@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "App.h"
 
 int CALLBACK WinMain(
 	HINSTANCE hInstance,
@@ -8,7 +9,7 @@ int CALLBACK WinMain(
 {
 	try
 	{
-//		return App{}.Go();
+		return App{}.Go();
 	}
 	catch (...)
 	{

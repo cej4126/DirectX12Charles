@@ -1,55 +1,29 @@
+#include "stdafx.h"
 #include "Window.h"
 
-Window::Window(HINSTANCE hIinst, int width, int height, LPSTR name)
-	:
-	width(width),
-	height(height),
-	name(name)
-{
-	WNDCLASSEX wc = { 0 };
-	wc.cbSize = sizeof(wc);
-	wc.style = CS_OWNDC;
-	wc.lpfnWndProc = HandleMsgSetup;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = hIinst;
-	wc.hIcon = static_cast<HICON>(LoadImage(
-		GetInstance(), MAKEINTRESOURCE(IDI_ICON1),
-		IMAGE_ICON, 32, 32, 0
-	));
-	wc.hCursor = nullptr;
-	wc.hbrBackground = nullptr;
-	wc.lpszMenuName = nullptr;
-	wc.lpszClassName = GetName();
-	wc.hIconSm = static_cast<HICON>(LoadImage(
-		GetInstance(), MAKEINTRESOURCE(IDI_ICON1),
-		IMAGE_ICON, 16, 16, 0
-	));
-	RegisterClassEx(&wc);
-}
-
-Window::WindowClass::~WindowClass()
-{
-	UnregisterClass(wndClassName, GetInstance());
-}
-
-const char *Window::WindowClass::GetName() noexcept
-{
-	return wndClassName;
-}
-
-HINSTANCE Window::WindowClass::GetInstance() noexcept
-{
-	return wndClass.hInst;
-}
-
-
 // Window Stuff
-Window::Window(HINSTANCE hIinst, int width, int height, const char *name)
+Window::Window(int width, int height)
 	:
 	width(width),
 	height(height)
 {
+	hInstance = GetModuleHandle(nullptr);
+
+	WNDCLASSEX wc = { 0 };
+	wc.cbSize = sizeof(wc);
+	wc.style = CS_OWNDC;
+	wc.lpfnWndProc = WndProc;
+	wc.cbClsExtra = 0;
+	wc.cbWndExtra = 0;
+	wc.hInstance = hInstance;
+	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hCursor = nullptr;
+	wc.hbrBackground = nullptr;
+	wc.lpszMenuName = nullptr;
+	wc.lpszClassName = WindowName;
+	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	RegisterClassEx(&wc);
+
 	// calculate window size based on desired client region size
 	RECT wr;
 	wr.left = 100;
@@ -58,27 +32,95 @@ Window::Window(HINSTANCE hIinst, int width, int height, const char *name)
 	wr.bottom = height + wr.top;
 	if (AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE) == 0)
 	{
-		throw CHWND_LAST_EXCEPT();
+		throw;
 	}
 	// create window & get hWnd
 	hWnd = CreateWindow(
-		WindowClass::GetName(), name,
+		WindowName, WindowName,
 		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
 		CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
-		nullptr, nullptr, WindowClass::GetInstance(), this
-	);
+		nullptr, nullptr, hInstance, this);
 	// check for error
 	if (hWnd == nullptr)
 	{
-		throw CHWND_LAST_EXCEPT();
+		throw;
 	}
 	// newly created windows start off as hidden
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 	// create graphics object
-	pGfx = std::make_unique<Graphics>(hWnd);
+	//pGfx = std::make_unique<Graphics>(hWnd);
+}
+
+std::optional<int> Window::ProcessMessages() noexcept
+{
+	MSG msg;
+	// while queue has messages, remove and dispatch them (but do not block on empty queue)
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	{
+		// check for quit because peekmessage does not signal this via return val
+		if (msg.message == WM_QUIT)
+		{
+			// return optional wrapping int (arg to PostQuitMessage is in wparam) signals quit
+			return (int)msg.wParam;
+		}
+
+		// TranslateMessage will post auxilliary WM_CHAR messages from key msgs
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	// return empty optional when not quitting app
+	return {};
 }
 
 Window::~Window()
 {
 	DestroyWindow(hWnd);
+	UnregisterClass(WindowName, hInstance);
+}
+
+
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+		case WM_KEYDOWN:
+			if (wParam == VK_ESCAPE)
+			{
+	//			//if (MessageBox(0, L"Quit?", L"Quit", MB_YESNO | MB_ICONQUESTION) == IDYES)
+				if (MessageBox(0, L"Quit?", L"Quit", MB_YESNO | MB_ICONQUESTION) == IDYES)
+				{
+					//running = false;
+					DestroyWindow(hwnd);
+				}
+			}
+			return 0;
+			break;
+	//	case WM_MOUSEMOVE:
+	//	{
+	//		if (wParam == MK_LBUTTON)
+	//		{
+	//			XMFLOAT2 location;
+	//			location.x = (float)GET_X_LPARAM(lParam);
+	//			location.y = (float)GET_Y_LPARAM(lParam);
+	//			bool mouseDownLast = !mouseDown;
+	//			// xapp OnMouseMove
+	//			mouseDown = true;
+	//		}
+	//		else
+	//		{
+	//			mouseDown = false;
+	//		}
+	//		return 0;
+	//	}
+		case WM_DESTROY:
+			//running = false;
+			// xapp setrunning
+			PostQuitMessage(0);
+			return 0;
+		default:
+			break;
+	}
+
+	return DefWindowProc(hwnd, msg, wParam, lParam);
 }

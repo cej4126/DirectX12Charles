@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Window.h"
 
 class App
@@ -9,6 +8,7 @@ public:
    int Go();
    ~App();
 private:
+   void DoFrame();
    Window wnd;
 
 };
