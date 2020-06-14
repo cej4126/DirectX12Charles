@@ -5,6 +5,18 @@
 #endif
 
 #include <Windows.h>
+#include <optional>
+#include <memory>
+#include <wrl.h>
 #include <d3d12.h>
+#include <dxgi1_6.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
+
+inline void ThrowIfFailed(HRESULT hr)
+{
+   if (hr != S_OK)
+   {
+      throw;
+   }
+}

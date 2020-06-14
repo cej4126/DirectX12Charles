@@ -47,8 +47,9 @@ Window::Window(int width, int height)
 	}
 	// newly created windows start off as hidden
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
+
 	// create graphics object
-	//pGfx = std::make_unique<Graphics>(hWnd);
+	pGfx = std::make_unique<Graphics>(hWnd, width, height);
 }
 
 std::optional<int> Window::ProcessMessages() noexcept
@@ -79,6 +80,14 @@ Window::~Window()
 	UnregisterClass(WindowName, hInstance);
 }
 
+Graphics &Window::Gfx()
+{
+	if (!pGfx)
+	{
+		throw;
+	}
+	return *pGfx;
+}
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
