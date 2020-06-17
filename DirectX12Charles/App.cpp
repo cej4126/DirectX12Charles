@@ -15,8 +15,8 @@ int App::Go()
       {
          return *code;
       }
+      DoFrame();
    }
-   DoFrame();
    return 0;
 }
 
@@ -26,4 +26,5 @@ App::~App()
 
 void App::DoFrame()
 {
+   wnd.Gfx().OnRender();
 }
