@@ -12,7 +12,7 @@ Window::Window(int width, int height)
 	WNDCLASSEX wc = { 0 };
 	wc.cbSize = sizeof(wc);
 	wc.style = CS_OWNDC;
-	wc.lpfnWndProc = WndProc;
+	wc.lpfnWndProc = HandleMsgInit;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = hInstance;
@@ -89,7 +89,28 @@ Graphics &Window::Gfx()
 	return *pGfx;
 }
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Window::HandleMsgInit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	// Wait for window construction to get the this pointer
+	if (msg == WM_NCCREATE)
+	{
+		// Put the main handler with the this pointer
+		const CREATESTRUCT *const pCreate = reinterpret_cast<CREATESTRUCT *>(lParam);
+		Window *const pWin = static_cast<Window *>(pCreate->lpCreateParams);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWin));
+		SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::HandleMsgMain));
+	}
+	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+
+LRESULT CALLBACK Window::HandleMsgMain(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	Window *const pWin = reinterpret_cast<Window *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	return pWin->HandleMsg(hwnd, msg, wParam, lParam);
+}
+
+LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
