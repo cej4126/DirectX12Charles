@@ -14,6 +14,14 @@
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 
+// DirectX 11
+#include <d3d11on12.h>
+
+// DWrite
+#include <d2d1_3.h>
+#include <dwrite.h>
+
+
 inline void ThrowIfFailed(HRESULT hr)
 {
    if (hr != S_OK)

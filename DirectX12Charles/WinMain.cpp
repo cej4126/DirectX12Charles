@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "App.h"
 
-#pragma comment(lib, "dxgi.lib")
-#pragma comment(lib, "d3d12.lib")
-#pragma comment(lib, "D3DCompiler.lib")
-
 int CALLBACK WinMain(
 	HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,

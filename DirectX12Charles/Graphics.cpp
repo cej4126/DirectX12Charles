@@ -6,8 +6,8 @@ Graphics::Graphics(HWND hWnd, int width, int height)
    :
    swapChainBuffers(bufferCount),
    width(width),
-   height(height)
-
+   height(height),
+   hWnd(hWnd)
 {
    aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
@@ -84,7 +84,6 @@ Graphics::Graphics(HWND hWnd, int width, int height)
    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
    swapChainDesc.Flags = 0;
 
-   ComPtr<IDXGISwapChain1> swapChain1;
    ThrowIfFailed(m_DxgiFactory4->CreateSwapChainForHwnd(commandQueue.Get(),
       hWnd,
       &swapChainDesc,
@@ -113,9 +112,9 @@ Graphics::Graphics(HWND hWnd, int width, int height)
    rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
    for (UINT i{ 0 }; i < bufferCount; i++)
    {
-      D3D12_CPU_DESCRIPTOR_HANDLE d = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
-      d.ptr += (INT64)i * (UINT64)rtvDescriptorSize;
-      device->CreateRenderTargetView(swapChainBuffers[i].Get(), nullptr, d);
+      D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
+      rtvHandle.ptr += (INT64)i * (UINT64)rtvDescriptorSize;
+      device->CreateRenderTargetView(swapChainBuffers[i].Get(), nullptr, rtvHandle);
    }
 
    // Create Depth Stencil Buffer
@@ -212,7 +211,7 @@ Graphics::Graphics(HWND hWnd, int width, int height)
    {
       throw;
    }
-   
+
    viewport.TopLeftX = 0.0f;
    viewport.TopLeftY = 0.0f;
    viewport.Width = (float)width;
@@ -315,9 +314,9 @@ void Graphics::ItemDepent()
    // Define the geometry for a triangle.
    Vertex triangleVertices[] =
    {
-       { { 0.0f, 0.25f * aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-       { { 0.25f, -0.25f * aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
-       { { -0.25f, -0.25f * aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
+       { { 0.0f - 0.5f, 0.25f * aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+       { { 0.25f - 0.5f, -0.25f * aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
+       { { -0.25f - 0.5f, -0.25f * aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
    };
 
    const UINT vertexBufferSize = sizeof(triangleVertices);
@@ -381,11 +380,12 @@ void Graphics::ItemDepent()
       ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
    }
 
+   testDirectX11Setup();
+
    // Wait for the command list to execute; we are reusing the same command 
    // list in our main loop but for now, we just want to wait for setup to 
    // complete before continuing.
    WaitForPreviousFrame();
-
 }
 
 void Graphics::WaitForPreviousFrame()
@@ -408,6 +408,216 @@ void Graphics::WaitForPreviousFrame()
    }
 
    frameIndex = swapChain->GetCurrentBackBufferIndex();
+}
+
+void Graphics::testDirectX11Setup()
+{
+   UINT x11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+#if defined(_DEBUG)
+   x11DeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+   // Create an 11 device wrapped around the 12 device and share 12's command queue.
+   ThrowIfFailed(D3D11On12CreateDevice(
+      device.Get(),
+      x11DeviceFlags,
+      nullptr,
+      0,
+      reinterpret_cast<IUnknown **>(commandQueue.GetAddressOf()),
+      1,
+      0,
+      &x11Device,
+      &x11DeviceContext,
+      nullptr
+   ));
+
+   // Query the 11On12 device from the 11 device.
+   ThrowIfFailed(x11Device.As(&x11On12Device));
+   
+   // DWrite
+   D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
+
+   D2D1_DEVICE_CONTEXT_OPTIONS deviceOptions = D2D1_DEVICE_CONTEXT_OPTIONS_NONE;
+   ThrowIfFailed(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory3), &d2dFactoryOptions, &m_d2dFactory));
+   ComPtr<IDXGIDevice> dxgiDevice;
+   ThrowIfFailed(x11On12Device.As(&dxgiDevice));
+   ThrowIfFailed(m_d2dFactory->CreateDevice(dxgiDevice.Get(), &m_d2dDevice));
+   ThrowIfFailed(m_d2dDevice->CreateDeviceContext(deviceOptions, &x11d2dDeviceContext));
+   ThrowIfFailed(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &m_dWriteFactory));
+
+
+   float dpiX;
+   float dpiY;
+
+   dpiX = (float)GetDpiForWindow(hWnd);
+   dpiY = dpiX;
+   //m_d2dFactory->GetDesktopDpi(&dpiX, &dpiY);
+   D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
+      D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+      D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+      dpiX,
+      dpiY
+   );
+
+   // Create a RTV
+   for (UINT i{ 0 }; i < bufferCount; i++)
+   {
+      //swapChainBuffers[i].ReleaseAndGetAddressOf()
+      D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
+      ThrowIfFailed(x11On12Device->CreateWrappedResource(
+         swapChainBuffers[i].Get(),
+         &d3d11Flags,
+         D3D12_RESOURCE_STATE_RENDER_TARGET,
+         D3D12_RESOURCE_STATE_PRESENT,
+         IID_PPV_ARGS(&x11wrappedBackBuffers[i])
+      ));
+
+      // Create a render target for D2D to draw directly to this back buffer.
+      ComPtr<IDXGISurface> surface;
+      ThrowIfFailed(x11wrappedBackBuffers[i].As(&surface));
+      ThrowIfFailed(x11d2dDeviceContext->CreateBitmapFromDxgiSurface(
+         surface.Get(),
+         &bitmapProperties,
+         &x11d2dRenderTargets[i]));
+
+
+      ThrowIfFailed(x11Device->CreateRenderTargetView(x11wrappedBackBuffers[i].Get(), nullptr, &x11Target[i]));
+   }
+
+
+
+
+
+   struct Vertex
+   {
+      float x;
+      float y;
+      float r;
+      float g;
+      float b;
+   };
+
+   // create vertex buffer (1 2d triangle at center of screen)
+   const Vertex vertices[] =
+   {
+      { 0.0f,0.5f,1.0f,0.0f,0.0f },
+      { 0.5f,-0.5f,0.0f,1.0f,0.0f },
+      { -0.5f,-0.5f,0.0f,0.0f,1.0f },
+   };
+
+   verticesCount = (UINT)std::size(vertices);
+   ComPtr<ID3D11Buffer> x11VertexBuffer;
+
+   D3D11_BUFFER_DESC bd = {};
+   bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+   bd.Usage = D3D11_USAGE_DEFAULT;
+   bd.CPUAccessFlags = 0u;
+   bd.MiscFlags = 0u;
+   bd.ByteWidth = sizeof(vertices);
+   bd.StructureByteStride = sizeof(Vertex);
+   D3D11_SUBRESOURCE_DATA sd = {};
+   sd.pSysMem = vertices;
+   ThrowIfFailed(x11Device->CreateBuffer(&bd, &sd, &x11VertexBuffer));
+
+   // create pixel shader
+   ComPtr<ID3DBlob> pBlob;
+   ThrowIfFailed(D3DReadFileToBlob(L"PixelShaderX11.cso", &pBlob));
+   ThrowIfFailed(x11Device->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &x11PixelShader));
+
+   // create vertex shader
+   ThrowIfFailed(D3DReadFileToBlob(L"VertexShaderX11.cso", &pBlob));
+   ThrowIfFailed(x11Device->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &x11VertexShader));
+
+   // input (vertex) layout (2d position only)
+   const D3D11_INPUT_ELEMENT_DESC ied[] =
+   {
+      { "POSITION",0,DXGI_FORMAT_R32G32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+      { "COLOR",0,DXGI_FORMAT_R32G32B32_FLOAT,0,8u,D3D11_INPUT_PER_VERTEX_DATA,0 },
+   };
+   ThrowIfFailed(x11Device->CreateInputLayout(
+      ied, (UINT)std::size(ied),
+      pBlob->GetBufferPointer(),
+      pBlob->GetBufferSize(),
+      &x11InputLayout
+   ));
+
+   x11ViewPort.Width = width;
+   x11ViewPort.Height = height;
+   x11ViewPort.MinDepth = 0;
+   x11ViewPort.MaxDepth = 1;
+   x11ViewPort.TopLeftX = 0;
+   x11ViewPort.TopLeftY = 0;
+
+   // DWrite
+   ThrowIfFailed(x11d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &x11d2dtextBrush));
+   ThrowIfFailed(m_dWriteFactory->CreateTextFormat(
+      L"Arial",
+      NULL,
+      DWRITE_FONT_WEIGHT_NORMAL,
+      DWRITE_FONT_STYLE_NORMAL,
+      DWRITE_FONT_STRETCH_NORMAL,
+      25,
+      L"en-us",
+      &x11d2dtextFormat
+   ));
+
+
+}
+
+void Graphics::testDirectX11Draw()
+{
+   x11On12Device->AcquireWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+
+   // DWrite
+
+   D2D1_SIZE_F rtSize = x11d2dRenderTargets[frameIndex]->GetSize();
+   D2D1_RECT_F textRect = D2D1::RectF(0, 0, rtSize.width, rtSize.height);
+   static const WCHAR text[] = L"Charles was here";
+
+   // Render text directly to the back buffer.
+   x11d2dDeviceContext->SetTarget(x11d2dRenderTargets[frameIndex].Get());
+   x11d2dDeviceContext->BeginDraw();
+   x11d2dDeviceContext->SetTransform(D2D1::Matrix3x2F::Identity());
+   x11d2dDeviceContext->DrawText(
+      text,
+      _countof(text) - 1,
+      x11d2dtextFormat.Get(),
+      &textRect,
+      x11d2dtextBrush.Get()
+   );
+   ThrowIfFailed(x11d2dDeviceContext->EndDraw());
+
+   // X11
+
+
+   // Bind vertex buffer to pipeline
+   const UINT stride = sizeof(Vertex);
+   const UINT offset = 0u;
+   x11DeviceContext->IASetVertexBuffers(0u, 1u, x11VertexBuffer.GetAddressOf(), &stride, &offset);
+
+   // bind pixel shader
+   x11DeviceContext->PSSetShader(x11PixelShader.Get(), nullptr, 0u);
+
+   // bind vertex shader
+   x11DeviceContext->VSSetShader(x11VertexShader.Get(), nullptr, 0u);
+
+   // bind vertex layout
+   x11DeviceContext->IASetInputLayout(x11InputLayout.Get());
+
+   // Set primitive topology to triangle list (groups of 3 vertices)
+   x11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+   x11DeviceContext->RSSetViewports(1u, &x11ViewPort);
+
+   // bind render target
+   x11DeviceContext->OMSetRenderTargets(1u, x11Target[frameIndex].GetAddressOf(), nullptr);
+
+   x11DeviceContext->Draw(verticesCount, 0u);
+
+   x11On12Device->ReleaseWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+
+   x11DeviceContext->Flush();
+
 }
 
 void Graphics::OnRender()
@@ -463,6 +673,9 @@ void Graphics::OnRender()
    // Execute the command list.
    ID3D12CommandList *ppCommandLists[] = { commandList.Get() };
    commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+   // DirectX 11
+   testDirectX11Draw();
 
    // Present the frame.
    ThrowIfFailed(swapChain->Present(1, 0));
