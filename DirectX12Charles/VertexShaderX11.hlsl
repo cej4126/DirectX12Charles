@@ -7,7 +7,8 @@ struct VSOut
 VSOut main( float2 pos : POSITION, float3 color : COLOR )
 {
 	VSOut vso;
-	vso.pos = float4(pos.x,pos.y,0.0f,1.0f);
-	vso.color = color;
+	vso.pos = float4(pos.x, pos.y, 0.0f, 1.0f);
+//	vso.color = color;
+	vso.color = float3(1.0f, 1.0f, 1.0f);
 	return vso;
 }

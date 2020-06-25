@@ -312,11 +312,14 @@ void Graphics::ItemDepent()
    ThrowIfFailed(commandList->Close());
 
    // Define the geometry for a triangle.
+   float offsetx = -0.5f;
+   float offsety = 0.5f;
+   float size = 0.15f;
    Vertex triangleVertices[] =
    {
-       { { 0.0f - 0.5f, 0.25f * aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-       { { 0.25f - 0.5f, -0.25f * aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
-       { { -0.25f - 0.5f, -0.25f * aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
+       { { 0.0f + offsetx, (size + offsety) * aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+       { { size + offsetx, (-size + offsety)* aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
+       { { -size + offsetx, (-size + offsety) * aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
    };
 
    const UINT vertexBufferSize = sizeof(triangleVertices);
@@ -410,6 +413,71 @@ void Graphics::WaitForPreviousFrame()
    frameIndex = swapChain->GetCurrentBackBufferIndex();
 }
 
+
+void Graphics::OnRender()
+{
+   frameIndex = swapChain->GetCurrentBackBufferIndex();
+   // Command list allocators can only be reset when the associated 
+   // command lists have finished execution on the GPU; apps should use 
+   // fences to determine GPU execution progress.
+   ThrowIfFailed(commandAllocators[frameIndex]->Reset());
+
+   // However, when ExecuteCommandList() is called on a particular command 
+   // list, that command list can then be reset at any time and must be before 
+   // re-recording.
+   ThrowIfFailed(commandList->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
+
+   // Set necessary state.
+   commandList->SetGraphicsRootSignature(rootSignature.Get());
+   commandList->RSSetViewports(1, &viewport);
+   commandList->RSSetScissorRects(1, &scissorRect);
+
+   D3D12_RESOURCE_BARRIER resourceBarrier;
+   resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+   resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+   resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+   resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+   resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+   resourceBarrier.Transition.pResource = swapChainBuffers[frameIndex].Get();
+   commandList->ResourceBarrier(1, &resourceBarrier);
+
+   // Indicate that the back buffer will be used as a render target.
+   D3D12_CPU_DESCRIPTOR_HANDLE renderTargetDesc = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
+   renderTargetDesc.ptr += (SIZE_T)frameIndex * (SIZE_T)rtvDescriptorSize;
+   commandList->OMSetRenderTargets(1, &renderTargetDesc, FALSE, nullptr);
+
+   // Record commands.
+   const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
+   commandList->ClearRenderTargetView(renderTargetDesc, clearColor, 0, nullptr);
+   commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+   commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+   commandList->DrawInstanced(3, 1, 0, 0);
+
+
+   // Indicate that the back buffer will now be used to present.
+   resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+   resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+   resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+   resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+   resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+   resourceBarrier.Transition.pResource = swapChainBuffers[frameIndex].Get();
+   commandList->ResourceBarrier(1, &resourceBarrier);
+
+   ThrowIfFailed(commandList->Close());
+
+   // Execute the command list.
+   ID3D12CommandList *ppCommandLists[] = { commandList.Get() };
+   commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+   // DirectX 11
+   testDirectX11Draw();
+
+   // Present the frame.
+   ThrowIfFailed(swapChain->Present(1, 0));
+
+   WaitForPreviousFrame();
+}
+
 void Graphics::testDirectX11Setup()
 {
    UINT x11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
@@ -459,10 +527,17 @@ void Graphics::testDirectX11Setup()
       dpiY
    );
 
+   //for (UINT i{ 0 }; i < bufferCount; i++)
+   //{
+   //   D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
+   //   rtvHandle.ptr += (INT64)i * (UINT64)rtvDescriptorSize;
+   //   device->CreateRenderTargetView(swapChainBuffers[i].Get(), nullptr, rtvHandle);
+   //}
+
+
    // Create a RTV
    for (UINT i{ 0 }; i < bufferCount; i++)
    {
-      //swapChainBuffers[i].ReleaseAndGetAddressOf()
       D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
       ThrowIfFailed(x11On12Device->CreateWrappedResource(
          swapChainBuffers[i].Get(),
@@ -480,13 +555,11 @@ void Graphics::testDirectX11Setup()
          &bitmapProperties,
          &x11d2dRenderTargets[i]));
 
-
       ThrowIfFailed(x11Device->CreateRenderTargetView(x11wrappedBackBuffers[i].Get(), nullptr, &x11Target[i]));
+
+//      ThrowIfFailed(swapChain1->GetBuffer(i, __uuidof(ID3D11Resource), &pBackBuffer[i]));
+//      ThrowIfFailed(x11Device->CreateRenderTargetView(pBackBuffer[i].Get(), nullptr, &x11Target[i]));
    }
-
-
-
-
 
    struct Vertex
    {
@@ -534,6 +607,7 @@ void Graphics::testDirectX11Setup()
       { "POSITION",0,DXGI_FORMAT_R32G32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
       { "COLOR",0,DXGI_FORMAT_R32G32B32_FLOAT,0,8u,D3D11_INPUT_PER_VERTEX_DATA,0 },
    };
+
    ThrowIfFailed(x11Device->CreateInputLayout(
       ied, (UINT)std::size(ied),
       pBlob->GetBufferPointer(),
@@ -541,15 +615,23 @@ void Graphics::testDirectX11Setup()
       &x11InputLayout
    ));
 
-   x11ViewPort.Width = width;
-   x11ViewPort.Height = height;
+   x11ViewPort.Width = (float)width;
+   x11ViewPort.Height = (float)height;
    x11ViewPort.MinDepth = 0;
    x11ViewPort.MaxDepth = 1;
    x11ViewPort.TopLeftX = 0;
    x11ViewPort.TopLeftY = 0;
 
+   // Depth Stencil
+   D3D11_DEPTH_STENCIL_DESC depthDesc = {};
+   depthDesc.StencilEnable = false;
+   depthDesc.DepthEnable = false;
+
+   ThrowIfFailed(x11Device->CreateDepthStencilState(
+      &depthDesc, &x11DepthStencilState));
+
    // DWrite
-   ThrowIfFailed(x11d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &x11d2dtextBrush));
+   ThrowIfFailed(x11d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::DarkRed), &x11d2dtextBrush));
    ThrowIfFailed(m_dWriteFactory->CreateTextFormat(
       L"Arial",
       NULL,
@@ -571,7 +653,7 @@ void Graphics::testDirectX11Draw()
    // DWrite
 
    D2D1_SIZE_F rtSize = x11d2dRenderTargets[frameIndex]->GetSize();
-   D2D1_RECT_F textRect = D2D1::RectF(0, 0, rtSize.width, rtSize.height);
+   D2D1_RECT_F textRect = D2D1::RectF(20, 20, rtSize.width, rtSize.height);
    static const WCHAR text[] = L"Charles was here";
 
    // Render text directly to the back buffer.
@@ -588,8 +670,6 @@ void Graphics::testDirectX11Draw()
    ThrowIfFailed(x11d2dDeviceContext->EndDraw());
 
    // X11
-
-
    // Bind vertex buffer to pipeline
    const UINT stride = sizeof(Vertex);
    const UINT offset = 0u;
@@ -604,13 +684,15 @@ void Graphics::testDirectX11Draw()
    // bind vertex layout
    x11DeviceContext->IASetInputLayout(x11InputLayout.Get());
 
-   // Set primitive topology to triangle list (groups of 3 vertices)
-   x11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
    x11DeviceContext->RSSetViewports(1u, &x11ViewPort);
+
+   x11DeviceContext->OMSetDepthStencilState(x11DepthStencilState.Get(), 0u);
 
    // bind render target
    x11DeviceContext->OMSetRenderTargets(1u, x11Target[frameIndex].GetAddressOf(), nullptr);
+
+   // Set primitive topology to triangle list (groups of 3 vertices)
+   x11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
    x11DeviceContext->Draw(verticesCount, 0u);
 
@@ -619,67 +701,3 @@ void Graphics::testDirectX11Draw()
    x11DeviceContext->Flush();
 
 }
-
-void Graphics::OnRender()
-{
-   frameIndex = swapChain->GetCurrentBackBufferIndex();
-   // Command list allocators can only be reset when the associated 
-   // command lists have finished execution on the GPU; apps should use 
-   // fences to determine GPU execution progress.
-   ThrowIfFailed(commandAllocators[frameIndex]->Reset());
-
-   // However, when ExecuteCommandList() is called on a particular command 
-   // list, that command list can then be reset at any time and must be before 
-   // re-recording.
-   ThrowIfFailed(commandList->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
-
-   // Set necessary state.
-   commandList->SetGraphicsRootSignature(rootSignature.Get());
-   commandList->RSSetViewports(1, &viewport);
-   commandList->RSSetScissorRects(1, &scissorRect);
-
-   D3D12_RESOURCE_BARRIER resourceBarrier;
-   resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-   resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-   resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-   resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-   resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-   resourceBarrier.Transition.pResource = swapChainBuffers[frameIndex].Get();
-   commandList->ResourceBarrier(1, &resourceBarrier);
-
-   // Indicate that the back buffer will be used as a render target.
-   D3D12_CPU_DESCRIPTOR_HANDLE renderTargetDesc = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
-   renderTargetDesc.ptr += (SIZE_T)frameIndex * (SIZE_T)rtvDescriptorSize;
-   commandList->OMSetRenderTargets(1, &renderTargetDesc, FALSE, nullptr);
-
-   // Record commands.
-   const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-   commandList->ClearRenderTargetView(renderTargetDesc, clearColor, 0, nullptr);
-   commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-   commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-   commandList->DrawInstanced(3, 1, 0, 0);
-
-   // Indicate that the back buffer will now be used to present.
-   resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-   resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-   resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-   resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-   resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-   resourceBarrier.Transition.pResource = swapChainBuffers[frameIndex].Get();
-   commandList->ResourceBarrier(1, &resourceBarrier);
-
-   ThrowIfFailed(commandList->Close());
-
-   // Execute the command list.
-   ID3D12CommandList *ppCommandLists[] = { commandList.Get() };
-   commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-
-   // DirectX 11
-   testDirectX11Draw();
-
-   // Present the frame.
-   ThrowIfFailed(swapChain->Present(1, 0));
-
-   WaitForPreviousFrame();
-}
-

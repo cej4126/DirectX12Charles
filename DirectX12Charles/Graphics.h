@@ -76,6 +76,8 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> x11Target[bufferCount];
 	Microsoft::WRL::ComPtr<ID3D12Resource> x11renderTargets[bufferCount];
 	Microsoft::WRL::ComPtr<ID3D11Resource> x11wrappedBackBuffers[bufferCount];
+	Microsoft::WRL::ComPtr<ID3D11Resource> pBackBuffer[bufferCount];
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> x11DepthStencilState;
 	D3D11_VIEWPORT x11ViewPort;
 	UINT verticesCount;
 
