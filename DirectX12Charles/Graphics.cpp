@@ -20,13 +20,13 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 //#endif
 
 
-//   LoadDriveX12();
+   LoadDriveX12();
 
-//   LoadBaseX12();
-//   CreateFence();
-//   LoadDepentX12();
+   LoadBaseX12();
+   CreateFence();
+   LoadDepentX12();
 
-   LoadDriveX11test();
+//   LoadDriveX11test();
 
    LoadBaseX11();
 
@@ -131,7 +131,6 @@ void Graphics::LoadDriveX11test()
    sd.SampleDesc.Quality = 0;
    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
    sd.BufferCount = bufferCount;
-//   sd.BufferCount = 1;
    sd.OutputWindow = hWnd;
    sd.Windowed = TRUE;
    sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
@@ -467,80 +466,80 @@ void Graphics::LoadDepentX12()
 
 void Graphics::LoadBaseX11()
 {
-//   UINT x11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-//#if defined(_DEBUG)
-//   x11DeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
-//#endif
-//
-//   // Create an 11 device wrapped around the 12 device and share 12's command queue.
-//   ThrowIfFailed(D3D11On12CreateDevice(
-//      device.Get(),
-//      x11DeviceFlags,
-//      nullptr,
-//      0,
-//      reinterpret_cast<IUnknown **>(commandQueue.GetAddressOf()),
-//      1,
-//      0,
-//      &x11Device,
-//      &x11DeviceContext,
-//      nullptr
-//   ));
-//
-//   // Query the 11On12 device from the 11 device.
-//   ThrowIfFailed(x11Device.As(&x11On12Device));
+   UINT x11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+#if defined(_DEBUG)
+   x11DeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
 
-   //// DWrite
-   //D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
+   // Create an 11 device wrapped around the 12 device and share 12's command queue.
+   ThrowIfFailed(D3D11On12CreateDevice(
+      device.Get(),
+      x11DeviceFlags,
+      nullptr,
+      0,
+      reinterpret_cast<IUnknown **>(commandQueue.GetAddressOf()),
+      1,
+      0,
+      &x11Device,
+      &x11DeviceContext,
+      nullptr
+   ));
 
-   //D2D1_DEVICE_CONTEXT_OPTIONS deviceOptions = D2D1_DEVICE_CONTEXT_OPTIONS_NONE;
-   //ThrowIfFailed(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory3), &d2dFactoryOptions, &m_d2dFactory));
-   //ComPtr<IDXGIDevice> dxgiDevice;
-   //ThrowIfFailed(x11On12Device.As(&dxgiDevice));
-   //ThrowIfFailed(m_d2dFactory->CreateDevice(dxgiDevice.Get(), &m_d2dDevice));
-   //ThrowIfFailed(m_d2dDevice->CreateDeviceContext(deviceOptions, &x11d2dDeviceContext));
-   //ThrowIfFailed(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &m_dWriteFactory));
+   // Query the 11On12 device from the 11 device.
+   ThrowIfFailed(x11Device.As(&x11On12Device));
+
+   // DWrite
+   D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
+
+   D2D1_DEVICE_CONTEXT_OPTIONS deviceOptions = D2D1_DEVICE_CONTEXT_OPTIONS_NONE;
+   ThrowIfFailed(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory3), &d2dFactoryOptions, &m_d2dFactory));
+   ComPtr<IDXGIDevice> dxgiDevice;
+   ThrowIfFailed(x11On12Device.As(&dxgiDevice));
+   ThrowIfFailed(m_d2dFactory->CreateDevice(dxgiDevice.Get(), &m_d2dDevice));
+   ThrowIfFailed(m_d2dDevice->CreateDeviceContext(deviceOptions, &x11d2dDeviceContext));
+   ThrowIfFailed(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &m_dWriteFactory));
 
 
-   //float dpiX;
-   //float dpiY;
+   float dpiX;
+   float dpiY;
 
-   //dpiX = (float)GetDpiForWindow(hWnd);
-   //dpiY = dpiX;
-   ////m_d2dFactory->GetDesktopDpi(&dpiX, &dpiY);
-   //D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
-   //   D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-   //   D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
-   //   dpiX,
-   //   dpiY
-   //);
+   dpiX = (float)GetDpiForWindow(hWnd);
+   dpiY = dpiX;
+   //m_d2dFactory->GetDesktopDpi(&dpiX, &dpiY);
+   D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
+      D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+      D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+      dpiX,
+      dpiY
+   );
 
  
 
    //// Create a RTV
-   //for (UINT i{ 0 }; i < bufferCount; i++)
-   //{
-   //   D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
-   //   ThrowIfFailed(x11On12Device->CreateWrappedResource(
-   //      swapChainBuffers[i].Get(),
-   //      &d3d11Flags,
-   //      D3D12_RESOURCE_STATE_RENDER_TARGET,
-   //      D3D12_RESOURCE_STATE_PRESENT,
-   //      IID_PPV_ARGS(&x11wrappedBackBuffers[i])
-   //   ));
+   for (UINT i{ 0 }; i < bufferCount; i++)
+   {
+      D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
+      ThrowIfFailed(x11On12Device->CreateWrappedResource(
+         swapChainBuffers[i].Get(),
+         &d3d11Flags,
+         D3D12_RESOURCE_STATE_RENDER_TARGET,
+         D3D12_RESOURCE_STATE_PRESENT,
+         IID_PPV_ARGS(&x11wrappedBackBuffers[i])
+      ));
 
-   //   // Create a render target for D2D to draw directly to this back buffer.
-   //   ComPtr<IDXGISurface> surface;
-   //   ThrowIfFailed(x11wrappedBackBuffers[i].As(&surface));
-   //   ThrowIfFailed(x11d2dDeviceContext->CreateBitmapFromDxgiSurface(
-   //      surface.Get(),
-   //      &bitmapProperties,
-   //      &x11d2dRenderTargets[i]));
+      // Create a render target for D2D to draw directly to this back buffer.
+      ComPtr<IDXGISurface> surface;
+      ThrowIfFailed(x11wrappedBackBuffers[i].As(&surface));
+      ThrowIfFailed(x11d2dDeviceContext->CreateBitmapFromDxgiSurface(
+         surface.Get(),
+         &bitmapProperties,
+         &x11d2dRenderTargets[i]));
 
-   //   ThrowIfFailed(x11Device->CreateRenderTargetView(x11wrappedBackBuffers[i].Get(), nullptr, &x11Target[i]));
+      ThrowIfFailed(x11Device->CreateRenderTargetView(x11wrappedBackBuffers[i].Get(), nullptr, &x11Target[i]));
 
-   //   //      ThrowIfFailed(swapChain1->GetBuffer(i, __uuidof(ID3D11Resource), &pBackBuffer[i]));
-   //   //      ThrowIfFailed(x11Device->CreateRenderTargetView(pBackBuffer[i].Get(), nullptr, &x11Target[i]));
-   //}
+      //ThrowIfFailed(swapChain1->GetBuffer(i, __uuidof(ID3D11Resource), &pBackBuffer[i]));
+      //ThrowIfFailed(x11Device->CreateRenderTargetView(pBackBuffer[i].Get(), nullptr, &x11Target[i]));
+   }
 
    // create vertex buffer (1 2d triangle at center of screen)
    const VertexX11 vertices[] =
@@ -594,25 +593,25 @@ void Graphics::LoadBaseX11()
    x11ViewPort.TopLeftY = 0;
 
    // Depth Stencil
-   //D3D11_DEPTH_STENCIL_DESC depthDesc = {};
-   //depthDesc.StencilEnable = false;
-   //depthDesc.DepthEnable = false;
+   D3D11_DEPTH_STENCIL_DESC depthDesc = {};
+   depthDesc.StencilEnable = false;
+   depthDesc.DepthEnable = false;
 
-   //ThrowIfFailed(x11Device->CreateDepthStencilState(
-   //   &depthDesc, &x11DepthStencilState));
+   ThrowIfFailed(x11Device->CreateDepthStencilState(
+      &depthDesc, &x11DepthStencilState));
 
-   //// DWrite
-   //ThrowIfFailed(x11d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::DarkRed), &x11d2dtextBrush));
-   //ThrowIfFailed(m_dWriteFactory->CreateTextFormat(
-   //   L"Arial",
-   //   NULL,
-   //   DWRITE_FONT_WEIGHT_NORMAL,
-   //   DWRITE_FONT_STYLE_NORMAL,
-   //   DWRITE_FONT_STRETCH_NORMAL,
-   //   25,
-   //   L"en-us",
-   //   &x11d2dtextFormat
-   //));
+   // DWrite
+   ThrowIfFailed(x11d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::DarkRed), &x11d2dtextBrush));
+   ThrowIfFailed(m_dWriteFactory->CreateTextFormat(
+      L"Arial",
+      NULL,
+      DWRITE_FONT_WEIGHT_NORMAL,
+      DWRITE_FONT_STYLE_NORMAL,
+      DWRITE_FONT_STRETCH_NORMAL,
+      25,
+      L"en-us",
+      &x11d2dtextFormat
+   ));
 }
 
 void Graphics::WaitForPreviousFrame()
@@ -642,7 +641,7 @@ void Graphics::OnRender()
    frameIndex = swapChain->GetCurrentBackBufferIndex();
    //frameIndex = pSwap->GetCurrentBackBufferIndex();
    // DirectX 12
-   //OnRenderX12();
+   OnRenderX12();
 
    // DirectX 11
    OnRenderX11();
@@ -651,7 +650,7 @@ void Graphics::OnRender()
    // Present the frame.
    ThrowIfFailed(swapChain->Present(1, 0));
 
-   //WaitForPreviousFrame();
+   WaitForPreviousFrame();
 }
 
 void Graphics::OnRenderX12()
@@ -695,7 +694,7 @@ void Graphics::OnRenderX12()
 
    // Indicate that the back buffer will now be used to present.
 
-//#define X11_ICLUDED
+#define X11_ICLUDED
 #ifdef X11_ICLUDED
    resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
    resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
@@ -718,49 +717,28 @@ void Graphics::OnRenderX11()
    const float color[] = { 0.2f, 0.2f, 1.0f, 0.7f };
    x11DeviceContext->ClearRenderTargetView(x11Target[frameIndex].Get(), color);
 
-   //x11On12Device->AcquireWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+   x11On12Device->AcquireWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
 
-   //// DWrite
+   // DWrite
 
-   //D2D1_SIZE_F rtSize = x11d2dRenderTargets[frameIndex]->GetSize();
-   //D2D1_RECT_F textRect = D2D1::RectF(20, 20, rtSize.width, rtSize.height);
-   //static const WCHAR text[] = L"Charles was here";
+   D2D1_SIZE_F rtSize = x11d2dRenderTargets[frameIndex]->GetSize();
+   D2D1_RECT_F textRect = D2D1::RectF(20, 20, rtSize.width, rtSize.height);
+   static const WCHAR text[] = L"Charles was here";
 
-   //// Render text directly to the back buffer.
-   //x11d2dDeviceContext->SetTarget(x11d2dRenderTargets[frameIndex].Get());
-   //x11d2dDeviceContext->BeginDraw();
-   //x11d2dDeviceContext->SetTransform(D2D1::Matrix3x2F::Identity());
-   //x11d2dDeviceContext->DrawText(
-   //   text,
-   //   _countof(text) - 1,
-   //   x11d2dtextFormat.Get(),
-   //   &textRect,
-   //   x11d2dtextBrush.Get()
-   //);
-   //ThrowIfFailed(x11d2dDeviceContext->EndDraw());
+   // Render text directly to the back buffer.
+   x11d2dDeviceContext->SetTarget(x11d2dRenderTargets[frameIndex].Get());
+   x11d2dDeviceContext->BeginDraw();
+   x11d2dDeviceContext->SetTransform(D2D1::Matrix3x2F::Identity());
+   x11d2dDeviceContext->DrawText(
+      text,
+      _countof(text) - 1,
+      x11d2dtextFormat.Get(),
+      &textRect,
+      x11d2dtextBrush.Get()
+   );
+   ThrowIfFailed(x11d2dDeviceContext->EndDraw());
 
    // X11
-
-   //const VertexX11 vertices[] =
-   //{
-   //   { 0.0f,0.5f,1.0f,0.0f,0.0f },
-   //   { 0.5f,-0.5f,0.0f,1.0f,0.0f },
-   //   { -0.5f,-0.5f,0.0f,0.0f,1.0f },
-   //};
-
-   //verticesCount = (UINT)std::size(vertices);
-
-   //D3D11_BUFFER_DESC bd = {};
-   //bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-   //bd.Usage = D3D11_USAGE_DEFAULT;
-   //bd.CPUAccessFlags = 0u;
-   //bd.MiscFlags = 0u;
-   //bd.ByteWidth = sizeof(vertices);
-   //bd.StructureByteStride = sizeof(VertexX11);
-   //D3D11_SUBRESOURCE_DATA sd = {};
-   //sd.pSysMem = vertices;
-   //ThrowIfFailed(x11Device->CreateBuffer(&bd, &sd, &x11VertexBuffer));
-
 
 
    // Bind vertex buffer to pipeline
@@ -777,7 +755,7 @@ void Graphics::OnRenderX11()
    // bind vertex layout
    x11DeviceContext->IASetInputLayout(x11InputLayout.Get());
 
-//   x11DeviceContext->OMSetDepthStencilState(x11DepthStencilState.Get(), 0u);
+   x11DeviceContext->OMSetDepthStencilState(x11DepthStencilState.Get(), 0u);
 
    // bind render target
    x11DeviceContext->OMSetRenderTargets(1u, x11Target[frameIndex].GetAddressOf(), nullptr);
@@ -789,8 +767,8 @@ void Graphics::OnRenderX11()
 
    x11DeviceContext->Draw(verticesCount, 0u);
 
-//   x11On12Device->ReleaseWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+   x11On12Device->ReleaseWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
 
-//   x11DeviceContext->Flush();
+   x11DeviceContext->Flush();
 
 }

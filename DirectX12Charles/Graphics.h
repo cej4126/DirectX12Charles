@@ -35,8 +35,8 @@ private:
 	void WaitForPreviousFrame();
 
 protected:
-//	static const UINT bufferCount = 3;
-	static const UINT bufferCount = 1;
+	static const UINT bufferCount = 3;
+//	static const UINT bufferCount = 1;
 	struct Vertex
 	{
 		DirectX::XMFLOAT3 position;
