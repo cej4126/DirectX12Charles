@@ -27,12 +27,17 @@ private:
 	void CreateFence();
 	void LoadDepentX12();
 	void OnRenderX12();
+	void WaitForPreviousFrame();
 
 	// DirectX 11
-	void LoadDriveX11test();
+	void LoadDriveX11Only();
 	void LoadBaseX11();
+	void LoadDepentX11();
+	void OnRender2DWrite();
 	void OnRenderX11();
-	void WaitForPreviousFrame();
+
+	// DWrite
+	void LoadBase2D();
 
 protected:
 	static const UINT bufferCount = 3;
@@ -100,6 +105,7 @@ protected:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> pSwap;
 
 	// DWrite
+	Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
 	Microsoft::WRL::ComPtr<ID2D1Bitmap1> x11d2dRenderTargets[bufferCount];
 	Microsoft::WRL::ComPtr<ID2D1DeviceContext2> x11d2dDeviceContext;
 	Microsoft::WRL::ComPtr<IDWriteTextFormat> x11d2dtextFormat;
