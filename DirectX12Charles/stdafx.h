@@ -20,6 +20,7 @@
 // DWrite
 #include <d2d1_3.h>
 #include <dwrite.h>
+#include <chrono>
 
 
 inline void ThrowIfFailed(HRESULT hr)

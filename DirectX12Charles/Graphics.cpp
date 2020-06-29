@@ -1,6 +1,7 @@
 #include "Graphics.h"
 
 using namespace Microsoft::WRL;
+using namespace DirectX;
 
 Graphics::Graphics(HWND hWnd, int width, int height)
    :
@@ -304,13 +305,38 @@ void Graphics::CreateFence()
 
 void Graphics::LoadDepentX12()
 {
+   D3D12_ROOT_DESCRIPTOR rootCBVDescriptor;
+   rootCBVDescriptor.RegisterSpace = 0;
+   rootCBVDescriptor.ShaderRegister = 0;
+
+   D3D12_ROOT_PARAMETER  rootParameters[1];
+   rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // this is a constant buffer view root descriptor
+   rootParameters[0].Descriptor = rootCBVDescriptor; // this is the root descriptor for this root parameter
+   rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // our pixel shader will be the only shader accessing this parameter for now
+
+   // create a static sampler
+   D3D12_STATIC_SAMPLER_DESC sampler = {};
+   sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+   sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+   sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+   sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+   sampler.MipLODBias = 0;
+   sampler.MaxAnisotropy = 0;
+   sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+   sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+   sampler.MinLOD = 0.0f;
+   sampler.MaxLOD = D3D12_FLOAT32_MAX;
+   sampler.ShaderRegister = 0;
+   sampler.RegisterSpace = 0;
+   sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
    // Create an basic root signature.
    D3D12_ROOT_SIGNATURE_DESC rsDesc;
    rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-   rsDesc.NumParameters = 0;
-   rsDesc.pParameters = nullptr;
-   rsDesc.NumStaticSamplers = 0;
-   rsDesc.pStaticSamplers = nullptr;
+   rsDesc.NumParameters = _countof(rootParameters);
+   rsDesc.pParameters = rootParameters;
+   rsDesc.NumStaticSamplers = 1;
+   rsDesc.pStaticSamplers = &sampler;
 
    ComPtr<ID3DBlob> signature;
    ComPtr<ID3DBlob> error;
@@ -332,7 +358,7 @@ void Graphics::LoadDepentX12()
    D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
    {
        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-       { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+       { "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
    };
 
    D3D12_RASTERIZER_DESC rasterizerDesc;
@@ -385,18 +411,89 @@ void Graphics::LoadDepentX12()
    // to record yet. The main loop expects it to be closed, so close it now.
    ThrowIfFailed(commandList->Close());
 
+   LoadVertexBuffer();
+   LoadIndexBuffer();
+
+   // Constant buffer
+   D3D12_HEAP_PROPERTIES constantHeapUpload = {};
+   constantHeapUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+   constantHeapUpload.CreationNodeMask = 1;
+   constantHeapUpload.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+   constantHeapUpload.Type = D3D12_HEAP_TYPE_UPLOAD;
+   constantHeapUpload.VisibleNodeMask = 1;
+
+   D3D12_RESOURCE_DESC constantHeapDesc = {};
+   constantHeapDesc.Alignment = 0;
+   constantHeapDesc.DepthOrArraySize = 1;
+   constantHeapDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+   constantHeapDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+   constantHeapDesc.Format = DXGI_FORMAT_UNKNOWN;
+   constantHeapDesc.Height = 1;
+   constantHeapDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+   constantHeapDesc.SampleDesc.Count = 1;
+   constantHeapDesc.SampleDesc.Quality = 0;
+   constantHeapDesc.Width = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+   constantHeapDesc.MipLevels = 1;
+
+   ThrowIfFailed(device->CreateCommittedResource(
+      &constantHeapUpload, // this heap will be used to upload the constant buffer data
+      D3D12_HEAP_FLAG_NONE, // no flags
+      &constantHeapDesc, // size of the resource heap. Must be a multiple of 64KB for single-textures and constant buffers
+      D3D12_RESOURCE_STATE_GENERIC_READ, // will be data that is read from so we keep it in the generic read state
+      nullptr, // we do not have use an optimized clear value for constant buffers
+      IID_PPV_ARGS(&constantBufferUploadHeaps)));
+
+   ZeroMemory(&cbPerObject, sizeof(cbPerObject));
+   D3D12_RANGE readRange;
+   readRange.Begin = 0;
+   readRange.End = 0;
+   ThrowIfFailed(constantBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&cbvGPUAddress)));
+   memcpy(cbvGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &cbPerObject, sizeof(cbPerObject));
+
+   // Create synchronization objects and wait until assets have been uploaded to the GPU.
+   ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
+   fenceValue = 1;
+
+   // Create an event handle to use for frame synchronization.
+   fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+   if (fenceEvent == nullptr)
+   {
+      ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+   }
+
+
+   // Wait for the command list to execute; we are reusing the same command 
+   // list in our main loop but for now, we just want to wait for setup to 
+   // complete before continuing.
+   WaitForPreviousFrame();
+}
+
+void Graphics::LoadVertexBuffer()
+{
    // Define the geometry for a triangle.
    float offsetx = -0.5f;
    float offsety = 0.5f;
-   float size = 0.15f;
-   Vertex triangleVertices[] =
+   float size1 = 0.15f;
+   float size2 = 0.10f;
+   float size3 = 0.20f;
+   Vertex verticesX12[] =
    {
-       { { 0.0f + offsetx, (size + offsety) * aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-       { { size + offsetx, (-size + offsety)* aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
-       { { -size + offsetx, (-size + offsety) * aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
-   };
+       { {   0.0f,  size1, 0.0f }, {  30, 255,   0, 255 } },
+       { {  size1, -size1, 0.0f }, {   0, 255,   0, 255 } },
+       { { -size1, -size1, 0.0f }, {   0, 255,  30, 255  } },
 
-   const UINT vertexBufferSize = sizeof(triangleVertices);
+       { { -size2,  size2, 0.0f }, {  30, 255, 255, 255 } },
+       { {  size2,  size2, 0.0f }, {   0, 255, 255, 255 } },
+       { {   0.0f, -size3, 0.0f }, {   0,  40, 255, 255 } },
+
+   };
+   const UINT vertexCount = (UINT)std::size(verticesX12);
+   const UINT vertexBufferSize = sizeof(verticesX12);
+   for (int i = 0; i < vertexCount; i++)
+   {
+      verticesX12[i].position.x += offsetx;
+      verticesX12[i].position.y = (verticesX12[i].position.y + offsety) * aspectRatio;
+   }
 
    D3D12_HEAP_PROPERTIES heapProps;
    ZeroMemory(&heapProps, sizeof(heapProps));
@@ -438,30 +535,76 @@ void Graphics::LoadDepentX12()
    readRange.Begin = 0;
    readRange.End = 0;
    ThrowIfFailed(vertexBuffer->Map(0, &readRange, reinterpret_cast<void **>(&pVertexDataBegin)));
-   memcpy(pVertexDataBegin, triangleVertices, sizeof(triangleVertices));
+   memcpy(pVertexDataBegin, verticesX12, sizeof(verticesX12));
    vertexBuffer->Unmap(0, nullptr);
 
    // Initialize the vertex buffer view.
    vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
    vertexBufferView.StrideInBytes = sizeof(Vertex);
    vertexBufferView.SizeInBytes = vertexBufferSize;
+}
 
-   // Create synchronization objects and wait until assets have been uploaded to the GPU.
-   ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
-   fenceValue = 1;
-
-   // Create an event handle to use for frame synchronization.
-   fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-   if (fenceEvent == nullptr)
+void Graphics::LoadIndexBuffer()
+{
+   // Define the geometry for a triangle.
+   const unsigned short indicesX12[] =
    {
-      ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-   }
+      0, 1, 2,
+      0, 2, 3,
+      0, 4, 1,
+      2, 1, 5
+   };
 
+   indicesCount = (UINT)std::size(indicesX12);
+   const UINT indicesBufferSize = sizeof(indicesX12);
 
-   // Wait for the command list to execute; we are reusing the same command 
-   // list in our main loop but for now, we just want to wait for setup to 
-   // complete before continuing.
-   WaitForPreviousFrame();
+   D3D12_HEAP_PROPERTIES heapProps;
+   ZeroMemory(&heapProps, sizeof(heapProps));
+   heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
+   heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+   heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+   heapProps.CreationNodeMask = 1;
+   heapProps.VisibleNodeMask = 1;
+
+   D3D12_RESOURCE_DESC resourceDesc;
+   ZeroMemory(&resourceDesc, sizeof(resourceDesc));
+   resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+   resourceDesc.Alignment = 0;
+   resourceDesc.Width = indicesBufferSize;
+   resourceDesc.Height = 1;
+   resourceDesc.DepthOrArraySize = 1;
+   resourceDesc.MipLevels = 1;
+   resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+   resourceDesc.SampleDesc.Count = 1;
+   resourceDesc.SampleDesc.Quality = 0;
+   resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+   resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+   // Note: using upload heaps to transfer static data like Index buffers is not 
+   // recommended. Every time the GPU needs it, the upload heap will be marshalled 
+   // over. Please read up on Default Heap usage. An upload heap is used here for 
+   // code simplicity and because there are very few Index to actually transfer.
+   ThrowIfFailed(device->CreateCommittedResource(
+      &heapProps,
+      D3D12_HEAP_FLAG_NONE,
+      &resourceDesc,
+      D3D12_RESOURCE_STATE_GENERIC_READ,
+      nullptr,
+      IID_PPV_ARGS(&indexBuffer)));
+
+   // Copy the triangle data to the Index buffer.
+   UINT8 *pIndexDataBegin;
+   D3D12_RANGE readRange;         // We do not intend to read from this resource on the CPU.
+   readRange.Begin = 0;
+   readRange.End = 0;
+   ThrowIfFailed(indexBuffer->Map(0, &readRange, reinterpret_cast<void **>(&pIndexDataBegin)));
+   memcpy(pIndexDataBegin, indicesX12, sizeof(indicesX12));
+   indexBuffer->Unmap(0, nullptr);
+
+   // Initialize the indices buffer view.
+   indexBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
+   indexBufferView.Format = DXGI_FORMAT_R16_UINT;
+   indexBufferView.SizeInBytes = indicesBufferSize;
 }
 
 void Graphics::LoadBaseX11()
@@ -548,25 +691,65 @@ void Graphics::LoadBase2D()
 void Graphics::LoadDepentX11()
 {
    // create vertex buffer (1 2d triangle at center of screen)
-   const VertexX11 vertices[] =
+   const VertexX11 verticesX11[] =
    {
-      { 0.0f,0.5f,1.0f,0.0f,0.0f },
-      { 0.5f,-0.5f,0.0f,1.0f,0.0f },
-      { -0.5f,-0.5f,0.0f,0.0f,1.0f },
+      {  0.0f,  0.5f, 0,   0,  70, 255 },
+      {  0.5f, -0.5f, 0, 255,   0, 255 },
+      { -0.5f, -0.5f, 0,  60, 255, 255 },
+
+      { -0.3f,  0.3f, 30, 255,  0, 255 },
+      {  0.3f,  0.3f,  0, 255,  0, 255 },
+      {  0.0f, -0.9f,  0, 255, 30, 255 },
    };
 
-   verticesCount = (UINT)std::size(vertices);
+   verticeX11Count = (UINT)std::size(verticesX11);
 
-   D3D11_BUFFER_DESC bd = {};
-   bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-   bd.Usage = D3D11_USAGE_DEFAULT;
-   bd.CPUAccessFlags = 0u;
-   bd.MiscFlags = 0u;
-   bd.ByteWidth = sizeof(vertices);
-   bd.StructureByteStride = sizeof(VertexX11);
-   D3D11_SUBRESOURCE_DATA sd = {};
-   sd.pSysMem = vertices;
-   ThrowIfFailed(x11Device->CreateBuffer(&bd, &sd, &x11VertexBuffer));
+   D3D11_BUFFER_DESC verticesX11Desc = {};
+   verticesX11Desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+   verticesX11Desc.Usage = D3D11_USAGE_DEFAULT;
+   verticesX11Desc.CPUAccessFlags = 0u;
+   verticesX11Desc.MiscFlags = 0u;
+   verticesX11Desc.ByteWidth = sizeof(verticesX11);
+   verticesX11Desc.StructureByteStride = sizeof(VertexX11);
+   D3D11_SUBRESOURCE_DATA verticeX11Data = {};
+   verticeX11Data.pSysMem = verticesX11;
+   ThrowIfFailed(x11Device->CreateBuffer(&verticesX11Desc, &verticeX11Data, &x11VertexBuffer));
+
+   const unsigned short indicesX11[] =
+   {
+      0, 1, 2,
+      0, 2, 3,
+      0, 4, 1,
+      2, 1, 5
+   };
+
+   D3D11_BUFFER_DESC indicesX11Desc = {};
+   indicesX11Desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+   indicesX11Desc.Usage = D3D11_USAGE_DEFAULT;
+   indicesX11Desc.CPUAccessFlags = 0u;
+   indicesX11Desc.MiscFlags = 0u;
+   indicesX11Desc.ByteWidth = sizeof(indicesX11);
+   indicesX11Desc.StructureByteStride = sizeof(unsigned short);
+   D3D11_SUBRESOURCE_DATA indiceX11Data = {};
+   indiceX11Data.pSysMem = indicesX11;
+   ThrowIfFailed(x11Device->CreateBuffer(&indicesX11Desc, &indiceX11Data, &x11IndexBuffer));
+   indiceX11Count = (UINT)std::size(indicesX11);
+
+   cbX11.transform = DirectX::XMMatrixIdentity();
+
+   // Constant Buffer
+   D3D11_BUFFER_DESC cbd;
+   cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+   cbd.Usage = D3D11_USAGE_DYNAMIC;
+   cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+   cbd.MiscFlags = 0u;
+   cbd.ByteWidth = sizeof(cbX11);
+   cbd.StructureByteStride = 0u;
+   D3D11_SUBRESOURCE_DATA csd = {};
+   csd.pSysMem = &cbX11;
+   ThrowIfFailed(x11Device->CreateBuffer(&cbd, &csd, &x11ConstantBuffer));
+
+
 
    // create pixel shader
    ComPtr<ID3DBlob> pBlob;
@@ -581,7 +764,7 @@ void Graphics::LoadDepentX11()
    const D3D11_INPUT_ELEMENT_DESC ied[] =
    {
       { "POSITION",0,DXGI_FORMAT_R32G32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-      { "COLOR",0,DXGI_FORMAT_R32G32B32_FLOAT,0,8u,D3D11_INPUT_PER_VERTEX_DATA,0 },
+      { "COLOR",0,DXGI_FORMAT_R8G8B8A8_UNORM,0,8u,D3D11_INPUT_PER_VERTEX_DATA,0 },
    };
 
    ThrowIfFailed(x11Device->CreateInputLayout(
@@ -607,7 +790,7 @@ void Graphics::LoadDepentX11()
       &depthDesc, &x11DepthStencilState));
 
    // DWrite
-   ThrowIfFailed(x11d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::DarkRed), &x11d2dtextBrush));
+   ThrowIfFailed(x11d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &x11d2dtextBrush));
    ThrowIfFailed(m_dWriteFactory->CreateTextFormat(
       L"Arial",
       NULL,
@@ -642,15 +825,14 @@ void Graphics::WaitForPreviousFrame()
    frameIndex = swapChain->GetCurrentBackBufferIndex();
 }
 
-void Graphics::OnRender()
+void Graphics::OnRender(float angle)
 {
    frameIndex = swapChain->GetCurrentBackBufferIndex();
-   //frameIndex = pSwap->GetCurrentBackBufferIndex();
-   OnRenderX12();
+   OnRenderX12(angle);
 
    x11On12Device->AcquireWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
    OnRender2DWrite();
-   OnRenderX11();
+   OnRenderX11(angle);
    x11On12Device->ReleaseWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
    x11DeviceContext->Flush();
 
@@ -660,7 +842,7 @@ void Graphics::OnRender()
    WaitForPreviousFrame();
 }
 
-void Graphics::OnRenderX12()
+void Graphics::OnRenderX12(float angle)
 {
    // Command list allocators can only be reset when the associated 
    // command lists have finished execution on the GPU; apps should use 
@@ -696,7 +878,15 @@ void Graphics::OnRenderX12()
    commandList->ClearRenderTargetView(renderTargetDesc, clearColor, 0, nullptr);
    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
    commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-   commandList->DrawInstanced(3, 1, 0, 0);
+   commandList->IASetIndexBuffer(&indexBufferView);
+
+   constantBuffer.transform = XMMatrixTranspose(XMMatrixRotationZ(angle));
+   memcpy(cbvGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &constantBuffer, sizeof(constantBuffer));
+
+   commandList->SetGraphicsRootConstantBufferView(0,
+      constantBufferUploadHeaps->GetGPUVirtualAddress() + 0 * ConstantBufferPerObjectAlignedSize);
+
+   commandList->DrawIndexedInstanced(indicesCount, 1u, 0u, 0u, 0u);
 
 
    // Indicate that the back buffer will now be used to present.
@@ -719,12 +909,26 @@ void Graphics::OnRenderX12()
    commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 }
 
-void Graphics::OnRenderX11()
+void Graphics::OnRenderX11(float angle)
 {
    // Bind vertex buffer to pipeline
    const UINT stride = sizeof(VertexX11);
    const UINT offset = 0u;
    x11DeviceContext->IASetVertexBuffers(0u, 1u, x11VertexBuffer.GetAddressOf(), &stride, &offset);
+   x11DeviceContext->IASetIndexBuffer(x11IndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
+
+   constantBuffer.transform = XMMatrixTranspose(XMMatrixRotationZ(angle));
+   D3D11_MAPPED_SUBRESOURCE msr;
+   ThrowIfFailed(x11DeviceContext->Map(
+      x11ConstantBuffer.Get(), 0u,
+      D3D11_MAP_WRITE_DISCARD, 0u,
+      &msr
+   ));
+   memcpy(msr.pData, &constantBuffer, sizeof(constantBuffer));
+   x11DeviceContext->Unmap(x11ConstantBuffer.Get(), 0u);
+
+   // bind index buffer   
+   x11DeviceContext->VSSetConstantBuffers(0u, 1u, x11ConstantBuffer.GetAddressOf());
 
    // bind pixel shader
    x11DeviceContext->PSSetShader(x11PixelShader.Get(), nullptr, 0u);
@@ -745,10 +949,9 @@ void Graphics::OnRenderX11()
 
    x11DeviceContext->RSSetViewports(1u, &x11ViewPort);
 
-   x11DeviceContext->Draw(verticesCount, 0u);
+   x11DeviceContext->DrawIndexed(indiceX11Count, 0u, 0u);
 
 }
-
 
 void Graphics::OnRender2DWrite()
 {
