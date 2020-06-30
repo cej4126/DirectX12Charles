@@ -1,7 +1,6 @@
 #pragma once
 #include "stdafx.h"
-//#include "Keyboard.h"
-//#include "Mouse.h"
+#include "Input.h"
 #include "Graphics.h"
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -15,6 +14,7 @@ public:
 	static std::optional<int> ProcessMessages() noexcept;
 	~Window();
 	Graphics &Gfx();
+	Input input;
 private:
 	static LRESULT CALLBACK HandleMsgInit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK HandleMsgMain(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

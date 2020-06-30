@@ -35,28 +35,45 @@ private:
 
 protected:
 	static const UINT bufferCount = 3;
-	struct Vertex
+
+	struct VertexX11
 	{
-		DirectX::XMFLOAT3 position;
 		struct
 		{
-			unsigned char r;
-			unsigned char g;
-			unsigned char b;
-			unsigned char a;
-		} color;
+			float x;
+			float y;
+			float z;
+		} pos;
+	};
+
+	struct Vertex
+	{
+		Vertex(float x, float y, float z) : pos(x, y, z) {}
+		DirectX::XMFLOAT3 pos;
 	};
 	int width;
 	int height;
 	float aspectRatio;
 	HWND hWnd;
 
-	struct ConstantBuffer
+	struct MatrixBufferType
 	{
 		XMMATRIX transform;
 	};
-	ConstantBuffer constantBuffer;
+	MatrixBufferType matrixBuffer;
+	int ConstantBufferPerObjectAlignedSize = (sizeof(matrixBuffer) + 255) & ~255;
 
+	struct ConstantBufferColor
+	{
+		struct
+		{
+			float r;
+			float g;
+			float b;
+			float a;
+		} face_colors[6];
+	};
+	struct ConstantBufferColor colorBuffer;
 
 	Microsoft::WRL::ComPtr <IDXGIFactory4> m_DxgiFactory4;
 	Microsoft::WRL::ComPtr <IDXGIAdapter3> adapter;
@@ -85,14 +102,10 @@ protected:
 	D3D12_INDEX_BUFFER_VIEW indexBufferView;
 	UINT indicesCount;
 
-	struct ConstantBufferPerObject
-	{
-		XMMATRIX wvpMat;
-	};
-	int ConstantBufferPerObjectAlignedSize = (sizeof(ConstantBufferPerObject) + 255) & ~255;
-	ConstantBufferPerObject cbPerObject;
-	Microsoft::WRL::ComPtr <ID3D12Resource> constantBufferUploadHeaps;
-	UINT8 *cbvGPUAddress;
+	Microsoft::WRL::ComPtr <ID3D12Resource> matrixBufferUploadHeaps;
+	Microsoft::WRL::ComPtr <ID3D12Resource> colorBufferUploadHeaps;
+	UINT8 *matrixBufferGPUAddress;
+	UINT8 *colorBufferGPUAddress;
 
 	UINT frameIndex;
 	HANDLE fenceEvent;
@@ -104,34 +117,15 @@ protected:
 	int rtvDescriptorSize;
 
    // DirectX 11
-	struct VertexX11
-	{
-		struct
-		{
-			float x;
-			float y;
-		} pos;
-		struct
-		{
-			unsigned char r;
-			unsigned char g;
-			unsigned char b;
-			unsigned char a;
-		} color;
-	};
-
-	struct ConstantBufferX11
-	{
-		XMMATRIX transform;
-	};
-	ConstantBufferX11 cbX11;
 
 	Microsoft::WRL::ComPtr<ID3D11Device> x11Device;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> x11DeviceContext;
 	Microsoft::WRL::ComPtr<ID3D11On12Device> x11On12Device;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> x11VertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> x11IndexBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> x11ConstantBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> x11MatrixBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> x11ColorBuffer;
+
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> x11PixelShader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> x11VertexShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> x11InputLayout;
@@ -142,7 +136,6 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D11Resource> pBackBuffer[bufferCount];
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> x11DepthStencilState;
 	D3D11_VIEWPORT x11ViewPort;
-	UINT verticeX11Count;
 	UINT indiceX11Count;
 
 	Microsoft::WRL::ComPtr<IDXGISwapChain> pSwap;

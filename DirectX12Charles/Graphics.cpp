@@ -309,12 +309,20 @@ void Graphics::LoadDepentX12()
    rootCBVDescriptor.RegisterSpace = 0;
    rootCBVDescriptor.ShaderRegister = 0;
 
-   D3D12_ROOT_PARAMETER  rootParameters[1];
+   D3D12_ROOT_PARAMETER  rootParameters[2];
+//   D3D12_ROOT_PARAMETER  rootParameters[1];
    rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // this is a constant buffer view root descriptor
    rootParameters[0].Descriptor = rootCBVDescriptor; // this is the root descriptor for this root parameter
    rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // our pixel shader will be the only shader accessing this parameter for now
 
-   // create a static sampler
+   rootCBVDescriptor.RegisterSpace = 0;
+   rootCBVDescriptor.ShaderRegister = 1;
+
+   rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // this is a constant buffer view root descriptor
+   rootParameters[1].Descriptor = rootCBVDescriptor; // this is the root descriptor for this root parameter
+   rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
+
+                                                                        // create a static sampler
    D3D12_STATIC_SAMPLER_DESC sampler = {};
    sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
    sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
@@ -357,8 +365,7 @@ void Graphics::LoadDepentX12()
    // Define the vertex input layout.
    D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
    {
-       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-       { "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
    };
 
    D3D12_RASTERIZER_DESC rasterizerDesc;
@@ -414,7 +421,7 @@ void Graphics::LoadDepentX12()
    LoadVertexBuffer();
    LoadIndexBuffer();
 
-   // Constant buffer
+   // Matrix Constant buffer
    D3D12_HEAP_PROPERTIES constantHeapUpload = {};
    constantHeapUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
    constantHeapUpload.CreationNodeMask = 1;
@@ -441,14 +448,38 @@ void Graphics::LoadDepentX12()
       &constantHeapDesc, // size of the resource heap. Must be a multiple of 64KB for single-textures and constant buffers
       D3D12_RESOURCE_STATE_GENERIC_READ, // will be data that is read from so we keep it in the generic read state
       nullptr, // we do not have use an optimized clear value for constant buffers
-      IID_PPV_ARGS(&constantBufferUploadHeaps)));
+      IID_PPV_ARGS(&matrixBufferUploadHeaps)));
 
-   ZeroMemory(&cbPerObject, sizeof(cbPerObject));
    D3D12_RANGE readRange;
    readRange.Begin = 0;
    readRange.End = 0;
-   ThrowIfFailed(constantBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&cbvGPUAddress)));
-   memcpy(cbvGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &cbPerObject, sizeof(cbPerObject));
+   ThrowIfFailed(matrixBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&matrixBufferGPUAddress)));
+
+   // Color Constant Buffer
+   constantHeapDesc.Alignment = 0;
+   constantHeapDesc.DepthOrArraySize = 1;
+   constantHeapDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+   constantHeapDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+   constantHeapDesc.Format = DXGI_FORMAT_UNKNOWN;
+   constantHeapDesc.Height = 1;
+   constantHeapDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+   constantHeapDesc.SampleDesc.Count = 1;
+   constantHeapDesc.SampleDesc.Quality = 0;
+   constantHeapDesc.Width = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+   constantHeapDesc.MipLevels = 1;
+
+   ThrowIfFailed(device->CreateCommittedResource(
+      &constantHeapUpload, // this heap will be used to upload the constant buffer data
+      D3D12_HEAP_FLAG_NONE, // no flags
+      &constantHeapDesc, // size of the resource heap. Must be a multiple of 64KB for single-textures and constant buffers
+      D3D12_RESOURCE_STATE_GENERIC_READ, // will be data that is read from so we keep it in the generic read state
+      nullptr, // we do not have use an optimized clear value for constant buffers
+      IID_PPV_ARGS(&colorBufferUploadHeaps)));
+
+   readRange.Begin = 1;
+   readRange.End = 0;
+   ThrowIfFailed(colorBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&colorBufferGPUAddress)));
+
 
    // Create synchronization objects and wait until assets have been uploaded to the GPU.
    ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
@@ -471,29 +502,24 @@ void Graphics::LoadDepentX12()
 void Graphics::LoadVertexBuffer()
 {
    // Define the geometry for a triangle.
-   float offsetx = -0.5f;
-   float offsety = 0.5f;
-   float size1 = 0.15f;
-   float size2 = 0.10f;
-   float size3 = 0.20f;
    Vertex verticesX12[] =
    {
-       { {   0.0f,  size1, 0.0f }, {  30, 255,   0, 255 } },
-       { {  size1, -size1, 0.0f }, {   0, 255,   0, 255 } },
-       { { -size1, -size1, 0.0f }, {   0, 255,  30, 255  } },
+      { -1.0f, -1.0f, -1.0f },
+      {  1.0f, -1.0f, -1.0f },
+      { -1.0f,  1.0f, -1.0f },
+      {  1.0f,  1.0f, -1.0f },
 
-       { { -size2,  size2, 0.0f }, {  30, 255, 255, 255 } },
-       { {  size2,  size2, 0.0f }, {   0, 255, 255, 255 } },
-       { {   0.0f, -size3, 0.0f }, {   0,  40, 255, 255 } },
-
+      { -1.0f, -1.0f,  1.0f },
+      {  1.0f, -1.0f,  1.0f },
+      { -1.0f,  1.0f,  1.0f },
+      {  1.0f,  1.0f,  1.0f },
    };
    const UINT vertexCount = (UINT)std::size(verticesX12);
    const UINT vertexBufferSize = sizeof(verticesX12);
-   for (int i = 0; i < vertexCount; i++)
-   {
-      verticesX12[i].position.x += offsetx;
-      verticesX12[i].position.y = (verticesX12[i].position.y + offsety) * aspectRatio;
-   }
+   //for (int i = 0; i < vertexCount; i++)
+   //{
+   //   verticesX12[i].position.y = verticesX12[i].position.y * aspectRatio;
+   //}
 
    D3D12_HEAP_PROPERTIES heapProps;
    ZeroMemory(&heapProps, sizeof(heapProps));
@@ -549,10 +575,12 @@ void Graphics::LoadIndexBuffer()
    // Define the geometry for a triangle.
    const unsigned short indicesX12[] =
    {
-      0, 1, 2,
-      0, 2, 3,
-      0, 4, 1,
-      2, 1, 5
+      0,2,1, 2,3,1,
+      1,3,5, 3,7,5,
+      2,6,3, 3,6,7,
+      4,5,7, 4,7,6,
+      0,4,2, 2,4,6,
+      0,1,4, 1,5,4
    };
 
    indicesCount = (UINT)std::size(indicesX12);
@@ -690,19 +718,20 @@ void Graphics::LoadBase2D()
 
 void Graphics::LoadDepentX11()
 {
+
    // create vertex buffer (1 2d triangle at center of screen)
    const VertexX11 verticesX11[] =
    {
-      {  0.0f,  0.5f, 0,   0,  70, 255 },
-      {  0.5f, -0.5f, 0, 255,   0, 255 },
-      { -0.5f, -0.5f, 0,  60, 255, 255 },
+      { -0.5f, -0.5f, -0.5f },
+      {  0.5f, -0.5f, -0.5f },
+      { -0.5f,  0.5f, -0.5f },
+      {  0.5f,  0.5f, -0.5f },
 
-      { -0.3f,  0.3f, 30, 255,  0, 255 },
-      {  0.3f,  0.3f,  0, 255,  0, 255 },
-      {  0.0f, -0.9f,  0, 255, 30, 255 },
+      { -0.5f, -0.5f,  0.5f },
+      {  0.5f, -0.5f,  0.5f },
+      { -0.5f,  0.5f,  0.5f },
+      {  0.5f,  0.5f,  0.5f },
    };
-
-   verticeX11Count = (UINT)std::size(verticesX11);
 
    D3D11_BUFFER_DESC verticesX11Desc = {};
    verticesX11Desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -717,10 +746,12 @@ void Graphics::LoadDepentX11()
 
    const unsigned short indicesX11[] =
    {
-      0, 1, 2,
-      0, 2, 3,
-      0, 4, 1,
-      2, 1, 5
+      0,2,1, 2,3,1,
+      1,3,5, 3,7,5,
+      2,6,3, 3,6,7,
+      4,5,7, 4,7,6,
+      0,4,2, 2,4,6,
+      0,1,4, 1,5,4
    };
 
    D3D11_BUFFER_DESC indicesX11Desc = {};
@@ -735,20 +766,49 @@ void Graphics::LoadDepentX11()
    ThrowIfFailed(x11Device->CreateBuffer(&indicesX11Desc, &indiceX11Data, &x11IndexBuffer));
    indiceX11Count = (UINT)std::size(indicesX11);
 
-   cbX11.transform = DirectX::XMMatrixIdentity();
-
    // Constant Buffer
+   matrixBuffer.transform = XMMatrixIdentity();
    D3D11_BUFFER_DESC cbd;
    cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
    cbd.Usage = D3D11_USAGE_DYNAMIC;
    cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
    cbd.MiscFlags = 0u;
-   cbd.ByteWidth = sizeof(cbX11);
+   cbd.ByteWidth = sizeof(matrixBuffer);
    cbd.StructureByteStride = 0u;
    D3D11_SUBRESOURCE_DATA csd = {};
-   csd.pSysMem = &cbX11;
-   ThrowIfFailed(x11Device->CreateBuffer(&cbd, &csd, &x11ConstantBuffer));
+   csd.pSysMem = &matrixBuffer;
+   ThrowIfFailed(x11Device->CreateBuffer(&cbd, &csd, &x11MatrixBuffer));
 
+   // lookup table for cube face colors
+   ConstantBufferColor cb =
+   {
+      {
+         {1.0f, 0.0f, 1.0f, 1.0f},
+         {1.0f, 0.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f, 0.0f, 1.0f},
+         {0.0f, 0.0f, 1.0f, 1.0f},
+         {1.0f, 1.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f, 1.0f, 1.0f},
+      }
+   };
+   colorBuffer = cb;
+   //for (int i = 0; i < 6; i++)
+   //{
+   //   colorBuffer.face_colors[i].r = cb.face_colors[i].r;
+   //}
+
+   // Constant Buffer
+   D3D11_BUFFER_DESC colorDesc;
+   colorDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+//   colorDesc.Usage = D3D11_USAGE_DEFAULT;
+   colorDesc.Usage = D3D11_USAGE_DYNAMIC;
+   colorDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+   colorDesc.MiscFlags = 0u;
+   colorDesc.ByteWidth = sizeof(colorBuffer);
+   colorDesc.StructureByteStride = 0u;
+   D3D11_SUBRESOURCE_DATA colorSub = {};
+   colorSub.pSysMem = &colorBuffer;
+   ThrowIfFailed(x11Device->CreateBuffer(&colorDesc, &colorSub, &x11ColorBuffer));
 
 
    // create pixel shader
@@ -763,8 +823,7 @@ void Graphics::LoadDepentX11()
    // input (vertex) layout (2d position only)
    const D3D11_INPUT_ELEMENT_DESC ied[] =
    {
-      { "POSITION",0,DXGI_FORMAT_R32G32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-      { "COLOR",0,DXGI_FORMAT_R8G8B8A8_UNORM,0,8u,D3D11_INPUT_PER_VERTEX_DATA,0 },
+      { "POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 }
    };
 
    ThrowIfFailed(x11Device->CreateInputLayout(
@@ -880,11 +939,18 @@ void Graphics::OnRenderX12(float angle)
    commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
    commandList->IASetIndexBuffer(&indexBufferView);
 
-   constantBuffer.transform = XMMatrixTranspose(XMMatrixRotationZ(angle));
-   memcpy(cbvGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &constantBuffer, sizeof(constantBuffer));
+   float offsetx = -0.5f;
+   float offsety = 0.5f;
 
+   matrixBuffer.transform = XMMatrixTranspose(XMMatrixScaling(aspectRatio, 1.0f, 1.0f) * XMMatrixRotationZ(angle) * XMMatrixTranslation(offsetx, offsety, 0.0f));
+   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &matrixBuffer, sizeof(matrixBuffer));
    commandList->SetGraphicsRootConstantBufferView(0,
-      constantBufferUploadHeaps->GetGPUVirtualAddress() + 0 * ConstantBufferPerObjectAlignedSize);
+      matrixBufferUploadHeaps->GetGPUVirtualAddress() + 0 * ConstantBufferPerObjectAlignedSize);
+
+   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
+
+   commandList->SetGraphicsRootConstantBufferView(1,
+      colorBufferUploadHeaps->GetGPUVirtualAddress() + 0 * ConstantBufferPerObjectAlignedSize);
 
    commandList->DrawIndexedInstanced(indicesCount, 1u, 0u, 0u, 0u);
 
@@ -917,18 +983,26 @@ void Graphics::OnRenderX11(float angle)
    x11DeviceContext->IASetVertexBuffers(0u, 1u, x11VertexBuffer.GetAddressOf(), &stride, &offset);
    x11DeviceContext->IASetIndexBuffer(x11IndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
 
-   constantBuffer.transform = XMMatrixTranspose(XMMatrixRotationZ(angle));
+   matrixBuffer.transform = XMMatrixTranspose(XMMatrixRotationZ(angle));
    D3D11_MAPPED_SUBRESOURCE msr;
    ThrowIfFailed(x11DeviceContext->Map(
-      x11ConstantBuffer.Get(), 0u,
+      x11MatrixBuffer.Get(), 0u,
       D3D11_MAP_WRITE_DISCARD, 0u,
       &msr
    ));
-   memcpy(msr.pData, &constantBuffer, sizeof(constantBuffer));
-   x11DeviceContext->Unmap(x11ConstantBuffer.Get(), 0u);
+   memcpy(msr.pData, &matrixBuffer, sizeof(matrixBuffer));
+   x11DeviceContext->Unmap(x11MatrixBuffer.Get(), 0u);
+   x11DeviceContext->VSSetConstantBuffers(0u, 1u, x11MatrixBuffer.GetAddressOf());
 
-   // bind index buffer   
-   x11DeviceContext->VSSetConstantBuffers(0u, 1u, x11ConstantBuffer.GetAddressOf());
+   D3D11_MAPPED_SUBRESOURCE msrColor;
+   ThrowIfFailed(x11DeviceContext->Map(
+      x11ColorBuffer.Get(), 0u,
+      D3D11_MAP_WRITE_DISCARD, 0u,
+      &msrColor
+   ));
+   memcpy(msrColor.pData, &colorBuffer, sizeof(colorBuffer));
+   x11DeviceContext->Unmap(x11ColorBuffer.Get(), 0u);
+   x11DeviceContext->PSSetConstantBuffers(0u, 1u, x11ColorBuffer.GetAddressOf());
 
    // bind pixel shader
    x11DeviceContext->PSSetShader(x11PixelShader.Get(), nullptr, 0u);

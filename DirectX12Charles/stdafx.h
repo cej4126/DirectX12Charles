@@ -5,6 +5,7 @@
 #endif
 
 #include <Windows.h>
+#include <Winuser.h>
 #include <optional>
 #include <memory>
 #include <vector>
