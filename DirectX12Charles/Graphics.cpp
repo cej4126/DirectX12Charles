@@ -21,15 +21,24 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 #endif
 
    LoadDriveX12();
-
    LoadBaseX12();
    CreateFence();
    LoadDepentX12();
 
-   LoadDriveX11Only();
+   if (DirectX11OnlyFlag)
+   {
+      LoadDriveX11Only();
+   }
+   else
+   {
+      LoadBaseX11();
+   }
 
-   //LoadBaseX11();
-   //LoadBase2D();
+   if (DWriteFlag)
+   {
+      LoadBase2D();
+   }
+
    LoadDepentX11();
 }
 
@@ -516,10 +525,6 @@ void Graphics::LoadVertexBuffer()
    };
    const UINT vertexCount = (UINT)std::size(verticesX12);
    const UINT vertexBufferSize = sizeof(verticesX12);
-   //for (int i = 0; i < vertexCount; i++)
-   //{
-   //   verticesX12[i].position.y = verticesX12[i].position.y * aspectRatio;
-   //}
 
    D3D12_HEAP_PROPERTIES heapProps;
    ZeroMemory(&heapProps, sizeof(heapProps));
@@ -751,17 +756,8 @@ void Graphics::LoadDepentX11()
    verticeX11Data.pSysMem = verticesX11;
    ThrowIfFailed(x11Device->CreateBuffer(&verticesX11Desc, &verticeX11Data, &x11VertexBuffer));
 
-   const unsigned short indicesX11[] =
+   const unsigned short indicesX11Right[] =
    {
-      //4,7,5, 4,6,7
-
-      //0,1,2, 2,1,3,  // Back Face
-      //1,5,3, 3,5,7,  // Left Face
-      //2,3,6, 3,7,6,  // Top Face
-      //4,7,5, 4,6,7,  // Front Face
-      //0,2,4, 2,6,4,  // Right Face
-      //0,4,1, 1,4,5   // Bottom Face
-
       0,2,1, 2,3,1,  // Back Face
       1,3,5, 3,7,5,  // Left Face
       2,6,3, 3,6,7,  // Top Face
@@ -769,6 +765,28 @@ void Graphics::LoadDepentX11()
       0,4,2, 2,4,6,  // Right Face
       0,1,4, 1,5,4   // Bottom Face
    };
+
+   const unsigned short indicesX11Left[] =
+   {
+      0,1,2, 2,1,3,  // Back Face
+      1,5,3, 3,5,7,  // Left Face
+      2,3,6, 3,7,6,  // Top Face
+      4,7,5, 4,6,7,  // Front Face
+      0,2,4, 2,6,4,  // Right Face
+      0,4,1, 1,4,5   // Bottom Face
+   };
+   unsigned short indicesX11[36];
+   for (int i = 0; i < 36; i++)
+   {
+      if (DirectX11OnlyFlag || DirectX11on12Flag)
+      {
+         indicesX11[i] = indicesX11Right[i];
+      }
+      else
+      {
+         indicesX11[i] = indicesX11Left[i];
+      }
+   }
 
    D3D11_BUFFER_DESC indicesX11Desc = {};
    indicesX11Desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -867,18 +885,21 @@ void Graphics::LoadDepentX11()
    ThrowIfFailed(x11Device->CreateDepthStencilState(
       &depthDesc, &x11DepthStencilState));
 
-   //// DWrite
-   //ThrowIfFailed(x11d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &x11d2dtextBrush));
-   //ThrowIfFailed(m_dWriteFactory->CreateTextFormat(
-   //   L"Arial",
-   //   NULL,
-   //   DWRITE_FONT_WEIGHT_NORMAL,
-   //   DWRITE_FONT_STYLE_NORMAL,
-   //   DWRITE_FONT_STRETCH_NORMAL,
-   //   25,
-   //   L"en-us",
-   //   &x11d2dtextFormat
-   //));
+   if (DWriteFlag)
+   {
+      // DWrite
+      ThrowIfFailed(x11d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &x11d2dtextBrush));
+      ThrowIfFailed(m_dWriteFactory->CreateTextFormat(
+         L"Arial",
+         NULL,
+         DWRITE_FONT_WEIGHT_NORMAL,
+         DWRITE_FONT_STYLE_NORMAL,
+         DWRITE_FONT_STRETCH_NORMAL,
+         25,
+         L"en-us",
+         &x11d2dtextFormat
+      ));
+   }
 }
 
 void Graphics::WaitForPreviousFrame()
@@ -906,18 +927,35 @@ void Graphics::WaitForPreviousFrame()
 void Graphics::OnRender(float angle)
 {
    frameIndex = swapChain->GetCurrentBackBufferIndex();
-//   OnRenderX12(angle);
+   if (DirectX11on12Flag || DirectX12Flag)
+   {
+      OnRenderX12(angle);
+   }
 
-//   x11On12Device->AcquireWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
-//   OnRender2DWrite();
-   OnRenderX11(angle);
-//   x11On12Device->ReleaseWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
-//   x11DeviceContext->Flush();
+   if (DWriteFlag)
+   {
+      x11On12Device->AcquireWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+      OnRender2DWrite();
+   }
+
+   if (DirectX11OnlyFlag || DirectX11on12Flag)
+   {
+      OnRenderX11(angle);
+   }
+
+   if (DWriteFlag)
+   {
+      x11On12Device->ReleaseWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+      x11DeviceContext->Flush();
+   }
 
    // Present the frame.
    ThrowIfFailed(swapChain->Present(1, 0));
 
-//   WaitForPreviousFrame();
+   if (DirectX12Flag || DirectX11on12Flag)
+   {
+      WaitForPreviousFrame();
+   }
 }
 
 void Graphics::OnRenderX12(float angle)
@@ -961,31 +999,32 @@ void Graphics::OnRenderX12(float angle)
    float offsetx = -0.5f;
    float offsety = 0.5f;
 
-//   matrixBuffer.transform = XMMatrixTranspose(XMMatrixScaling(aspectRatio, 1.0f, 1.0f) * XMMatrixRotationZ(angle) * XMMatrixTranslation(offsetx, offsety, 0.0f));
-//   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &matrixBuffer, sizeof(matrixBuffer));
+   matrixBuffer.transform = XMMatrixTranspose(XMMatrixScaling(aspectRatio, 1.0f, 1.0f) * XMMatrixRotationZ(angle) * XMMatrixTranslation(offsetx, offsety, 0.0f));
+   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &matrixBuffer, sizeof(matrixBuffer));
    commandList->SetGraphicsRootConstantBufferView(0,
       matrixBufferUploadHeaps->GetGPUVirtualAddress() + 0 * ConstantBufferPerObjectAlignedSize);
 
-//   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
+   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
 
    commandList->SetGraphicsRootConstantBufferView(1,
       colorBufferUploadHeaps->GetGPUVirtualAddress() + 0 * ConstantBufferPerObjectAlignedSize);
 
-//   commandList->DrawIndexedInstanced(indicesCount, 1u, 0u, 0u, 0u);
-
+   if (DirectX12Flag)
+   {
+      commandList->DrawIndexedInstanced(indicesCount, 1u, 0u, 0u, 0u);
+   }
 
    // Indicate that the back buffer will now be used to present.
-
-//#define X11INCLUDED
-//#ifdef X11INCLUDED
-   //resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-   //resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-   //resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-   //resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-   //resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-   //resourceBarrier.Transition.pResource = swapChainBuffers[frameIndex].Get();
-   //commandList->ResourceBarrier(1, &resourceBarrier);
-//#endif
+   if (DirectX11OnlyFlag)
+   {
+      resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+      resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+      resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+      resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+      resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+      resourceBarrier.Transition.pResource = swapChainBuffers[frameIndex].Get();
+      commandList->ResourceBarrier(1, &resourceBarrier);
+   }
 
    ThrowIfFailed(commandList->Close());
 
@@ -997,36 +1036,18 @@ void Graphics::OnRenderX12(float angle)
 void Graphics::OnRenderX11(float angle)
 {
    // X11 only
-   const float color[] = { 0.1f, 0.1f, 0.1f, 1.0f };
-   x11DeviceContext->ClearRenderTargetView(x11Target[frameIndex].Get(), color);
-//   x11DeviceContext->ClearDepthStencilView(pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
-
-
+   if (DirectX11OnlyFlag)
+   {
+      const float color[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+      x11DeviceContext->ClearRenderTargetView(x11Target[frameIndex].Get(), color);
+      //x11DeviceContext->ClearDepthStencilView(pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
+   }
 
    // Bind vertex buffer to pipeline
    const UINT stride = sizeof(VertexX11);
    const UINT offset = 0u;
    x11DeviceContext->IASetVertexBuffers(0u, 1u, x11VertexBuffer.GetAddressOf(), &stride, &offset);
    x11DeviceContext->IASetIndexBuffer(x11IndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
-
-   //   const MatrixBufferType matrixBuffer =
-   //   {
-   //      {
-   //         XMMatrixTranspose(
-   //            XMMatrixRotationZ(angle) *
-   //            XMMatrixRotationX(angle) *
-   //            XMMatrixTranslation(0.0f, 0.0f, 4.0f) *
-   ////            XMMatrixPerspectiveLH(1.0f,3.0f / 4.0f,0.5f,10.0f)
-   //            XMMatrixPerspectiveLH(1.0f, 1.0f, 0.5f, 10.0f)
-   //         )
-   //      }
-   //   };
-
-   //matrixBuffer.transform = 
-   //   XMMatrixRotationZ(angle) *
-   //   XMMatrixRotationX(angle) *
-   //   XMMatrixTranslation(0.0f, 0.0f, 4.0f) *
-   //   XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 10.0f);
 
    matrixBuffer.transform = XMMatrixTranspose(
       //XMMatrixRotationZ(30.0f * XM_PI / 180.0f ) *

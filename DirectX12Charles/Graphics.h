@@ -149,5 +149,10 @@ protected:
 	Microsoft::WRL::ComPtr<ID2D1Factory3> m_d2dFactory;
 	Microsoft::WRL::ComPtr<ID2D1Device2> m_d2dDevice;
 	Microsoft::WRL::ComPtr<IDWriteFactory> m_dWriteFactory;
+
+	bool DirectX12Flag = true;
+	bool DirectX11on12Flag = true;
+	bool DirectX11OnlyFlag = false;
+	bool DWriteFlag = true;
 };
 
