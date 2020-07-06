@@ -9,14 +9,18 @@ App::App()
 
 int App::Go()
 {
-   while (true)
+   while (wnd.running)
    {
       if (const auto code = Window::ProcessMessages())
       {
          return *code;
       }
-      DoFrame();
+      if (wnd.running)
+      {
+         DoFrame();
+      }
    }
+
    return 0;
 }
 

@@ -15,6 +15,8 @@ public:
 	~Window();
 	Graphics &Gfx();
 	Input input;
+	bool running = true;
+
 private:
 	static LRESULT CALLBACK HandleMsgInit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK HandleMsgMain(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

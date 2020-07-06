@@ -12,21 +12,25 @@ public:
 	~Graphics() = default;
 
 	void OnRender(float angle);
+	void WaitForPreviousFrame();
+	void CleanUp();
 
 private:
 	void LoadDriveX12();
 	void LoadBaseX12();
 	void CreateFence();
+	void rootSignatureX12();
+	void CreateShaderX12();
 	void LoadDepentX12();
 	void LoadVertexBuffer();
 	void LoadIndexBuffer();
 	void OnRenderX12(float angle);
-	void WaitForPreviousFrame();
 
 	// DirectX 11
 	void LoadDriveX11Only();
 	void LoadBaseX11();
 	void LoadDepentX11();
+	void CreateShaderX11();
 	void OnRender2DWrite();
 	void OnRenderX11(float angle);
 
@@ -81,26 +85,60 @@ protected:
 	Microsoft::WRL::ComPtr <IDXGISwapChain1> swapChain1;
 	Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue;
 	Microsoft::WRL::ComPtr <IDXGISwapChain3> swapChain;
-	std::vector<Microsoft::WRL::ComPtr <ID3D12Resource>> swapChainBuffers;
+	Microsoft::WRL::ComPtr <ID3D12Resource> swapChainBuffers[bufferCount];
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> m_rtvHeap;
+	Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> dsDescriptorHeap;
 	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilBuffer;
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> descHeapDepthStencil;
+	//Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> descHeapDepthStencil;
 	std::vector<Microsoft::WRL::ComPtr <ID3D12CommandAllocator>> commandAllocators;
 	Microsoft::WRL::ComPtr <ID3D12GraphicsCommandList> commandList;
-	std::vector<Microsoft::WRL::ComPtr <ID3D12Fence>> fences;
-	std::vector<UINT64> fenceValues;
+	HANDLE fenceEvent;
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence[bufferCount];
+	UINT64 fenceValue[bufferCount];
 	HANDLE fenceEventHandle;
 
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
+	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc;
 	Microsoft::WRL::ComPtr <ID3DBlob> vertexShaderBlob;
 	Microsoft::WRL::ComPtr <ID3DBlob> pixelShaderBlob;
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> pipelineState;
 
 	Microsoft::WRL::ComPtr <ID3D12Resource> vertexBuffer;
+	Microsoft::WRL::ComPtr <ID3D12Resource> vertexUpload;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	Microsoft::WRL::ComPtr <ID3D12Resource> indexBuffer;
+	Microsoft::WRL::ComPtr <ID3D12Resource> indexUpload;
 	D3D12_INDEX_BUFFER_VIEW indexBufferView;
 	UINT indicesCount;
+
+
+	inline UINT64 UpdateSubresources(
+		_In_ ID3D12GraphicsCommandList *pCmdList,
+		_In_ ID3D12Resource *pDestinationResource,
+		_In_ ID3D12Resource *pIntermediate,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) UINT NumSubresources,
+		UINT64 RequiredSize,
+		_In_reads_(NumSubresources) const D3D12_PLACED_SUBRESOURCE_FOOTPRINT *pLayouts,
+		_In_reads_(NumSubresources) const UINT *pNumRows,
+		_In_reads_(NumSubresources) const UINT64 *pRowSizesInBytes,
+		_In_reads_(NumSubresources) const D3D12_SUBRESOURCE_DATA *pSrcData);
+
+	inline UINT64 UpdateSubresources(
+		_In_ ID3D12GraphicsCommandList *pCmdList,
+		_In_ ID3D12Resource *pDestinationResource,
+		_In_ ID3D12Resource *pIntermediate,
+		UINT64 IntermediateOffset,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
+		_In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) UINT NumSubresources,
+		_In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA *pSrcData);
+
+	void MemcpySubresource(
+		_In_ const D3D12_MEMCPY_DEST *pDest,
+		_In_ const D3D12_SUBRESOURCE_DATA *pSrc,
+		SIZE_T RowSizeInBytes,
+		UINT NumRows,
+		UINT NumSlices);
 
 	Microsoft::WRL::ComPtr <ID3D12Resource> matrixBufferUploadHeaps;
 	Microsoft::WRL::ComPtr <ID3D12Resource> colorBufferUploadHeaps;
@@ -108,9 +146,6 @@ protected:
 	UINT8 *colorBufferGPUAddress;
 
 	UINT frameIndex;
-	HANDLE fenceEvent;
-	Microsoft::WRL::ComPtr<ID3D12Fence> m_fence;
-	UINT64 fenceValue;
 
 	D3D12_VIEWPORT viewport;
 	D3D12_RECT scissorRect;
@@ -150,9 +185,17 @@ protected:
 	Microsoft::WRL::ComPtr<ID2D1Device2> m_d2dDevice;
 	Microsoft::WRL::ComPtr<IDWriteFactory> m_dWriteFactory;
 
+	//bool DirectX12Flag = true;
+	//bool DirectX11Flag = true;
+	//bool DirectX11on12Flag = true;
+	//bool DirectX11OnlyFlag = false;
+	//bool DWriteFlag = true;
+
 	bool DirectX12Flag = true;
-	bool DirectX11on12Flag = true;
+	bool DirectX11Flag = false;
+	bool DirectX11on12Flag = false;
 	bool DirectX11OnlyFlag = false;
-	bool DWriteFlag = true;
+	bool DWriteFlag = false;
+
 };
 
