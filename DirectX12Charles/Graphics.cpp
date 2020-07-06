@@ -150,9 +150,6 @@ void Graphics::LoadDriveX11Only()
    swapCreateFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-   // for checking results of d3d functions
-   //HRESULT hr;
-
    // create device and front/back buffers, and swap chain and rendering context
    ThrowIfFailed(D3D11CreateDeviceAndSwapChain(
       nullptr,
@@ -263,17 +260,17 @@ void Graphics::rootSignatureX12()
    rootCBVDescriptor.ShaderRegister = 0;
 
    D3D12_ROOT_PARAMETER  rootParameters[2];
-   //   D3D12_ROOT_PARAMETER  rootParameters[1];
-   rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // this is a constant buffer view root descriptor
-   rootParameters[0].Descriptor = rootCBVDescriptor; // this is the root descriptor for this root parameter
-   rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // our pixel shader will be the only shader accessing this parameter for now
+   // constant buffer for matrix
+   rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+   rootParameters[0].Descriptor = rootCBVDescriptor;
+   rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 
+   // Constant buffer for the color
    rootCBVDescriptor.RegisterSpace = 0;
    rootCBVDescriptor.ShaderRegister = 1;
-
-   rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // this is a constant buffer view root descriptor
-   rootParameters[1].Descriptor = rootCBVDescriptor; // this is the root descriptor for this root parameter
-   rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
+   rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+   rootParameters[1].Descriptor = rootCBVDescriptor;
+   rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
    // Create an basic root signature.
    D3D12_ROOT_SIGNATURE_DESC rsDesc;
@@ -283,8 +280,6 @@ void Graphics::rootSignatureX12()
       D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
    rsDesc.NumParameters = _countof(rootParameters);
    rsDesc.pParameters = rootParameters;
-   //rsDesc.NumStaticSamplers = 1;
-   //rsDesc.pStaticSamplers = &sampler;
    rsDesc.NumStaticSamplers = 0;
    rsDesc.pStaticSamplers = nullptr;
 
@@ -449,11 +444,11 @@ void Graphics::LoadDepentX12()
    constantHeapDesc.MipLevels = 1;
 
    ThrowIfFailed(device->CreateCommittedResource(
-      &constantHeapUpload, // this heap will be used to upload the constant buffer data
-      D3D12_HEAP_FLAG_NONE, // no flags
-      &constantHeapDesc, // size of the resource heap. Must be a multiple of 64KB for single-textures and constant buffers
-      D3D12_RESOURCE_STATE_GENERIC_READ, // will be data that is read from so we keep it in the generic read state
-      nullptr, // we do not have use an optimized clear value for constant buffers
+      &constantHeapUpload,
+      D3D12_HEAP_FLAG_NONE,
+      &constantHeapDesc,
+      D3D12_RESOURCE_STATE_GENERIC_READ,
+      nullptr,
       IID_PPV_ARGS(&matrixBufferUploadHeaps)));
 
    D3D12_RANGE readRange;
@@ -475,17 +470,16 @@ void Graphics::LoadDepentX12()
    constantHeapDesc.MipLevels = 1;
 
    ThrowIfFailed(device->CreateCommittedResource(
-      &constantHeapUpload, // this heap will be used to upload the constant buffer data
-      D3D12_HEAP_FLAG_NONE, // no flags
-      &constantHeapDesc, // size of the resource heap. Must be a multiple of 64KB for single-textures and constant buffers
-      D3D12_RESOURCE_STATE_GENERIC_READ, // will be data that is read from so we keep it in the generic read state
-      nullptr, // we do not have use an optimized clear value for constant buffers
+      &constantHeapUpload,
+      D3D12_HEAP_FLAG_NONE,
+      &constantHeapDesc,
+      D3D12_RESOURCE_STATE_GENERIC_READ,
+      nullptr,
       IID_PPV_ARGS(&colorBufferUploadHeaps)));
 
    readRange.Begin = 1;
    readRange.End = 0;
    ThrowIfFailed(colorBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&colorBufferGPUAddress)));
-
 
    // Now we execute the command list to upload the initial assets (triangle data)
    commandList->Close();
@@ -502,19 +496,18 @@ void Graphics::LoadVertexBuffer()
    // Define the geometry for a triangle.
    Vertex verticesX12[] =
    {
-      { -0.5f, -0.5f, -0.5f },
-      {  0.5f, -0.5f, -0.5f },
-      { -0.5f,  0.5f, -0.5f },
-      {  0.5f,  0.5f, -0.5f },
+      { -1.0f, -1.0f, -1.0f },
+      {  1.0f, -1.0f, -1.0f },
+      { -1.0f,  1.0f, -1.0f },
+      {  1.0f,  1.0f, -1.0f },
 
-      { -0.5f, -0.5f,  0.5f },
-      {  0.5f, -0.5f,  0.5f },
-      { -0.5f,  0.5f,  0.5f },
-      {  0.5f,  0.5f,  0.5f },
+      { -1.0f, -1.0f,  1.0f },
+      {  1.0f, -1.0f,  1.0f },
+      { -1.0f,  1.0f,  1.0f },
+      {  1.0f,  1.0f,  1.0f },
    };
    const UINT vertexCount = (UINT)std::size(verticesX12);
    const UINT vertexBufferSize = sizeof(verticesX12);
-
 
    D3D12_HEAP_PROPERTIES heapProps;
    ZeroMemory(&heapProps, sizeof(heapProps));
@@ -587,7 +580,6 @@ void Graphics::LoadVertexBuffer()
    vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
    vertexBufferView.StrideInBytes = sizeof(Vertex);
    vertexBufferView.SizeInBytes = vertexBufferSize;
-
 }
 
 void Graphics::LoadIndexBuffer()
@@ -602,26 +594,10 @@ void Graphics::LoadIndexBuffer()
       0,1,4, 1,5,4   // Bottom Face
    };
 
-   const unsigned short indicesX12Left[] =
-   {
-      0,1,2, 2,1,3,  // Back Face
-      1,5,3, 3,5,7,  // Left Face
-      2,3,6, 3,7,6,  // Top Face
-      4,7,5, 4,6,7,  // Front Face
-      0,2,4, 2,6,4,  // Right Face
-      0,4,1, 1,4,5   // Bottom Face
-   };
    unsigned short indicesX12[36];
    for (int i = 0; i < 36; i++)
    {
-      if (DirectX12Flag)
-      {
-         indicesX12[i] = indicesX12Right[i];
-      }
-      else
-      {
-         indicesX12[i] = indicesX12Left[i];
-      }
+      indicesX12[i] = indicesX12Right[i];
    }
 
    indicesCount = (UINT)std::size(indicesX12);
@@ -684,7 +660,6 @@ void Graphics::LoadIndexBuffer()
       0,  // FirstSubresource
       1,  // NumSubresources
       &indexData); // pSrcData
-
 
    D3D12_RESOURCE_BARRIER resourceBarrier;
    resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -923,17 +898,32 @@ void Graphics::LoadBase2D()
 void Graphics::CreateShaderX11()
 {
    // create pixel shader
-   ComPtr<ID3DBlob> pBlob;
-   ThrowIfFailed(D3DReadFileToBlob(L"PixelShaderX11.cso", &pBlob));
-   ThrowIfFailed(x11Device->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &x11PixelShader));
+   ComPtr<ID3DBlob> pBlobPixel;
+   ThrowIfFailed(D3DReadFileToBlob(L"PixelShaderX11.cso", &pBlobPixel));
+   ThrowIfFailed(x11Device->CreatePixelShader(pBlobPixel->GetBufferPointer(), pBlobPixel->GetBufferSize(), nullptr, &x11PixelShader));
 
    // create vertex shader
-   ThrowIfFailed(D3DReadFileToBlob(L"VertexShaderX11.cso", &pBlob));
-   ThrowIfFailed(x11Device->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &x11VertexShader));
+   ComPtr<ID3DBlob> pBlobVertex;
+   ThrowIfFailed(D3DReadFileToBlob(L"VertexShaderX11.cso", &pBlobVertex));
+   ThrowIfFailed(x11Device->CreateVertexShader(pBlobVertex->GetBufferPointer(), pBlobVertex->GetBufferSize(), nullptr, &x11VertexShader));
+
+   // input (vertex) layout
+   const D3D11_INPUT_ELEMENT_DESC ied[] =
+   {
+      { "POSITIONX", 0, DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA, 0 },
+   };
+
+   ThrowIfFailed(x11Device->CreateInputLayout(
+      ied, (UINT)std::size(ied),
+      pBlobVertex->GetBufferPointer(),
+      pBlobVertex->GetBufferSize(),
+      &x11InputLayout
+   ));
 }
 
 void Graphics::LoadDepentX11()
 {
+   CreateShaderX11();
 
    // create vertex buffer
    const VertexX11 verticesX11[] =
@@ -970,26 +960,10 @@ void Graphics::LoadDepentX11()
       0,1,4, 1,5,4   // Bottom Face
    };
 
-   const unsigned short indicesX11Left[] =
-   {
-      0,1,2, 2,1,3,  // Back Face
-      1,5,3, 3,5,7,  // Left Face
-      2,3,6, 3,7,6,  // Top Face
-      4,7,5, 4,6,7,  // Front Face
-      0,2,4, 2,6,4,  // Right Face
-      0,4,1, 1,4,5   // Bottom Face
-   };
    unsigned short indicesX11[36];
    for (int i = 0; i < 36; i++)
    {
-      if (DirectX11OnlyFlag || DirectX11on12Flag)
-      {
-         indicesX11[i] = indicesX11Right[i];
-      }
-      else
-      {
-         indicesX11[i] = indicesX11Left[i];
-      }
+      indicesX11[i] = indicesX11Right[i];
    }
 
    D3D11_BUFFER_DESC indicesX11Desc = {};
@@ -1041,7 +1015,6 @@ void Graphics::LoadDepentX11()
    // Constant Buffer
    D3D11_BUFFER_DESC colorDesc;
    colorDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-   //   colorDesc.Usage = D3D11_USAGE_DEFAULT;
    colorDesc.Usage = D3D11_USAGE_DYNAMIC;
    colorDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
    colorDesc.MiscFlags = 0u;
@@ -1050,7 +1023,6 @@ void Graphics::LoadDepentX11()
    D3D11_SUBRESOURCE_DATA colorSub = {};
    colorSub.pSysMem = &colorBuffer;
    ThrowIfFailed(x11Device->CreateBuffer(&colorDesc, &colorSub, &x11ColorBuffer));
-
 
    x11ViewPort.Width = (float)width;
    x11ViewPort.Height = (float)height;
@@ -1140,14 +1112,7 @@ void Graphics::OnRender(float angle)
 
 void Graphics::OnRenderX12(float angle)
 {
-   // Command list allocators can only be reset when the associated 
-   // command lists have finished execution on the GPU; apps should use 
-   // fences to determine GPU execution progress.
    ThrowIfFailed(commandAllocators[frameIndex]->Reset());
-
-   // However, when ExecuteCommandList() is called on a particular command 
-   // list, that command list can then be reset at any time and must be before 
-   // re-recording.
    ThrowIfFailed(commandList->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
 
    D3D12_RESOURCE_BARRIER resourceBarrier;
@@ -1180,16 +1145,13 @@ void Graphics::OnRenderX12(float angle)
    commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
    commandList->IASetIndexBuffer(&indexBufferView);
 
-   //float offsetx = -0.5f;
-   //float offsety = 0.5f;
-   float offsetx = 0.0f;
+   float offsetx = -3.0f;
    float offsety = 0.0f;
 
-   //matrixBuffer.transform = XMMatrixTranspose(XMMatrixScaling(aspectRatio, 1.0f, 1.0f) * XMMatrixRotationZ(angle) * XMMatrixTranslation(offsetx, offsety, 0.0f));
    matrixBuffer.transform = XMMatrixTranspose(
       XMMatrixRotationZ(angle) *
       XMMatrixRotationY(angle) *
-      //XMMatrixTranslation(offsetx, offsety, 0.0f));
+      XMMatrixScaling(0.5f, 0.5f, 0.5f) *
       XMMatrixTranslation(offsetx, offsety, 8.0f) *
       XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 10.0f));
 
@@ -1208,7 +1170,6 @@ void Graphics::OnRenderX12(float angle)
    }
 
    // Indicate that the back buffer will now be used to present.
-   //if (DirectX11OnlyFlag || DirectX12Flag)
    if (!DWriteFlag)
    {
       resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -1227,109 +1188,6 @@ void Graphics::OnRenderX12(float angle)
    commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 }
 
-void Graphics::CleanUp()
-{
-   if (DirectX11on12Flag || DirectX12Flag)
-   {
-      // wait for the gpu to finish all frames
-      for (int i = 0; i < bufferCount; ++i)
-      {
-         frameIndex = i;
-         WaitForPreviousFrame();
-         ThrowIfFailed(commandAllocators[frameIndex]->Reset());
-         ThrowIfFailed(commandList->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
-         ThrowIfFailed(commandList->Close());
-      }
-
-      for (int i = 0; i < bufferCount; ++i)
-      {
-         frameIndex = i;
-         ThrowIfFailed(commandQueue->Signal(fence[frameIndex].Get(), fenceValue[frameIndex]));
-         WaitForPreviousFrame();
-      }
-
-      //for (int i = 0; i < bufferCount; i++)
-      //{
-      //   commandAllocators[i]->Release();
-      //   fence[i]->Release();
-      //}
-      //commandList->Release();
-      //commandQueue->Release();
-
-
-      //m_DxgiFactory4->Release();
-      ////adapter->Release();
-      //device->Release();
-      //swapChain1->Release();
-      ////swapChain->Release();
-      ////for (int i = 0; i < bufferCount; i++)
-      ////{
-      ////   swapChainBuffers[i]->Release();
-      ////}
-      //m_rtvHeap->Release();
-      //dsDescriptorHeap->Release();
-      //depthStencilBuffer->Release();
-      ////HANDLE fenceEvent;
-
-      //rootSignature->Release();
-      //vertexShaderBlob->Release();
-      //pixelShaderBlob->Release();
-      //pipelineState->Release();
-
-      //vertexBuffer->Release();
-      //vertexUpload->Release();
-      //indexBuffer->Release();
-      //indexUpload->Release();
-
-      //matrixBufferUploadHeaps->Release();
-      //colorBufferUploadHeaps->Release();
-
-      //swapChain->Release();
-      //for (int i = 0; i < bufferCount; i++)
-      //{
-      //   swapChainBuffers[i]->Release();
-      //}
-      //commandQueue->Release();
-   }
-
-   //x11Device->Release();
-   //x11DeviceContext->Release();
-   //x11On12Device->Release();
-   //x11VertexBuffer->Release();
-   //x11IndexBuffer->Release();
-   //x11MatrixBuffer->Release();
-   //x11ColorBuffer->Release();
-
-   //x11PixelShader->Release();
-   //x11VertexShader->Release();
-   //x11InputLayout->Release();
-   //for (int i = 0; i < bufferCount; i++)
-   //{
-   //   x11BackBuffer[i]->Release();
-   //   x11Target[i]->Release();
-   //   x11renderTargets[i]->Release();
-   //   x11wrappedBackBuffers[i]->Release();
-   //   pBackBuffer[i]->Release();
-   //}
-   //x11DepthStencilState->Release();
-
-   //pSwap->Release();
-
-   //// DWrite
-   ////dxgiDevice->Release();
-   //for (int i = 0; i < bufferCount; i++)
-   //{
-   //   x11d2dRenderTargets[i]->Release();
-   //}
-   //x11d2dDeviceContext->Release();
-   //x11d2dtextFormat->Release();
-   //x11d2dtextBrush->Release();
-   //m_d2dFactory->Release();
-   //m_d2dDevice->Release();
-   //m_dWriteFactory->Release();
-
-}
-
 void Graphics::OnRenderX11(float angle)
 {
    // X11 only
@@ -1346,14 +1204,13 @@ void Graphics::OnRenderX11(float angle)
    x11DeviceContext->IASetVertexBuffers(0u, 1u, x11VertexBuffer.GetAddressOf(), &stride, &offset);
    x11DeviceContext->IASetIndexBuffer(x11IndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
 
+   float offsetx = 3.0f;
+   float offsety = 0.0f;
    matrixBuffer.transform = XMMatrixTranspose(
-      //XMMatrixRotationZ(30.0f * XM_PI / 180.0f ) *
-      //XMMatrixRotationX(10.0f * XM_PI / 180.0f ) *
       XMMatrixRotationZ(angle) *
-      XMMatrixRotationX(angle) *
-      //XMMatrixScaling(0.5f, 0.5f, 0.5f) *
-      XMMatrixTranslation(0.0f, 0.0f, 8.0f) *
-      //XMMatrixPerspectiveLH(1.0f, 1.0f, 0.5f, 10.0f));
+      XMMatrixRotationY(angle) *
+      XMMatrixScaling(0.5f, 0.5f, 0.5f) *
+      XMMatrixTranslation(offsetx, offsety, 8.0f) *
       XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 10.0f));
 
    D3D11_MAPPED_SUBRESOURCE msr;
@@ -1421,4 +1278,27 @@ void Graphics::OnRender2DWrite()
       x11d2dtextBrush.Get()
    );
    ThrowIfFailed(x11d2dDeviceContext->EndDraw());
+}
+
+void Graphics::CleanUp()
+{
+   if (DirectX11on12Flag || DirectX12Flag)
+   {
+      // wait for the gpu to finish all frames
+      for (int i = 0; i < bufferCount; ++i)
+      {
+         frameIndex = i;
+         WaitForPreviousFrame();
+         ThrowIfFailed(commandAllocators[frameIndex]->Reset());
+         ThrowIfFailed(commandList->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
+         ThrowIfFailed(commandList->Close());
+      }
+
+      for (int i = 0; i < bufferCount; ++i)
+      {
+         frameIndex = i;
+         ThrowIfFailed(commandQueue->Signal(fence[frameIndex].Get(), fenceValue[frameIndex]));
+         WaitForPreviousFrame();
+      }
+   }
 }
