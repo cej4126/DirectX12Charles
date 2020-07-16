@@ -22,6 +22,7 @@
 #include <d2d1_3.h>
 #include <dwrite.h>
 #include <chrono>
+#include <random>
 
 
 inline void ThrowIfFailed(HRESULT hr)

@@ -142,15 +142,24 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
+    <ClInclude Include="BindableX11.h" />
+    <ClInclude Include="BoxX11.h" />
+    <ClInclude Include="DrawBaseX11.h" />
+    <ClInclude Include="DrawX11.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="ObjectX11.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="BindableX11.cpp" />
+    <ClCompile Include="BoxX11.cpp" />
+    <ClCompile Include="DrawX11.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="ObjectX11.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>

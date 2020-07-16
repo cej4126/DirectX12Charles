@@ -5,6 +5,8 @@ using namespace DirectX;
 
 class Graphics
 {
+	friend class BindableX11;
+
 public:
 	Graphics(HWND hWnd, int width, int height);
 	Graphics(const Graphics &) = delete;

@@ -1,10 +1,22 @@
 #include "App.h"
+#include "BoxX11.h"
 
 App::App()
    :
    wnd(1000, 800)
 {
+   std::mt19937 gen(2018);
+
+   std::mt19937 rng(std::random_device{}());
+   std::uniform_real_distribution<float> rangedist(6.0f, 20.0f);
+
    lastTime = std::chrono::steady_clock::now();
+
+   for (auto i = 0; i < 1; i++)
+   {
+      float range = rangedist(rng);
+      boxes.push_back(std::make_unique<BoxX11>(wnd.Gfx(), range));
+   }
 }
 
 int App::Go()
