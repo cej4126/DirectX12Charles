@@ -20,8 +20,8 @@ private:
       } pos;
    };
 
-   BindableX11 *object;
-   float range;
+   BindableX11 *object = nullptr;
+   float range = 0;
 
    float boxRoll;
    float boxPitch;

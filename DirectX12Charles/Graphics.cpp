@@ -1302,3 +1302,8 @@ void Graphics::CleanUp()
       }
    }
 }
+
+void Graphics::DrawIndexed(UINT count) noexcept
+{
+   x11DeviceContext->DrawIndexed(count, 0u, 0u);
+}

@@ -58,5 +58,20 @@ void ObjectX11::AddTopology(D3D11_PRIMITIVE_TOPOLOGY type)
 
 void ObjectX11::Bind(Graphics &gfx) noexcept
 {
+   // Vertex Buffer
+   const UINT offset = 0u;
+   GetContext(gfx)->IASetVertexBuffers(0u, 1u, pVertexBuffer.GetAddressOf(), &vertexStride, &offset);
 
+   // Index Buffer
+   GetContext(gfx)->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
+
+   // Shaders
+   GetContext(gfx)->VSSetShader(pVertexShader.Get(), nullptr, 0u);
+   GetContext(gfx)->PSSetShader(pPixelShader.Get(), nullptr, 0u);
+
+   // Layout
+   GetContext(gfx)->IASetInputLayout(pInputLayout.Get());
+
+   // Topology
+   GetContext(gfx)->IASetPrimitiveTopology(topologyType);
 }

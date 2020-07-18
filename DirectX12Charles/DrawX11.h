@@ -15,6 +15,7 @@ public:
    virtual ~DrawX11() = default;
 
    virtual void Update(float dt) noexcept = 0;
+   UINT count = 0;
 
 protected:
    void AddBind(std::unique_ptr < BindableX11 > bind) noexcept;

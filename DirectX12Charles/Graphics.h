@@ -17,6 +17,8 @@ public:
 	void WaitForPreviousFrame();
 	void CleanUp();
 
+	void DrawIndexed(UINT count) noexcept;
+
 private:
 	void LoadDriveX12();
 	void LoadBaseX12();

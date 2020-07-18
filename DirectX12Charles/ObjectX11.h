@@ -58,9 +58,9 @@ private:
 
    // VertexBuffer 
    Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
-   UINT vertexStride;
+   UINT vertexStride = 0;
    // IndexBuffer 
-   UINT indexCount;
+   UINT indexCount = 0;
    Microsoft::WRL::ComPtr<ID3D11Buffer> pIndexBuffer;
 
 	Microsoft::WRL::ComPtr<ID3DBlob> pVertexBytecodeBlob;
@@ -74,6 +74,6 @@ private:
 	// Layout
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> pInputLayout;
 	// Topology
-	D3D11_PRIMITIVE_TOPOLOGY topologyType;
+	D3D11_PRIMITIVE_TOPOLOGY topologyType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 };
 

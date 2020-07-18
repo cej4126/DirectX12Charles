@@ -87,10 +87,19 @@ BoxX11::BoxX11(Graphics &gfx, float range)
       };
       object->AddInputLayout(ied);
 
-
+      addStaticBind(std::move(object));
    }
+
+
+   // AddBind()
 }
 
 void BoxX11::Update(float dt) noexcept
 {
+   boxRoll += boxRollRate * dt;
+   boxPitch += boxPitchRate * dt;
+   boxYaw += boxYawRate * dt;
+   spaceRoll += spaceRollRate * dt;
+   spacePitch += spacePitchRate * dt;
+   spaceYaw += spaceYawRate * dt;
 }

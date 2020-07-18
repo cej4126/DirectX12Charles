@@ -55,5 +55,12 @@ float App::TimeMark()
 
 void App::DoFrame()
 {
+   auto dt = TimeMark();
    wnd.Gfx().OnRender(TimePeek());
+
+   for (auto &b : boxes)
+   {
+      b->Update(dt);
+      b->Draw(wnd.Gfx());         
+   }
 }

@@ -150,6 +150,7 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="ObjectX11.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TransformX11.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
@@ -160,6 +161,7 @@
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="ObjectX11.cpp" />
+    <ClCompile Include="TransformX11.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
