@@ -11,6 +11,8 @@ public:
 	template<class V>
 	void AddVertexBuffer(const std::vector<V> &vertices)
 	{
+		vertexStride = sizeof(V);
+
 		D3D11_BUFFER_DESC bd = {};
 		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		bd.Usage = D3D11_USAGE_DEFAULT;
@@ -41,7 +43,7 @@ public:
 
 		D3D11_SUBRESOURCE_DATA csd = {};
 		csd.pSysMem = &consts;
-		ThrowIfFailed(GetDevice(gfx)->CreateBuffer(&cbd, &csd, &pConstantBuffer));
+		ThrowIfFailed(GetDevice(gfx)->CreateBuffer(&cbd, &csd, &pPixelConstantBuffer));
 	}
 
 	// Layout
@@ -68,8 +70,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3DBlob> pPixelBytecodeBlob;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShader;
 
-	// Constant Buffer
-	Microsoft::WRL::ComPtr<ID3D11Buffer> pConstantBuffer;
+	// Pixel Constant Buffer
+	Microsoft::WRL::ComPtr<ID3D11Buffer> pPixelConstantBuffer;
 
 	// Layout
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> pInputLayout;

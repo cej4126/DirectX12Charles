@@ -1,3 +1,4 @@
+#pragma once
 #include "stdafx.h"
 #include "Graphics.h"
 #include "BindableX11.h"
@@ -15,11 +16,16 @@ public:
    virtual ~DrawX11() = default;
 
    virtual void Update(float dt) noexcept = 0;
-   UINT count = 0;
+   virtual XMMATRIX GetTransformXM() const noexcept = 0;
+
+
+   //static UINT indexCountDrawX11;
 
 protected:
    void AddBind(std::unique_ptr < BindableX11 > bind) noexcept;
 
 private:
+   virtual const std::vector<std::unique_ptr<BindableX11>> &GetStaticBinds() const noexcept = 0;
+   UINT indexCountDrawX11 = 36;
    std::vector<std::unique_ptr< BindableX11 >> binds;
 };

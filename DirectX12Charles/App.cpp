@@ -8,7 +8,8 @@ App::App()
    std::mt19937 gen(2018);
 
    std::mt19937 rng(std::random_device{}());
-   std::uniform_real_distribution<float> rangedist(6.0f, 20.0f);
+   std::uniform_real_distribution<float> rangedist(1.0f, 5.0f);
+//   std::uniform_real_distribution<float> rangedist(6.0f, 20.0f);
 
    lastTime = std::chrono::steady_clock::now();
 
@@ -17,6 +18,7 @@ App::App()
       float range = rangedist(rng);
       boxes.push_back(std::make_unique<BoxX11>(wnd.Gfx(), range));
    }
+   wnd.Gfx().SetProjectionX11(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
 }
 
 int App::Go()
@@ -55,12 +57,19 @@ float App::TimeMark()
 
 void App::DoFrame()
 {
-   auto dt = TimeMark();
-   wnd.Gfx().OnRender(TimePeek());
+   auto dt = TimePeek();
+
+
+   wnd.Gfx().OnRenderBegin(dt);
+
+   wnd.Gfx().OnRender(dt);
 
    for (auto &b : boxes)
    {
       b->Update(dt);
-      b->Draw(wnd.Gfx());         
+      b->Draw(wnd.Gfx());
    }
+
+   wnd.Gfx().OnRenderEnd(dt);
+
 }

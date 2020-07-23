@@ -978,7 +978,7 @@ void Graphics::LoadDepentX11()
    ThrowIfFailed(x11Device->CreateBuffer(&indicesX11Desc, &indiceX11Data, &x11IndexBuffer));
    indiceX11Count = (UINT)std::size(indicesX11);
 
-   // Constant Buffer
+   // Constant Buffer Matrix
    matrixBuffer.transform = XMMatrixIdentity();
    D3D11_BUFFER_DESC cbd;
    cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -1012,7 +1012,7 @@ void Graphics::LoadDepentX11()
       colorBuffer.face_colors[i].a = cb.face_colors[i].a;
    }
 
-   // Constant Buffer
+   // Constant Buffer color
    D3D11_BUFFER_DESC colorDesc;
    colorDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
    colorDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -1073,7 +1073,7 @@ void Graphics::WaitForPreviousFrame()
    }
 }
 
-void Graphics::OnRender(float angle)
+void Graphics::OnRenderBegin(float angle)
 {
    frameIndex = swapChain->GetCurrentBackBufferIndex();
    WaitForPreviousFrame();
@@ -1088,12 +1088,18 @@ void Graphics::OnRender(float angle)
       x11On12Device->AcquireWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
       OnRender2DWrite();
    }
+}
 
+void Graphics::OnRender(float angle)
+{
    if (DirectX11OnlyFlag || DirectX11on12Flag)
    {
       OnRenderX11(angle);
    }
+}
 
+void Graphics::OnRenderEnd(float angle)
+{
    if (DWriteFlag)
    {
       x11On12Device->ReleaseWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
@@ -1256,6 +1262,27 @@ void Graphics::OnRenderX11(float angle)
    {
       x11DeviceContext->DrawIndexed(indiceX11Count, 0u, 0u);
    }
+
+   ////test
+   //offsetx = 0.0f;
+   //offsety = 1.0f;
+   //matrixBuffer.transform = XMMatrixTranspose(
+   //   XMMatrixRotationZ(angle) *
+   //   XMMatrixRotationY(angle) *
+   //   XMMatrixScaling(0.5f, 0.5f, 0.5f) *
+   //   XMMatrixTranslation(offsetx, offsety, 8.0f) *
+   //   XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 10.0f));
+
+   //ThrowIfFailed(x11DeviceContext->Map(
+   //   x11MatrixBuffer.Get(), 0u,
+   //   D3D11_MAP_WRITE_DISCARD, 0u,
+   //   &msr
+   //));
+   //memcpy(msr.pData, &matrixBuffer, sizeof(matrixBuffer));
+   //x11DeviceContext->Unmap(x11MatrixBuffer.Get(), 0u);
+   //x11DeviceContext->VSSetConstantBuffers(0u, 1u, x11MatrixBuffer.GetAddressOf());
+
+
 }
 
 void Graphics::OnRender2DWrite()

@@ -2,12 +2,14 @@
 #include "stdafx.h"
 #include "DrawBaseX11.h"
 #include "ObjectX11.h"
+#include "TransformX11.h"
 
 class BoxX11 : public DrawBaseX11 <BoxX11>
 {
 public:
    BoxX11(Graphics &gfx, float range);
    void Update(float dt) noexcept override;
+   XMMATRIX GetTransformXM() const noexcept override;
 
 private:
    struct Vertex

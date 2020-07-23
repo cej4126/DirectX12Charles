@@ -39,7 +39,6 @@ BoxX11::BoxX11(Graphics &gfx, float range)
          { 1.0f,1.0f,1.0f },
       };
 
-
       object->AddVertexBuffer(vertices);
 
       // indies
@@ -53,7 +52,8 @@ BoxX11::BoxX11(Graphics &gfx, float range)
          0,1,4, 1,5,4
       };
       object->AddIndexBuffer(indices);
-      object->AddShaders(L"VertexShader.cso", L"PixelShader.cso");
+//      object->AddShaders(L"VertexShaderX11.cso", L"PixelShaderX11.cso");
+      object->AddShaders(L"VertexShaderX11.cso", L"PixelShaderX11.cso");
 
       struct ConstantBuffer2
       {
@@ -68,12 +68,12 @@ BoxX11::BoxX11(Graphics &gfx, float range)
       const ConstantBuffer2 cb2 =
       {
          {
-            { 1.0f,0.0f,1.0f },
-            { 1.0f,0.0f,0.0f },
-            { 0.0f,1.0f,0.0f },
-            { 0.0f,0.0f,1.0f },
-            { 1.0f,1.0f,0.0f },
-            { 0.0f,1.0f,1.0f },
+            { 1.0f,0.0f,0.2f },
+            { 1.0f,0.0f,0.3f },
+            { 1.0f,0.0f,0.4f },
+            { 1.0f,0.0f,0.5f },
+            { 1.0f,0.0f,0.6f },
+            { 1.0f,0.0f,0.7f },
          }
       };
 
@@ -83,15 +83,18 @@ BoxX11::BoxX11(Graphics &gfx, float range)
       // Layout
       const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
       {
-         { "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+         { "PositionX",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
       };
       object->AddInputLayout(ied);
 
-      addStaticBind(std::move(object));
+      addStaticBind(std::move(object), (UINT)indices.size());
+
    }
 
+   std::unique_ptr < TransformX11 > trans = std::make_unique<TransformX11>(gfx, *this);
+   trans->AddTransformConstantBuffer();
 
-   // AddBind()
+   AddBind(std::move(trans));
 }
 
 void BoxX11::Update(float dt) noexcept
@@ -102,4 +105,12 @@ void BoxX11::Update(float dt) noexcept
    spaceRoll += spaceRollRate * dt;
    spacePitch += spacePitchRate * dt;
    spaceYaw += spaceYawRate * dt;
+}
+
+XMMATRIX BoxX11::GetTransformXM() const noexcept
+{
+   return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
+      DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *
+      DirectX::XMMatrixRotationRollPitchYaw(spacePitch, spaceYaw, spaceRoll) *
+      DirectX::XMMatrixTranslation(0.0f, 0.0f, 10.0f);
 }

@@ -13,11 +13,16 @@ public:
 	Graphics &operator=(const Graphics &) = delete;
 	~Graphics() = default;
 
+	void OnRenderBegin(float angle);
 	void OnRender(float angle);
+	void OnRenderEnd(float angle);
 	void WaitForPreviousFrame();
 	void CleanUp();
 
 	void DrawIndexed(UINT count) noexcept;
+
+	void SetProjectionX11(FXMMATRIX proj) noexcept { projectionX11 = proj; }
+	XMMATRIX GetProjectionX11() const noexcept { return projectionX11; }
 
 private:
 	void LoadDriveX12();
@@ -64,6 +69,7 @@ protected:
 	float aspectRatio;
 	HWND hWnd;
 
+	XMMATRIX projectionX11;
 	struct MatrixBufferType
 	{
 		XMMATRIX transform;
