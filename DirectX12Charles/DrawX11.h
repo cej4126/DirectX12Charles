@@ -18,9 +18,6 @@ public:
    virtual void Update(float dt) noexcept = 0;
    virtual XMMATRIX GetTransformXM() const noexcept = 0;
 
-
-   //static UINT indexCountDrawX11;
-
 protected:
    void AddBind(std::unique_ptr < BindableX11 > bind) noexcept;
 

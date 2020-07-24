@@ -42,11 +42,6 @@ App::~App()
 {
 }
 
-float App::TimePeek()
-{
-   return std::chrono::duration<float>(std::chrono::steady_clock::now() - lastTime).count();
-}
-
 float App::TimeMark()
 {
    const auto oldTime = lastTime;
@@ -55,10 +50,14 @@ float App::TimeMark()
    return frameTime.count();
 }
 
+float App::TimePeek()
+{
+   return std::chrono::duration<float>(std::chrono::steady_clock::now() - lastTime).count();
+}
+
 void App::DoFrame()
 {
-   auto dt = TimePeek();
-
+   auto dt = TimeMark();
 
    wnd.Gfx().OnRenderBegin(dt);
 

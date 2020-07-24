@@ -52,7 +52,6 @@ BoxX11::BoxX11(Graphics &gfx, float range)
          0,1,4, 1,5,4
       };
       object->AddIndexBuffer(indices);
-//      object->AddShaders(L"VertexShaderX11.cso", L"PixelShaderX11.cso");
       object->AddShaders(L"VertexShaderX11.cso", L"PixelShaderX11.cso");
 
       struct ConstantBuffer2
@@ -88,7 +87,6 @@ BoxX11::BoxX11(Graphics &gfx, float range)
       object->AddInputLayout(ied);
 
       addStaticBind(std::move(object), (UINT)indices.size());
-
    }
 
    std::unique_ptr < TransformX11 > trans = std::make_unique<TransformX11>(gfx, *this);
@@ -112,5 +110,5 @@ XMMATRIX BoxX11::GetTransformXM() const noexcept
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *
       DirectX::XMMatrixRotationRollPitchYaw(spacePitch, spaceYaw, spaceRoll) *
-      DirectX::XMMatrixTranslation(0.0f, 0.0f, 10.0f);
+      DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
 }

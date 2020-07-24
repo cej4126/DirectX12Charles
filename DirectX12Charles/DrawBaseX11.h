@@ -22,6 +22,5 @@ private:
    static std::vector<std::unique_ptr<BindableX11>> staticBinds;
 };
 
-
 template<class T>
 std::vector<std::unique_ptr<BindableX11>> DrawBaseX11 <T>::staticBinds;
