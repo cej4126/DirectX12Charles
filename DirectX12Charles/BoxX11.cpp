@@ -1,26 +1,28 @@
 #include "BoxX11.h"
+using namespace std;
 
 BoxX11::BoxX11(Graphics &gfx, float range)
    :
    range(range)
 {
-   std::mt19937 rng;
-   std::uniform_real_distribution<float> rand2pi(0.0f, 3.1415f * 2.0f);
-   std::uniform_real_distribution<float> rand1_3pi(0.0f, 3.1415f * 0.3f);
+   random_device rd;
+   mt19937 gen(rd());
+   uniform_real_distribution<float> rand2pi(0.0f, 3.1415f * 2.0f);
+   uniform_real_distribution<float> rand1_3pi(0.0f, 3.1415f * 0.7f);
 
-   boxRoll = rand2pi(rng);
-   boxPitch = rand2pi(rng);
-   boxYaw = rand2pi(rng);
-   spaceRoll = rand2pi(rng);
-   spacePitch = rand2pi(rng);
-   spaceYaw = rand2pi(rng);
+   boxRoll = rand2pi(gen);
+   boxPitch = rand2pi(gen);
+   boxYaw = rand2pi(gen);
+   spaceRoll = rand2pi(gen);
+   spacePitch = rand2pi(gen);
+   spaceYaw = rand2pi(gen);
 
-   boxRollRate = rand1_3pi(rng);
-   boxPitchRate = rand1_3pi(rng);
-   boxYawRate = rand1_3pi(rng);
-   spaceRollRate = rand1_3pi(rng);
-   spacePitchRate = rand1_3pi(rng);
-   spaceYawRate = rand1_3pi(rng);
+   boxRollRate = rand1_3pi(gen);
+   boxPitchRate = rand1_3pi(gen);
+   boxYawRate = rand1_3pi(gen);
+   spaceRollRate = rand1_3pi(gen);
+   spacePitchRate = rand1_3pi(gen);
+   spaceYawRate = rand1_3pi(gen);
 
    if (!isStaticSet())
    {
@@ -67,12 +69,12 @@ BoxX11::BoxX11(Graphics &gfx, float range)
       const ConstantBuffer2 cb2 =
       {
          {
-            { 1.0f,0.0f,0.2f },
-            { 1.0f,0.0f,0.3f },
-            { 1.0f,0.0f,0.4f },
-            { 1.0f,0.0f,0.5f },
-            { 1.0f,0.0f,0.6f },
-            { 1.0f,0.0f,0.7f },
+            {1.0f, 0.0f, 1.0f, 1.0f},
+            {1.0f, 0.0f, 0.0f, 1.0f},
+            {0.0f, 1.0f, 0.0f, 1.0f},
+            {0.0f, 0.0f, 1.0f, 1.0f},
+            {1.0f, 1.0f, 0.0f, 1.0f},
+            {0.0f, 1.0f, 1.0f, 1.0f},
          }
       };
 
@@ -110,5 +112,5 @@ XMMATRIX BoxX11::GetTransformXM() const noexcept
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *
       DirectX::XMMatrixRotationRollPitchYaw(spacePitch, spaceYaw, spaceRoll) *
-      DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
+      DirectX::XMMatrixTranslation(8.0f, -4.0f, 20.0f);
 }

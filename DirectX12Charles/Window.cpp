@@ -120,11 +120,6 @@ LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
          PostQuitMessage(0);
          return 0;
-      //case WM_DESTROY:
-      //   running = false;
-      //   Gfx().WaitForPreviousFrame();
-      //   PostQuitMessage(0);
-      //   return 0;
       case WM_KILLFOCUS:
          input.ClearState();
          break;

@@ -1,0 +1,183 @@
+#include "stdafx.h"
+#include "OneBoxX11.h"
+using namespace Microsoft::WRL;
+
+OneBoxX11::OneBoxX11(Graphics &gfx)
+   :
+   gfx(gfx)
+{
+   // create vertex buffer
+   const VertexX11 verticesX11[] =
+   {
+      { -1.0f, -1.0f, -1.0f },
+      {  1.0f, -1.0f, -1.0f },
+      { -1.0f,  1.0f, -1.0f },
+      {  1.0f,  1.0f, -1.0f },
+
+      { -1.0f, -1.0f,  1.0f },
+      {  1.0f, -1.0f,  1.0f },
+      { -1.0f,  1.0f,  1.0f },
+      {  1.0f,  1.0f,  1.0f },
+   };
+
+   D3D11_BUFFER_DESC verticesX11Desc = {};
+   verticesX11Desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+   verticesX11Desc.Usage = D3D11_USAGE_DEFAULT;
+   verticesX11Desc.CPUAccessFlags = 0u;
+   verticesX11Desc.MiscFlags = 0u;
+   verticesX11Desc.ByteWidth = sizeof(verticesX11);
+   verticesX11Desc.StructureByteStride = sizeof(VertexX11);
+   D3D11_SUBRESOURCE_DATA verticeX11Data = {};
+   verticeX11Data.pSysMem = verticesX11;
+   ThrowIfFailed(gfx.GetDevice()->CreateBuffer(&verticesX11Desc, &verticeX11Data, &x11VertexBuffer));
+
+   const unsigned short indicesX11Right[] =
+   {
+      0,2,1, 2,3,1,  // Back Face
+      1,3,5, 3,7,5,  // Left Face
+      2,6,3, 3,6,7,  // Top Face
+      4,5,7, 4,7,6,  // Front Face
+      0,4,2, 2,4,6,  // Right Face
+      0,1,4, 1,5,4   // Bottom Face
+   };
+
+   unsigned short indicesX11[36];
+   for (int i = 0; i < 36; i++)
+   {
+      indicesX11[i] = indicesX11Right[i];
+   }
+
+   D3D11_BUFFER_DESC indicesX11Desc = {};
+   indicesX11Desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+   indicesX11Desc.Usage = D3D11_USAGE_DEFAULT;
+   indicesX11Desc.CPUAccessFlags = 0u;
+   indicesX11Desc.MiscFlags = 0u;
+   indicesX11Desc.ByteWidth = sizeof(indicesX11);
+   indicesX11Desc.StructureByteStride = sizeof(unsigned short);
+   D3D11_SUBRESOURCE_DATA indiceX11Data = {};
+   indiceX11Data.pSysMem = indicesX11;
+   ThrowIfFailed(gfx.GetDevice()->CreateBuffer(&indicesX11Desc, &indiceX11Data, &x11IndexBuffer));
+   indiceX11Count = (UINT)std::size(indicesX11);
+
+   // Constant Buffer Matrix
+   matrixBuffer.transform = XMMatrixIdentity();
+   D3D11_BUFFER_DESC cbd;
+   cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+   cbd.Usage = D3D11_USAGE_DYNAMIC;
+   cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+   cbd.MiscFlags = 0u;
+   cbd.ByteWidth = sizeof(matrixBuffer);
+   cbd.StructureByteStride = 0u;
+   D3D11_SUBRESOURCE_DATA csd = {};
+   csd.pSysMem = &matrixBuffer;
+   ThrowIfFailed(gfx.GetDevice()->CreateBuffer(&cbd, &csd, &x11MatrixBuffer));
+
+   // lookup table for cube face colors
+   ConstantBufferColor cb =
+   {
+      {
+         {1.0f, 0.0f, 1.0f, 1.0f},
+         {1.0f, 0.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f, 0.0f, 1.0f},
+         {0.0f, 0.0f, 1.0f, 1.0f},
+         {1.0f, 1.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f, 1.0f, 1.0f},
+      }
+   };
+
+   for (int i = 0; i < 6; i++)
+   {
+      colorBuffer.face_colors[i].r = cb.face_colors[i].r;
+      colorBuffer.face_colors[i].g = cb.face_colors[i].g;
+      colorBuffer.face_colors[i].b = cb.face_colors[i].b;
+      colorBuffer.face_colors[i].a = cb.face_colors[i].a;
+   }
+
+   // Constant Buffer color
+   D3D11_BUFFER_DESC colorDesc;
+   colorDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+   colorDesc.Usage = D3D11_USAGE_DYNAMIC;
+   colorDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+   colorDesc.MiscFlags = 0u;
+   colorDesc.ByteWidth = sizeof(colorBuffer);
+   colorDesc.StructureByteStride = 0u;
+   D3D11_SUBRESOURCE_DATA colorSub = {};
+   colorSub.pSysMem = &colorBuffer;
+   ThrowIfFailed(gfx.GetDevice()->CreateBuffer(&colorDesc, &colorSub, &x11ColorBuffer));
+
+   // create pixel shader
+   ComPtr<ID3DBlob> pBlobPixel;
+   ThrowIfFailed(D3DReadFileToBlob(L"PixelShaderX11.cso", &pBlobPixel));
+   ThrowIfFailed(gfx.GetDevice()->CreatePixelShader(pBlobPixel->GetBufferPointer(), pBlobPixel->GetBufferSize(), nullptr, &x11PixelShader));
+
+   // create vertex shader
+   ComPtr<ID3DBlob> pBlobVertex;
+   ThrowIfFailed(D3DReadFileToBlob(L"VertexShaderX11.cso", &pBlobVertex));
+   ThrowIfFailed(gfx.GetDevice()->CreateVertexShader(pBlobVertex->GetBufferPointer(), pBlobVertex->GetBufferSize(), nullptr, &x11VertexShader));
+
+   // input (vertex) layout
+   const D3D11_INPUT_ELEMENT_DESC ied[] =
+   {
+      { "POSITIONX", 0, DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA, 0 },
+   };
+
+   ThrowIfFailed(gfx.GetDevice()->CreateInputLayout(
+      ied, (UINT)std::size(ied),
+      pBlobVertex->GetBufferPointer(),
+      pBlobVertex->GetBufferSize(),
+      &x11InputLayout));
+}
+
+void OneBoxX11::Update(float dt)
+{
+   angle += 2.0f * dt;
+}
+
+void OneBoxX11::Draw()
+{
+   // Bind vertex buffer to pipeline
+   const UINT stride = sizeof(VertexX11);
+   const UINT offset = 0u;
+   gfx.GetContext()->IASetVertexBuffers(0u, 1u, x11VertexBuffer.GetAddressOf(), &stride, &offset);
+
+   gfx.GetContext()->IASetIndexBuffer(x11IndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
+
+   float offsetx = 5.0f;
+   float offsety = 3.0f;
+   matrixBuffer.transform = XMMatrixTranspose(
+      XMMatrixRotationZ(angle) *
+      XMMatrixRotationY(angle) *
+      XMMatrixScaling(0.5f, 0.5f, 0.5f) *
+      XMMatrixTranslation(offsetx, offsety, 8.0f) *
+      XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 10.0f));
+
+   D3D11_MAPPED_SUBRESOURCE msr;
+   ThrowIfFailed(gfx.GetContext()->Map(
+      x11MatrixBuffer.Get(), 0u,
+      D3D11_MAP_WRITE_DISCARD, 0u,
+      &msr
+   ));
+   memcpy(msr.pData, &matrixBuffer, sizeof(matrixBuffer));
+   gfx.GetContext()->Unmap(x11MatrixBuffer.Get(), 0u);
+   gfx.GetContext()->VSSetConstantBuffers(0u, 1u, x11MatrixBuffer.GetAddressOf());
+
+   D3D11_MAPPED_SUBRESOURCE msrColor;
+   ThrowIfFailed(gfx.GetContext()->Map(
+      x11ColorBuffer.Get(), 0u,
+      D3D11_MAP_WRITE_DISCARD, 0u,
+      &msrColor
+   ));
+   memcpy(msrColor.pData, &colorBuffer, sizeof(colorBuffer));
+   gfx.GetContext()->Unmap(x11ColorBuffer.Get(), 0u);
+   gfx.GetContext()->PSSetConstantBuffers(0u, 1u, x11ColorBuffer.GetAddressOf());
+
+   // bind pixel shader
+   gfx.GetContext()->PSSetShader(x11PixelShader.Get(), nullptr, 0u);
+
+   // bind vertex shader
+   gfx.GetContext()->VSSetShader(x11VertexShader.Get(), nullptr, 0u);
+
+   gfx.GetContext()->IASetInputLayout(x11InputLayout.Get());
+
+   gfx.GetContext()->DrawIndexed(indiceX11Count, 0u, 0u);
+}

@@ -20,7 +20,6 @@ void ObjectX11::AddIndexBuffer(const std::vector<unsigned short> &indices)
    D3D11_SUBRESOURCE_DATA isd = {};
    isd.pSysMem = indices.data();
    ThrowIfFailed(GetDevice(gfx)->CreateBuffer(&ibd, &isd, &pIndexBuffer));
-
 }
 
 void ObjectX11::AddShaders(const std::wstring &vertexPath, const std::wstring &pixelPath)

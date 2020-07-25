@@ -9,7 +9,6 @@ Graphics::Graphics(HWND hWnd, int width, int height)
    height(height),
    hWnd(hWnd)
 {
-
    aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
    // debug 3d
@@ -36,7 +35,7 @@ Graphics::Graphics(HWND hWnd, int width, int height)
       LoadBase2D();
    }
 
-   LoadDepentX11();
+   LoadDWrite();
 }
 
 void Graphics::LoadDriveX12()
@@ -45,8 +44,8 @@ void Graphics::LoadDriveX12()
    UINT dxgiFactoryFlags = 0;
 #if defined(_DEBUG) 
    dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
-   // end Dwrite
 #endif
+   // end Dwrite
 
    // factory
    ThrowIfFailed(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&m_DxgiFactory4)));
@@ -173,7 +172,6 @@ void Graphics::LoadDriveX11Only()
    {
       ThrowIfFailed(pSwap->GetBuffer(0, __uuidof(ID3D11Resource), &x11BackBuffer[i]));
       ThrowIfFailed(x11Device->CreateRenderTargetView(x11BackBuffer[i].Get(), nullptr, &x11Target[i]));
-
    }
 }
 
@@ -456,6 +454,27 @@ void Graphics::LoadDepentX12()
    readRange.End = 0;
    ThrowIfFailed(matrixBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&matrixBufferGPUAddress)));
 
+   // lookup table for cube face colors
+   ConstantBufferColor cb =
+   {
+      {
+         {1.0f, 0.0f, 1.0f, 1.0f},
+         {1.0f, 0.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f, 0.0f, 1.0f},
+         {0.0f, 0.0f, 1.0f, 1.0f},
+         {1.0f, 1.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f, 1.0f, 1.0f},
+      }
+   };
+   //colorBuffer = cb;
+   for (int i = 0; i < 6; i++)
+   {
+      colorBuffer.face_colors[i].r = cb.face_colors[i].r;
+      colorBuffer.face_colors[i].g = cb.face_colors[i].g;
+      colorBuffer.face_colors[i].b = cb.face_colors[i].b;
+      colorBuffer.face_colors[i].a = cb.face_colors[i].a;
+   }
+
    // Color Constant Buffer
    constantHeapDesc.Alignment = 0;
    constantHeapDesc.DepthOrArraySize = 1;
@@ -488,7 +507,6 @@ void Graphics::LoadDepentX12()
 
    fenceValue[frameIndex]++;
    ThrowIfFailed(commandQueue->Signal(fence[frameIndex].Get(), fenceValue[frameIndex]));
-
 }
 
 void Graphics::LoadVertexBuffer()
@@ -857,11 +875,24 @@ void Graphics::LoadBaseX11()
 
       swapChainBuffers[i]->SetName(L"swap Chain Buffers");
       ThrowIfFailed(x11Device->CreateRenderTargetView(x11wrappedBackBuffers[i].Get(), nullptr, &x11Target[i]));
-
-      // Not sure why nogo here
-      //ThrowIfFailed(swapChain1->GetBuffer(i, __uuidof(ID3D11Resource), &pBackBuffer[i]));
-      //ThrowIfFailed(x11Device->CreateRenderTargetView(pBackBuffer[i].Get(), nullptr, &x11Target[i]));
    }
+
+   x11ViewPort.Width = (float)width;
+   x11ViewPort.Height = (float)height;
+   x11ViewPort.MinDepth = 0;
+   x11ViewPort.MaxDepth = 1;
+   x11ViewPort.TopLeftX = 0;
+   x11ViewPort.TopLeftY = 0;
+
+   // Depth Stencil
+   D3D11_DEPTH_STENCIL_DESC depthDesc = {};
+   depthDesc.StencilEnable = false;
+   depthDesc.DepthEnable = false;
+
+   ThrowIfFailed(x11Device->CreateDepthStencilState(
+      &depthDesc, &x11DepthStencilState));
+
+
 }
 
 void Graphics::LoadBase2D()
@@ -871,7 +902,6 @@ void Graphics::LoadBase2D()
 
    dpiX = (float)GetDpiForWindow(hWnd);
    dpiY = dpiX;
-   //m_d2dFactory->GetDesktopDpi(&dpiX, &dpiY);
    D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
       D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
       D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
@@ -895,150 +925,8 @@ void Graphics::LoadBase2D()
    }
 }
 
-void Graphics::CreateShaderX11()
+void Graphics::LoadDWrite()
 {
-   // create pixel shader
-   ComPtr<ID3DBlob> pBlobPixel;
-   ThrowIfFailed(D3DReadFileToBlob(L"PixelShaderX11.cso", &pBlobPixel));
-   ThrowIfFailed(x11Device->CreatePixelShader(pBlobPixel->GetBufferPointer(), pBlobPixel->GetBufferSize(), nullptr, &x11PixelShader));
-
-   // create vertex shader
-   ComPtr<ID3DBlob> pBlobVertex;
-   ThrowIfFailed(D3DReadFileToBlob(L"VertexShaderX11.cso", &pBlobVertex));
-   ThrowIfFailed(x11Device->CreateVertexShader(pBlobVertex->GetBufferPointer(), pBlobVertex->GetBufferSize(), nullptr, &x11VertexShader));
-
-   // input (vertex) layout
-   const D3D11_INPUT_ELEMENT_DESC ied[] =
-   {
-      { "POSITIONX", 0, DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA, 0 },
-   };
-
-   ThrowIfFailed(x11Device->CreateInputLayout(
-      ied, (UINT)std::size(ied),
-      pBlobVertex->GetBufferPointer(),
-      pBlobVertex->GetBufferSize(),
-      &x11InputLayout
-   ));
-}
-
-void Graphics::LoadDepentX11()
-{
-   CreateShaderX11();
-
-   // create vertex buffer
-   const VertexX11 verticesX11[] =
-   {
-      { -1.0f, -1.0f, -1.0f },
-      {  1.0f, -1.0f, -1.0f },
-      { -1.0f,  1.0f, -1.0f },
-      {  1.0f,  1.0f, -1.0f },
-
-      { -1.0f, -1.0f,  1.0f },
-      {  1.0f, -1.0f,  1.0f },
-      { -1.0f,  1.0f,  1.0f },
-      {  1.0f,  1.0f,  1.0f },
-   };
-
-   D3D11_BUFFER_DESC verticesX11Desc = {};
-   verticesX11Desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-   verticesX11Desc.Usage = D3D11_USAGE_DEFAULT;
-   verticesX11Desc.CPUAccessFlags = 0u;
-   verticesX11Desc.MiscFlags = 0u;
-   verticesX11Desc.ByteWidth = sizeof(verticesX11);
-   verticesX11Desc.StructureByteStride = sizeof(VertexX11);
-   D3D11_SUBRESOURCE_DATA verticeX11Data = {};
-   verticeX11Data.pSysMem = verticesX11;
-   ThrowIfFailed(x11Device->CreateBuffer(&verticesX11Desc, &verticeX11Data, &x11VertexBuffer));
-
-   const unsigned short indicesX11Right[] =
-   {
-      0,2,1, 2,3,1,  // Back Face
-      1,3,5, 3,7,5,  // Left Face
-      2,6,3, 3,6,7,  // Top Face
-      4,5,7, 4,7,6,  // Front Face
-      0,4,2, 2,4,6,  // Right Face
-      0,1,4, 1,5,4   // Bottom Face
-   };
-
-   unsigned short indicesX11[36];
-   for (int i = 0; i < 36; i++)
-   {
-      indicesX11[i] = indicesX11Right[i];
-   }
-
-   D3D11_BUFFER_DESC indicesX11Desc = {};
-   indicesX11Desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-   indicesX11Desc.Usage = D3D11_USAGE_DEFAULT;
-   indicesX11Desc.CPUAccessFlags = 0u;
-   indicesX11Desc.MiscFlags = 0u;
-   indicesX11Desc.ByteWidth = sizeof(indicesX11);
-   indicesX11Desc.StructureByteStride = sizeof(unsigned short);
-   D3D11_SUBRESOURCE_DATA indiceX11Data = {};
-   indiceX11Data.pSysMem = indicesX11;
-   ThrowIfFailed(x11Device->CreateBuffer(&indicesX11Desc, &indiceX11Data, &x11IndexBuffer));
-   indiceX11Count = (UINT)std::size(indicesX11);
-
-   // Constant Buffer Matrix
-   matrixBuffer.transform = XMMatrixIdentity();
-   D3D11_BUFFER_DESC cbd;
-   cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-   cbd.Usage = D3D11_USAGE_DYNAMIC;
-   cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-   cbd.MiscFlags = 0u;
-   cbd.ByteWidth = sizeof(matrixBuffer);
-   cbd.StructureByteStride = 0u;
-   D3D11_SUBRESOURCE_DATA csd = {};
-   csd.pSysMem = &matrixBuffer;
-   ThrowIfFailed(x11Device->CreateBuffer(&cbd, &csd, &x11MatrixBuffer));
-
-   // lookup table for cube face colors
-   ConstantBufferColor cb =
-   {
-      {
-         {1.0f, 0.0f, 1.0f, 1.0f},
-         {1.0f, 0.0f, 0.0f, 1.0f},
-         {0.0f, 1.0f, 0.0f, 1.0f},
-         {0.0f, 0.0f, 1.0f, 1.0f},
-         {1.0f, 1.0f, 0.0f, 1.0f},
-         {0.0f, 1.0f, 1.0f, 1.0f},
-      }
-   };
-   //colorBuffer = cb;
-   for (int i = 0; i < 6; i++)
-   {
-      colorBuffer.face_colors[i].r = cb.face_colors[i].r;
-      colorBuffer.face_colors[i].g = cb.face_colors[i].g;
-      colorBuffer.face_colors[i].b = cb.face_colors[i].b;
-      colorBuffer.face_colors[i].a = cb.face_colors[i].a;
-   }
-
-   // Constant Buffer color
-   D3D11_BUFFER_DESC colorDesc;
-   colorDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-   colorDesc.Usage = D3D11_USAGE_DYNAMIC;
-   colorDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-   colorDesc.MiscFlags = 0u;
-   colorDesc.ByteWidth = sizeof(colorBuffer);
-   colorDesc.StructureByteStride = 0u;
-   D3D11_SUBRESOURCE_DATA colorSub = {};
-   colorSub.pSysMem = &colorBuffer;
-   ThrowIfFailed(x11Device->CreateBuffer(&colorDesc, &colorSub, &x11ColorBuffer));
-
-   x11ViewPort.Width = (float)width;
-   x11ViewPort.Height = (float)height;
-   x11ViewPort.MinDepth = 0;
-   x11ViewPort.MaxDepth = 1;
-   x11ViewPort.TopLeftX = 0;
-   x11ViewPort.TopLeftY = 0;
-
-   // Depth Stencil
-   D3D11_DEPTH_STENCIL_DESC depthDesc = {};
-   depthDesc.StencilEnable = false;
-   depthDesc.DepthEnable = false;
-
-   ThrowIfFailed(x11Device->CreateDepthStencilState(
-      &depthDesc, &x11DepthStencilState));
-
    if (DWriteFlag)
    {
       // DWrite
@@ -1059,7 +947,6 @@ void Graphics::LoadDepentX11()
 void Graphics::WaitForPreviousFrame()
 {
    // Need to set frameIndex before call this routine
-
    if (DirectX12Flag || DirectX11on12Flag)
    {
       // Wait until the previous frame is finished.
@@ -1073,8 +960,10 @@ void Graphics::WaitForPreviousFrame()
    }
 }
 
-void Graphics::OnRenderBegin(float angle)
+void Graphics::OnRenderBegin(float dt)
 {
+   angle += 2.0f * dt;
+
    frameIndex = swapChain->GetCurrentBackBufferIndex();
    WaitForPreviousFrame();
 
@@ -1090,15 +979,15 @@ void Graphics::OnRenderBegin(float angle)
    }
 }
 
-void Graphics::OnRender(float angle)
+void Graphics::OnRender()
 {
    if (DirectX11OnlyFlag || DirectX11on12Flag)
    {
-      OnRenderX11(angle);
+      OnRenderX11();
    }
 }
 
-void Graphics::OnRenderEnd(float angle)
+void Graphics::OnRenderEnd()
 {
    if (DWriteFlag)
    {
@@ -1151,8 +1040,8 @@ void Graphics::OnRenderX12(float angle)
    commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
    commandList->IASetIndexBuffer(&indexBufferView);
 
-   float offsetx = -3.0f;
-   float offsety = 0.0f;
+   float offsetx = -5.0f;
+   float offsety = 3.0f;
 
    matrixBuffer.transform = XMMatrixTranspose(
       XMMatrixRotationZ(angle) *
@@ -1194,59 +1083,14 @@ void Graphics::OnRenderX12(float angle)
    commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 }
 
-void Graphics::OnRenderX11(float angle)
+void Graphics::OnRenderX11()
 {
    // X11 only
    if (DirectX11OnlyFlag)
    {
       const float color[] = { 0.1f, 0.1f, 0.1f, 1.0f };
       x11DeviceContext->ClearRenderTargetView(x11Target[frameIndex].Get(), color);
-      //x11DeviceContext->ClearDepthStencilView(pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
    }
-
-   // Bind vertex buffer to pipeline
-   const UINT stride = sizeof(VertexX11);
-   const UINT offset = 0u;
-   x11DeviceContext->IASetVertexBuffers(0u, 1u, x11VertexBuffer.GetAddressOf(), &stride, &offset);
-   x11DeviceContext->IASetIndexBuffer(x11IndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
-
-   float offsetx = 3.0f;
-   float offsety = 0.0f;
-   matrixBuffer.transform = XMMatrixTranspose(
-      XMMatrixRotationZ(angle) *
-      XMMatrixRotationY(angle) *
-      XMMatrixScaling(0.5f, 0.5f, 0.5f) *
-      XMMatrixTranslation(offsetx, offsety, 8.0f) *
-      XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 10.0f));
-
-   D3D11_MAPPED_SUBRESOURCE msr;
-   ThrowIfFailed(x11DeviceContext->Map(
-      x11MatrixBuffer.Get(), 0u,
-      D3D11_MAP_WRITE_DISCARD, 0u,
-      &msr
-   ));
-   memcpy(msr.pData, &matrixBuffer, sizeof(matrixBuffer));
-   x11DeviceContext->Unmap(x11MatrixBuffer.Get(), 0u);
-   x11DeviceContext->VSSetConstantBuffers(0u, 1u, x11MatrixBuffer.GetAddressOf());
-
-   D3D11_MAPPED_SUBRESOURCE msrColor;
-   ThrowIfFailed(x11DeviceContext->Map(
-      x11ColorBuffer.Get(), 0u,
-      D3D11_MAP_WRITE_DISCARD, 0u,
-      &msrColor
-   ));
-   memcpy(msrColor.pData, &colorBuffer, sizeof(colorBuffer));
-   x11DeviceContext->Unmap(x11ColorBuffer.Get(), 0u);
-   x11DeviceContext->PSSetConstantBuffers(0u, 1u, x11ColorBuffer.GetAddressOf());
-
-   // bind pixel shader
-   x11DeviceContext->PSSetShader(x11PixelShader.Get(), nullptr, 0u);
-
-   // bind vertex shader
-   x11DeviceContext->VSSetShader(x11VertexShader.Get(), nullptr, 0u);
-
-   // bind vertex layout
-   x11DeviceContext->IASetInputLayout(x11InputLayout.Get());
 
    x11DeviceContext->OMSetDepthStencilState(x11DepthStencilState.Get(), 0u);
 
@@ -1257,32 +1101,6 @@ void Graphics::OnRenderX11(float angle)
    x11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
    x11DeviceContext->RSSetViewports(1u, &x11ViewPort);
-
-   if (DirectX11Flag)
-   {
-      x11DeviceContext->DrawIndexed(indiceX11Count, 0u, 0u);
-   }
-
-   ////test
-   //offsetx = 0.0f;
-   //offsety = 1.0f;
-   //matrixBuffer.transform = XMMatrixTranspose(
-   //   XMMatrixRotationZ(angle) *
-   //   XMMatrixRotationY(angle) *
-   //   XMMatrixScaling(0.5f, 0.5f, 0.5f) *
-   //   XMMatrixTranslation(offsetx, offsety, 8.0f) *
-   //   XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 10.0f));
-
-   //ThrowIfFailed(x11DeviceContext->Map(
-   //   x11MatrixBuffer.Get(), 0u,
-   //   D3D11_MAP_WRITE_DISCARD, 0u,
-   //   &msr
-   //));
-   //memcpy(msr.pData, &matrixBuffer, sizeof(matrixBuffer));
-   //x11DeviceContext->Unmap(x11MatrixBuffer.Get(), 0u);
-   //x11DeviceContext->VSSetConstantBuffers(0u, 1u, x11MatrixBuffer.GetAddressOf());
-
-
 }
 
 void Graphics::OnRender2DWrite()
@@ -1291,19 +1109,30 @@ void Graphics::OnRender2DWrite()
 
    D2D1_SIZE_F rtSize = x11d2dRenderTargets[frameIndex]->GetSize();
    D2D1_RECT_F textRect = D2D1::RectF(20, 20, rtSize.width, rtSize.height);
-   static const WCHAR text[] = L"Charles was here";
+   static const WCHAR textx12[] = L"DirectX12";
+   static const WCHAR textx11[] = L"DirectX11";
 
    // Render text directly to the back buffer.
    x11d2dDeviceContext->SetTarget(x11d2dRenderTargets[frameIndex].Get());
    x11d2dDeviceContext->BeginDraw();
    x11d2dDeviceContext->SetTransform(D2D1::Matrix3x2F::Identity());
    x11d2dDeviceContext->DrawText(
-      text,
-      _countof(text) - 1,
+      textx12,
+      _countof(textx12) - 1,
       x11d2dtextFormat.Get(),
       &textRect,
       x11d2dtextBrush.Get()
    );
+
+   textRect.left = 800;
+   x11d2dDeviceContext->DrawText(
+      textx11,
+      _countof(textx11) - 1,
+      x11d2dtextFormat.Get(),
+      &textRect,
+      x11d2dtextBrush.Get()
+   );
+
    ThrowIfFailed(x11d2dDeviceContext->EndDraw());
 }
 
