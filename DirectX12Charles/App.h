@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "Window.h"
+#include "dwritedraw.h"
 #include "BoxX11.h"
 #include "OneBoxX11.h"
 
@@ -19,6 +20,7 @@ private:
 
 private:
    std::chrono::steady_clock::time_point lastTime;
+   std::unique_ptr< class dwritedraw> dwriteitem;
    std::vector<std::unique_ptr<class BoxX11>> boxes;
    std::unique_ptr<class OneBoxX11 > box;
 };

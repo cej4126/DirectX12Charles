@@ -19,13 +19,16 @@ public:
    void WaitForPreviousFrame();
    void CleanUp();
 
-   void DrawIndexed(UINT count) noexcept;
-
    void SetProjectionX11(FXMMATRIX proj) noexcept { projectionX11 = proj; }
    XMMATRIX GetProjectionX11() const noexcept { return projectionX11; }
 
-   ID3D11DeviceContext *GetContext() noexcept { return x11DeviceContext.Get(); }
-   ID3D11Device *GetDevice() noexcept { return x11Device.Get(); }
+   ID3D11DeviceContext *GetContextX11() noexcept { return x11DeviceContext.Get(); }
+   ID3D11Device *GetDeviceX11() noexcept { return x11Device.Get(); }
+
+   ID2D1DeviceContext2 *Get2dContext() noexcept { return x11d2dDeviceContext.Get(); }
+   IDWriteFactory *Get2dWriteFactory() noexcept { return m_dWriteFactory.Get(); }
+   int GetWidth() { return width; }
+   int GetHeight() { return height; }
 
 private:
    void LoadDriveX12();
@@ -45,7 +48,6 @@ private:
 
    // DWrite
    void LoadBase2D();
-   void LoadDWrite();
    void OnRender2DWrite();
 
 protected:
@@ -115,27 +117,20 @@ protected:
    Microsoft::WRL::ComPtr <ID3DBlob> pixelShaderBlob;
    Microsoft::WRL::ComPtr <ID3D12PipelineState> pipelineState;
 
-   Microsoft::WRL::ComPtr <ID3D12Resource> vertexBuffer;
-   Microsoft::WRL::ComPtr <ID3D12Resource> vertexUpload;
+   Microsoft::WRL::ComPtr <ID3D12Resource> vertexDefaultBuffer;
+   Microsoft::WRL::ComPtr <ID3D12Resource> vertexUploadBuffer;
    D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
-   Microsoft::WRL::ComPtr <ID3D12Resource> indexBuffer;
-   Microsoft::WRL::ComPtr <ID3D12Resource> indexUpload;
+   Microsoft::WRL::ComPtr <ID3D12Resource> indexDefaultBuffer;
+   Microsoft::WRL::ComPtr <ID3D12Resource> indexUploadBuffer;
    D3D12_INDEX_BUFFER_VIEW indexBufferView;
    UINT indicesCount;
 
-
-   inline UINT64 UpdateSubresources(
-      _In_ ID3D12GraphicsCommandList *pCmdList,
+   inline UINT64 UpdateSubresource(
       _In_ ID3D12Resource *pDestinationResource,
       _In_ ID3D12Resource *pIntermediate,
-      _In_range_(0, D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
-      _In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) UINT NumSubresources,
-      UINT64 RequiredSize,
-      _In_reads_(NumSubresources) const D3D12_PLACED_SUBRESOURCE_FOOTPRINT *pLayouts,
-      _In_reads_(NumSubresources) const UINT *pNumRows,
-      _In_reads_(NumSubresources) const UINT64 *pRowSizesInBytes,
-      _In_reads_(NumSubresources) const D3D12_SUBRESOURCE_DATA *pSrcData);
+      _In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA *pSrcData);
 
+   //--------------------------
    inline UINT64 UpdateSubresources(
       _In_ ID3D12GraphicsCommandList *pCmdList,
       _In_ ID3D12Resource *pDestinationResource,
@@ -144,13 +139,6 @@ protected:
       _In_range_(0, D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
       _In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) UINT NumSubresources,
       _In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA *pSrcData);
-
-   void MemcpySubresource(
-      _In_ const D3D12_MEMCPY_DEST *pDest,
-      _In_ const D3D12_SUBRESOURCE_DATA *pSrc,
-      SIZE_T RowSizeInBytes,
-      UINT NumRows,
-      UINT NumSlices);
 
    Microsoft::WRL::ComPtr <ID3D12Resource> matrixBufferUploadHeaps;
    Microsoft::WRL::ComPtr <ID3D12Resource> colorBufferUploadHeaps;
@@ -184,8 +172,11 @@ protected:
    Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
    Microsoft::WRL::ComPtr<ID2D1Bitmap1> x11d2dRenderTargets[bufferCount];
    Microsoft::WRL::ComPtr<ID2D1DeviceContext2> x11d2dDeviceContext;
+
+
    Microsoft::WRL::ComPtr<IDWriteTextFormat> x11d2dtextFormat;
    Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> x11d2dtextBrush;
+
    Microsoft::WRL::ComPtr<ID2D1Factory3> m_d2dFactory;
    Microsoft::WRL::ComPtr<ID2D1Device2> m_d2dDevice;
    Microsoft::WRL::ComPtr<IDWriteFactory> m_dWriteFactory;

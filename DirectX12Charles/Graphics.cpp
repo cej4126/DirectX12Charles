@@ -34,8 +34,6 @@ Graphics::Graphics(HWND hWnd, int width, int height)
    {
       LoadBase2D();
    }
-
-   LoadDWrite();
 }
 
 void Graphics::LoadDriveX12()
@@ -500,6 +498,10 @@ void Graphics::LoadDepentX12()
    readRange.End = 0;
    ThrowIfFailed(colorBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&colorBufferGPUAddress)));
 
+   //test
+   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
+
+
    // Now we execute the command list to upload the initial assets (triangle data)
    commandList->Close();
    ID3D12CommandList *ppCommandLists[] = { commandList.Get() };
@@ -555,20 +557,20 @@ void Graphics::LoadVertexBuffer()
       &resourceDesc,
       D3D12_RESOURCE_STATE_COPY_DEST,
       nullptr,
-      IID_PPV_ARGS(&vertexBuffer)));
-   vertexBuffer->SetName(L"vertexBuffer");
+      IID_PPV_ARGS(&vertexDefaultBuffer)));
+   vertexDefaultBuffer->SetName(L"vertex Default Buffer");
 
    // Upload heap
    heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
-
+ 
    ThrowIfFailed(device->CreateCommittedResource(
       &heapProps,
       D3D12_HEAP_FLAG_NONE,
       &resourceDesc,
       D3D12_RESOURCE_STATE_GENERIC_READ,
       nullptr,
-      IID_PPV_ARGS(&vertexUpload)));
-   vertexUpload->SetName(L"vertexUpload");
+      IID_PPV_ARGS(&vertexUploadBuffer)));
+   vertexUploadBuffer->SetName(L"vertex Upload Buffer");
 
    // copy data to the upload heap
    D3D12_SUBRESOURCE_DATA vertexData = {};
@@ -577,12 +579,9 @@ void Graphics::LoadVertexBuffer()
    vertexData.SlicePitch = vertexBufferSize;
 
    // Add the copy to the command list
-   UpdateSubresources(commandList.Get(),
-      vertexBuffer.Get(),
-      vertexUpload.Get(),
-      0,  // IntermediateOffset
-      0,  // FirstSubresource
-      1,  // NumSubresources
+   UpdateSubresource(
+      vertexDefaultBuffer.Get(),
+      vertexUploadBuffer.Get(),
       &vertexData); // pSrcData
 
    D3D12_RESOURCE_BARRIER resourceBarrier;
@@ -591,11 +590,11 @@ void Graphics::LoadVertexBuffer()
    resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
    resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
    resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-   resourceBarrier.Transition.pResource = vertexBuffer.Get();
+   resourceBarrier.Transition.pResource = vertexDefaultBuffer.Get();
    commandList->ResourceBarrier(1, &resourceBarrier);
 
    // create a vertex buffer view for the triangle. We get the GPU memory address to the vertex pointer using the GetGPUVirtualAddress() method
-   vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
+   vertexBufferView.BufferLocation = vertexDefaultBuffer->GetGPUVirtualAddress();
    vertexBufferView.StrideInBytes = sizeof(Vertex);
    vertexBufferView.SizeInBytes = vertexBufferSize;
 }
@@ -649,8 +648,8 @@ void Graphics::LoadIndexBuffer()
       &resourceDesc,
       D3D12_RESOURCE_STATE_COPY_DEST,
       nullptr,
-      IID_PPV_ARGS(&indexBuffer)));
-   indexBuffer->SetName(L"indexBuffer");
+      IID_PPV_ARGS(&indexDefaultBuffer)));
+   indexDefaultBuffer->SetName(L"index Default Buffer");
 
    // Upload heap
    heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
@@ -661,8 +660,8 @@ void Graphics::LoadIndexBuffer()
       &resourceDesc,
       D3D12_RESOURCE_STATE_GENERIC_READ,
       nullptr,
-      IID_PPV_ARGS(&indexUpload)));
-   indexUpload->SetName(L"indexUpload");
+      IID_PPV_ARGS(&indexUploadBuffer)));
+   indexUploadBuffer->SetName(L"index Upload Buffer");
 
    // copy data to the upload heap
    D3D12_SUBRESOURCE_DATA indexData = {};
@@ -670,13 +669,9 @@ void Graphics::LoadIndexBuffer()
    indexData.RowPitch = indicesBufferSize;
    indexData.SlicePitch = indicesBufferSize;
 
-   // Add the copy to the command list
-   UpdateSubresources(commandList.Get(),
-      indexBuffer.Get(),
-      indexUpload.Get(),
-      0,  // IntermediateOffset
-      0,  // FirstSubresource
-      1,  // NumSubresources
+   UpdateSubresource(
+      indexDefaultBuffer.Get(),
+      indexUploadBuffer.Get(),
       &indexData); // pSrcData
 
    D3D12_RESOURCE_BARRIER resourceBarrier;
@@ -685,58 +680,81 @@ void Graphics::LoadIndexBuffer()
    resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
    resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
    resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-   resourceBarrier.Transition.pResource = indexBuffer.Get();
+   resourceBarrier.Transition.pResource = indexDefaultBuffer.Get();
    commandList->ResourceBarrier(1, &resourceBarrier);
 
-   indexBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
+   indexBufferView.BufferLocation = indexDefaultBuffer->GetGPUVirtualAddress();
    //indexBufferView.Format = DXGI_FORMAT_R32_UINT;
    indexBufferView.Format = DXGI_FORMAT_R16_UINT;
    indexBufferView.SizeInBytes = indicesBufferSize;
 }
 
-
-//------------------------------------------------------------------------------------------------
-// All arrays must be populated (e.g. by calling GetCopyableFootprints)
-inline UINT64 Graphics::UpdateSubresources(
-   _In_ ID3D12GraphicsCommandList *pCmdList,
-   _In_ ID3D12Resource *pDestinationResource,
-   _In_ ID3D12Resource *pIntermediate,
-   _In_range_(0, D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
-   _In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) UINT NumSubresources,
-   UINT64 RequiredSize,
-   _In_reads_(NumSubresources) const D3D12_PLACED_SUBRESOURCE_FOOTPRINT *pLayouts,
-   _In_reads_(NumSubresources) const UINT *pNumRows,
-   _In_reads_(NumSubresources) const UINT64 *pRowSizesInBytes,
-   _In_reads_(NumSubresources) const D3D12_SUBRESOURCE_DATA *pSrcData)
+inline UINT64 Graphics::UpdateSubresource(
+   _In_ ID3D12Resource *pDefaultBuffer,
+   _In_ ID3D12Resource *pUploadBuffer,
+   _In_reads_(1) D3D12_SUBRESOURCE_DATA *pSrcData)
 {
-   // part 1
+   UINT64 RequiredSize = 0;
+   UINT64 MemToAlloc = static_cast<UINT64>(sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) + sizeof(UINT) + sizeof(UINT64));
+   if (MemToAlloc > SIZE_MAX)
+   {
+      return 0;
+   }
+   void *pMem = HeapAlloc(GetProcessHeap(), 0, static_cast<SIZE_T>(MemToAlloc));
+   if (pMem == NULL)
+   {
+      return 0;
+   }
+   D3D12_PLACED_SUBRESOURCE_FOOTPRINT *pLayouts = reinterpret_cast<D3D12_PLACED_SUBRESOURCE_FOOTPRINT *>(pMem);
+   UINT64 *pRowSizesInBytes = reinterpret_cast<UINT64 *>(pLayouts + 1);
+   UINT *pNumRows = reinterpret_cast<UINT *>(pRowSizesInBytes + 1);
 
-    // Minor validation
-   D3D12_RESOURCE_DESC IntermediateDesc = pIntermediate->GetDesc();
-   D3D12_RESOURCE_DESC DestinationDesc = pDestinationResource->GetDesc();
+   D3D12_RESOURCE_DESC Desc = pDefaultBuffer->GetDesc();
+   ID3D12Device *pDevice;
+   pDefaultBuffer->GetDevice(__uuidof(*pDevice), reinterpret_cast<void **>(&pDevice));
+   pDevice->GetCopyableFootprints(&Desc,
+      0,  // FirstSubresource,
+      1,  // NumSubresources,
+      0,  // IntermediateOffset,
+      pLayouts, pNumRows,
+      pRowSizesInBytes,
+      &RequiredSize);
+   pDevice->Release();
+
+   // Minor validation
+   D3D12_RESOURCE_DESC IntermediateDesc = pUploadBuffer->GetDesc();
+   D3D12_RESOURCE_DESC DestinationDesc = pDefaultBuffer->GetDesc();
    if (IntermediateDesc.Dimension != D3D12_RESOURCE_DIMENSION_BUFFER ||
       IntermediateDesc.Width < RequiredSize + pLayouts[0].Offset ||
-      RequiredSize >(SIZE_T) - 1 ||
-      (DestinationDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER &&
-         (FirstSubresource != 0 || NumSubresources != 1)))
+      RequiredSize >(SIZE_T) - 1)
    {
       return 0;
    }
 
    BYTE *pData;
-   HRESULT hr = pIntermediate->Map(0, NULL, reinterpret_cast<void **>(&pData));
+   HRESULT hr = pUploadBuffer->Map(0, NULL, reinterpret_cast<void **>(&pData));
    if (FAILED(hr))
    {
       return 0;
    }
 
-   for (UINT i = 0; i < NumSubresources; ++i)
+   if (pRowSizesInBytes[0] > (SIZE_T)-1)
    {
-      if (pRowSizesInBytes[i] > (SIZE_T)-1) return 0;
-      D3D12_MEMCPY_DEST DestData = { pData + pLayouts[i].Offset, pLayouts[i].Footprint.RowPitch, pLayouts[i].Footprint.RowPitch * pNumRows[i] };
-      MemcpySubresource(&DestData, &pSrcData[i], (SIZE_T)pRowSizesInBytes[i], pNumRows[i], pLayouts[i].Footprint.Depth);
+      return 0;
    }
-   pIntermediate->Unmap(0, NULL);
+   D3D12_MEMCPY_DEST DestData = { pData + pLayouts[0].Offset, pLayouts[0].Footprint.RowPitch, pLayouts[0].Footprint.RowPitch * pNumRows[0] };
+   for (UINT z = 0; z < pLayouts[0].Footprint.Depth; ++z)
+   {
+      BYTE *pDestSlice = reinterpret_cast<BYTE *>(DestData.pData) + DestData.SlicePitch * z;
+      const BYTE *pSrcSlice = reinterpret_cast<const BYTE *>(pSrcData[0].pData) + pSrcData[0].SlicePitch * z;
+      for (UINT y = 0; y < pNumRows[0]; ++y)
+      {
+         memcpy(pDestSlice + DestData.RowPitch * y,
+            pSrcSlice + pSrcData[0].RowPitch * y,
+            (SIZE_T)pRowSizesInBytes[0]);
+      }
+   }
+   pUploadBuffer->Unmap(0, NULL);
 
    if (DestinationDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER)
    {
@@ -749,86 +767,23 @@ inline UINT64 Graphics::UpdateSubresources(
       SrcBox.bottom = 1;
       SrcBox.back = 1;
 
-      pCmdList->CopyBufferRegion(
-         pDestinationResource, 0, pIntermediate, pLayouts[0].Offset, pLayouts[0].Footprint.Width);
+      commandList->CopyBufferRegion(
+         pDefaultBuffer, 0, pUploadBuffer, pLayouts[0].Offset, pLayouts[0].Footprint.Width);
    }
    else
    {
-      for (UINT i = 0; i < NumSubresources; ++i)
-      {
-         //CD3DX12_TEXTURE_COPY_LOCATION Dst(pDestinationResource, i + FirstSubresource);
-         D3D12_TEXTURE_COPY_LOCATION Dst = {};
-         Dst.pResource = pDestinationResource;
-         Dst.SubresourceIndex = i + FirstSubresource;
-         //CD3DX12_TEXTURE_COPY_LOCATION Src(pIntermediate, pLayouts[i]);
-         D3D12_TEXTURE_COPY_LOCATION Src = {};
-         Src.pResource = pIntermediate;
-         Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-         Src.PlacedFootprint = pLayouts[i];
-         pCmdList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
-      }
+      // Not used
+      D3D12_TEXTURE_COPY_LOCATION Dst = {};
+      Dst.pResource = pDefaultBuffer;
+      Dst.SubresourceIndex = 0;
+      D3D12_TEXTURE_COPY_LOCATION Src = {};
+      Src.pResource = pUploadBuffer;
+      Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+      Src.PlacedFootprint = pLayouts[0];
+      commandList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
    }
-   return RequiredSize;
-}
-
-//------------------------------------------------------------------------------------------------
-// Heap-allocating UpdateSubresources implementation
-inline UINT64 Graphics::UpdateSubresources(
-   _In_ ID3D12GraphicsCommandList *pCmdList,
-   _In_ ID3D12Resource *pDestinationResource,
-   _In_ ID3D12Resource *pIntermediate,
-   UINT64 IntermediateOffset,
-   _In_range_(0, D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
-   _In_range_(0, D3D12_REQ_SUBRESOURCES - FirstSubresource) UINT NumSubresources,
-   _In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA *pSrcData)
-{
-   // part 2
-
-   UINT64 RequiredSize = 0;
-   UINT64 MemToAlloc = static_cast<UINT64>(sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) + sizeof(UINT) + sizeof(UINT64)) * NumSubresources;
-   if (MemToAlloc > SIZE_MAX)
-   {
-      return 0;
-   }
-   void *pMem = HeapAlloc(GetProcessHeap(), 0, static_cast<SIZE_T>(MemToAlloc));
-   if (pMem == NULL)
-   {
-      return 0;
-   }
-   D3D12_PLACED_SUBRESOURCE_FOOTPRINT *pLayouts = reinterpret_cast<D3D12_PLACED_SUBRESOURCE_FOOTPRINT *>(pMem);
-   UINT64 *pRowSizesInBytes = reinterpret_cast<UINT64 *>(pLayouts + NumSubresources);
-   UINT *pNumRows = reinterpret_cast<UINT *>(pRowSizesInBytes + NumSubresources);
-
-   D3D12_RESOURCE_DESC Desc = pDestinationResource->GetDesc();
-   ID3D12Device *pDevice;
-   pDestinationResource->GetDevice(__uuidof(*pDevice), reinterpret_cast<void **>(&pDevice));
-   pDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, IntermediateOffset, pLayouts, pNumRows, pRowSizesInBytes, &RequiredSize);
-   pDevice->Release();
-
-   UINT64 Result = UpdateSubresources(pCmdList, pDestinationResource, pIntermediate, FirstSubresource, NumSubresources, RequiredSize, pLayouts, pNumRows, pRowSizesInBytes, pSrcData);
    HeapFree(GetProcessHeap(), 0, pMem);
-   return Result;
-}
-
-// Row-by-row memcpy
-inline void Graphics::MemcpySubresource(
-   _In_ const D3D12_MEMCPY_DEST *pDest,
-   _In_ const D3D12_SUBRESOURCE_DATA *pSrc,
-   SIZE_T RowSizeInBytes,
-   UINT NumRows,
-   UINT NumSlices)
-{
-   for (UINT z = 0; z < NumSlices; ++z)
-   {
-      BYTE *pDestSlice = reinterpret_cast<BYTE *>(pDest->pData) + pDest->SlicePitch * z;
-      const BYTE *pSrcSlice = reinterpret_cast<const BYTE *>(pSrc->pData) + pSrc->SlicePitch * z;
-      for (UINT y = 0; y < NumRows; ++y)
-      {
-         memcpy(pDestSlice + pDest->RowPitch * y,
-            pSrcSlice + pSrc->RowPitch * y,
-            RowSizeInBytes);
-      }
-   }
+   return RequiredSize;
 }
 
 void Graphics::LoadBaseX11()
@@ -891,8 +846,6 @@ void Graphics::LoadBaseX11()
 
    ThrowIfFailed(x11Device->CreateDepthStencilState(
       &depthDesc, &x11DepthStencilState));
-
-
 }
 
 void Graphics::LoadBase2D()
@@ -922,25 +875,6 @@ void Graphics::LoadBase2D()
          surface.Get(),
          &bitmapProperties,
          &x11d2dRenderTargets[i]));
-   }
-}
-
-void Graphics::LoadDWrite()
-{
-   if (DWriteFlag)
-   {
-      // DWrite
-      ThrowIfFailed(x11d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &x11d2dtextBrush));
-      ThrowIfFailed(m_dWriteFactory->CreateTextFormat(
-         L"Arial",
-         NULL,
-         DWRITE_FONT_WEIGHT_NORMAL,
-         DWRITE_FONT_STYLE_NORMAL,
-         DWRITE_FONT_STRETCH_NORMAL,
-         25,
-         L"en-us",
-         &x11d2dtextFormat
-      ));
    }
 }
 
@@ -1030,12 +964,12 @@ void Graphics::OnRenderX12(float angle)
    const float clearColor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
    commandList->ClearRenderTargetView(renderTargetDesc, clearColor, 0, nullptr);
    commandList->ClearDepthStencilView(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-   commandList->SetGraphicsRootSignature(rootSignature.Get());
 
    // Set necessary state.
    commandList->RSSetViewports(1, &viewport);
    commandList->RSSetScissorRects(1, &scissorRect);
 
+   commandList->SetGraphicsRootSignature(rootSignature.Get());
    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
    commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
    commandList->IASetIndexBuffer(&indexBufferView);
@@ -1054,7 +988,7 @@ void Graphics::OnRenderX12(float angle)
    commandList->SetGraphicsRootConstantBufferView(0,
       matrixBufferUploadHeaps->GetGPUVirtualAddress() + 0 * ConstantBufferPerObjectAlignedSize);
 
-   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
+   //memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
 
    commandList->SetGraphicsRootConstantBufferView(1,
       colorBufferUploadHeaps->GetGPUVirtualAddress() + 0 * ConstantBufferPerObjectAlignedSize);
@@ -1097,9 +1031,6 @@ void Graphics::OnRenderX11()
    // bind render target
    x11DeviceContext->OMSetRenderTargets(1u, x11Target[frameIndex].GetAddressOf(), nullptr);
 
-   // Set primitive topology to triangle list (groups of 3 vertices)
-   x11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
    x11DeviceContext->RSSetViewports(1u, &x11ViewPort);
 }
 
@@ -1107,33 +1038,37 @@ void Graphics::OnRender2DWrite()
 {
    // DWrite
 
-   D2D1_SIZE_F rtSize = x11d2dRenderTargets[frameIndex]->GetSize();
-   D2D1_RECT_F textRect = D2D1::RectF(20, 20, rtSize.width, rtSize.height);
-   static const WCHAR textx12[] = L"DirectX12";
-   static const WCHAR textx11[] = L"DirectX11";
+   //D2D1_SIZE_F rtSize = x11d2dRenderTargets[frameIndex]->GetSize();
+   //D2D1_RECT_F textRect = D2D1::RectF(20, 20, rtSize.width, rtSize.height);
+   //static const WCHAR textx12[] = L"DirectX12";
+   //static const WCHAR textx11[] = L"DirectX11";
 
    // Render text directly to the back buffer.
    x11d2dDeviceContext->SetTarget(x11d2dRenderTargets[frameIndex].Get());
-   x11d2dDeviceContext->BeginDraw();
-   x11d2dDeviceContext->SetTransform(D2D1::Matrix3x2F::Identity());
-   x11d2dDeviceContext->DrawText(
-      textx12,
-      _countof(textx12) - 1,
-      x11d2dtextFormat.Get(),
-      &textRect,
-      x11d2dtextBrush.Get()
-   );
+   //x11d2dDeviceContext->BeginDraw();
 
-   textRect.left = 800;
-   x11d2dDeviceContext->DrawText(
-      textx11,
-      _countof(textx11) - 1,
-      x11d2dtextFormat.Get(),
-      &textRect,
-      x11d2dtextBrush.Get()
-   );
+   //x11d2dDeviceContext->DrawRectangle(D2D1::RectF(5.0f, 5.0f, static_cast<FLOAT>(width)-5.0f, static_cast<FLOAT>(height) - 5.0f), x11d2dtextBrush.Get());
+   //x11d2dDeviceContext->DrawLine(D2D1::Point2F(static_cast<FLOAT>(width)/2.0f, 5.0f), D2D1::Point2F(static_cast<FLOAT>(width)/2.0f, static_cast<FLOAT>(height)- 5.0f), x11d2dtextBrush.Get());
 
-   ThrowIfFailed(x11d2dDeviceContext->EndDraw());
+   //x11d2dDeviceContext->SetTransform(D2D1::Matrix3x2F::Identity());
+   //x11d2dDeviceContext->DrawText(
+   //   textx12,
+   //   _countof(textx12) - 1,
+   //   x11d2dtextFormat.Get(),
+   //   &textRect,
+   //   x11d2dtextBrush.Get()
+   //);
+
+   //textRect.left = 800;
+   //x11d2dDeviceContext->DrawText(
+   //   textx11,
+   //   _countof(textx11) - 1,
+   //   x11d2dtextFormat.Get(),
+   //   &textRect,
+   //   x11d2dtextBrush.Get()
+   //);
+
+   //ThrowIfFailed(x11d2dDeviceContext->EndDraw());
 }
 
 void Graphics::CleanUp()
@@ -1157,9 +1092,4 @@ void Graphics::CleanUp()
          WaitForPreviousFrame();
       }
    }
-}
-
-void Graphics::DrawIndexed(UINT count) noexcept
-{
-   x11DeviceContext->DrawIndexed(count, 0u, 0u);
 }

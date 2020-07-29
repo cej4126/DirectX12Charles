@@ -11,7 +11,6 @@ void DrawX11::Draw(Graphics &gfx) const noexcept
    {
       b->Bind(gfx);
    }
-   gfx.DrawIndexed(indexCountDrawX11);
 }
 
 void DrawX11::AddBind(std::unique_ptr<BindableX11> bind) noexcept

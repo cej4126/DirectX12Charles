@@ -23,6 +23,5 @@ protected:
 
 private:
    virtual const std::vector<std::unique_ptr<BindableX11>> &GetStaticBinds() const noexcept = 0;
-   UINT indexCountDrawX11 = 36;
    std::vector<std::unique_ptr< BindableX11 >> binds;
 };

@@ -29,7 +29,7 @@ OneBoxX11::OneBoxX11(Graphics &gfx)
    verticesX11Desc.StructureByteStride = sizeof(VertexX11);
    D3D11_SUBRESOURCE_DATA verticeX11Data = {};
    verticeX11Data.pSysMem = verticesX11;
-   ThrowIfFailed(gfx.GetDevice()->CreateBuffer(&verticesX11Desc, &verticeX11Data, &x11VertexBuffer));
+   ThrowIfFailed(gfx.GetDeviceX11()->CreateBuffer(&verticesX11Desc, &verticeX11Data, &x11VertexBuffer));
 
    const unsigned short indicesX11Right[] =
    {
@@ -56,7 +56,7 @@ OneBoxX11::OneBoxX11(Graphics &gfx)
    indicesX11Desc.StructureByteStride = sizeof(unsigned short);
    D3D11_SUBRESOURCE_DATA indiceX11Data = {};
    indiceX11Data.pSysMem = indicesX11;
-   ThrowIfFailed(gfx.GetDevice()->CreateBuffer(&indicesX11Desc, &indiceX11Data, &x11IndexBuffer));
+   ThrowIfFailed(gfx.GetDeviceX11()->CreateBuffer(&indicesX11Desc, &indiceX11Data, &x11IndexBuffer));
    indiceX11Count = (UINT)std::size(indicesX11);
 
    // Constant Buffer Matrix
@@ -70,7 +70,7 @@ OneBoxX11::OneBoxX11(Graphics &gfx)
    cbd.StructureByteStride = 0u;
    D3D11_SUBRESOURCE_DATA csd = {};
    csd.pSysMem = &matrixBuffer;
-   ThrowIfFailed(gfx.GetDevice()->CreateBuffer(&cbd, &csd, &x11MatrixBuffer));
+   ThrowIfFailed(gfx.GetDeviceX11()->CreateBuffer(&cbd, &csd, &x11MatrixBuffer));
 
    // lookup table for cube face colors
    ConstantBufferColor cb =
@@ -103,17 +103,17 @@ OneBoxX11::OneBoxX11(Graphics &gfx)
    colorDesc.StructureByteStride = 0u;
    D3D11_SUBRESOURCE_DATA colorSub = {};
    colorSub.pSysMem = &colorBuffer;
-   ThrowIfFailed(gfx.GetDevice()->CreateBuffer(&colorDesc, &colorSub, &x11ColorBuffer));
+   ThrowIfFailed(gfx.GetDeviceX11()->CreateBuffer(&colorDesc, &colorSub, &x11ColorBuffer));
 
    // create pixel shader
    ComPtr<ID3DBlob> pBlobPixel;
    ThrowIfFailed(D3DReadFileToBlob(L"PixelShaderX11.cso", &pBlobPixel));
-   ThrowIfFailed(gfx.GetDevice()->CreatePixelShader(pBlobPixel->GetBufferPointer(), pBlobPixel->GetBufferSize(), nullptr, &x11PixelShader));
+   ThrowIfFailed(gfx.GetDeviceX11()->CreatePixelShader(pBlobPixel->GetBufferPointer(), pBlobPixel->GetBufferSize(), nullptr, &x11PixelShader));
 
    // create vertex shader
    ComPtr<ID3DBlob> pBlobVertex;
    ThrowIfFailed(D3DReadFileToBlob(L"VertexShaderX11.cso", &pBlobVertex));
-   ThrowIfFailed(gfx.GetDevice()->CreateVertexShader(pBlobVertex->GetBufferPointer(), pBlobVertex->GetBufferSize(), nullptr, &x11VertexShader));
+   ThrowIfFailed(gfx.GetDeviceX11()->CreateVertexShader(pBlobVertex->GetBufferPointer(), pBlobVertex->GetBufferSize(), nullptr, &x11VertexShader));
 
    // input (vertex) layout
    const D3D11_INPUT_ELEMENT_DESC ied[] =
@@ -121,7 +121,7 @@ OneBoxX11::OneBoxX11(Graphics &gfx)
       { "POSITIONX", 0, DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA, 0 },
    };
 
-   ThrowIfFailed(gfx.GetDevice()->CreateInputLayout(
+   ThrowIfFailed(gfx.GetDeviceX11()->CreateInputLayout(
       ied, (UINT)std::size(ied),
       pBlobVertex->GetBufferPointer(),
       pBlobVertex->GetBufferSize(),
@@ -138,9 +138,9 @@ void OneBoxX11::Draw()
    // Bind vertex buffer to pipeline
    const UINT stride = sizeof(VertexX11);
    const UINT offset = 0u;
-   gfx.GetContext()->IASetVertexBuffers(0u, 1u, x11VertexBuffer.GetAddressOf(), &stride, &offset);
+   gfx.GetContextX11()->IASetVertexBuffers(0u, 1u, x11VertexBuffer.GetAddressOf(), &stride, &offset);
 
-   gfx.GetContext()->IASetIndexBuffer(x11IndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
+   gfx.GetContextX11()->IASetIndexBuffer(x11IndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
 
    float offsetx = 5.0f;
    float offsety = 3.0f;
@@ -152,32 +152,35 @@ void OneBoxX11::Draw()
       XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 10.0f));
 
    D3D11_MAPPED_SUBRESOURCE msr;
-   ThrowIfFailed(gfx.GetContext()->Map(
+   ThrowIfFailed(gfx.GetContextX11()->Map(
       x11MatrixBuffer.Get(), 0u,
       D3D11_MAP_WRITE_DISCARD, 0u,
       &msr
    ));
    memcpy(msr.pData, &matrixBuffer, sizeof(matrixBuffer));
-   gfx.GetContext()->Unmap(x11MatrixBuffer.Get(), 0u);
-   gfx.GetContext()->VSSetConstantBuffers(0u, 1u, x11MatrixBuffer.GetAddressOf());
+   gfx.GetContextX11()->Unmap(x11MatrixBuffer.Get(), 0u);
+   gfx.GetContextX11()->VSSetConstantBuffers(0u, 1u, x11MatrixBuffer.GetAddressOf());
 
    D3D11_MAPPED_SUBRESOURCE msrColor;
-   ThrowIfFailed(gfx.GetContext()->Map(
+   ThrowIfFailed(gfx.GetContextX11()->Map(
       x11ColorBuffer.Get(), 0u,
       D3D11_MAP_WRITE_DISCARD, 0u,
       &msrColor
    ));
    memcpy(msrColor.pData, &colorBuffer, sizeof(colorBuffer));
-   gfx.GetContext()->Unmap(x11ColorBuffer.Get(), 0u);
-   gfx.GetContext()->PSSetConstantBuffers(0u, 1u, x11ColorBuffer.GetAddressOf());
+   gfx.GetContextX11()->Unmap(x11ColorBuffer.Get(), 0u);
+   gfx.GetContextX11()->PSSetConstantBuffers(0u, 1u, x11ColorBuffer.GetAddressOf());
 
    // bind pixel shader
-   gfx.GetContext()->PSSetShader(x11PixelShader.Get(), nullptr, 0u);
+   gfx.GetContextX11()->PSSetShader(x11PixelShader.Get(), nullptr, 0u);
 
    // bind vertex shader
-   gfx.GetContext()->VSSetShader(x11VertexShader.Get(), nullptr, 0u);
+   gfx.GetContextX11()->VSSetShader(x11VertexShader.Get(), nullptr, 0u);
 
-   gfx.GetContext()->IASetInputLayout(x11InputLayout.Get());
+   gfx.GetContextX11()->IASetInputLayout(x11InputLayout.Get());
 
-   gfx.GetContext()->DrawIndexed(indiceX11Count, 0u, 0u);
+   // Set primitive topology to triangle list (groups of 3 vertices)
+   gfx.GetContextX11()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+   gfx.GetContextX11()->DrawIndexed(indiceX11Count, 0u, 0u);
 }

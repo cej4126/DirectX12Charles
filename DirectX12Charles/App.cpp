@@ -12,6 +12,8 @@ App::App()
 
    lastTime = std::chrono::steady_clock::now();
 
+   dwriteitem = std::make_unique<dwritedraw>(wnd.Gfx());
+   
    box = std::make_unique<OneBoxX11>(wnd.Gfx());
 
    for (auto i = 0; i < 4; i++)
@@ -64,6 +66,7 @@ void App::DoFrame()
 
    wnd.Gfx().OnRender();
 
+   dwriteitem->Draw();
    box->Update(dt);
    box->Draw();
 
