@@ -1,5 +1,4 @@
 #include "App.h"
-#include "BoxX11.h"
 
 App::App()
    :
@@ -14,13 +13,19 @@ App::App()
 
    dwriteitem = std::make_unique<dwritedraw>(wnd.Gfx());
    
-   box = std::make_unique<OneBoxX11>(wnd.Gfx());
+   boxX11 = std::make_unique<OneBoxX11>(wnd.Gfx());
+   boxX12 = std::make_unique<OneBoxX12>(wnd.Gfx());
+
+   //wnd.Gfx().OneBoxX12LoadDepend_A();
 
    for (auto i = 0; i < 4; i++)
    {
       float range = rangedist(rng);
-      boxes.push_back(std::make_unique<BoxX11>(wnd.Gfx(), range));
+      boxesX11.push_back(std::make_unique<BoxX11>(wnd.Gfx(), range));
    }
+
+   wnd.Gfx().RunCommandList();
+
    wnd.Gfx().SetProjectionX11(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
 }
 
@@ -62,20 +67,32 @@ void App::DoFrame()
 {
    auto dt = TimeMark();
 
-   wnd.Gfx().OnRenderBegin(dt);
+   wnd.Gfx().OnRenderBegin();
 
    wnd.Gfx().OnRender();
 
-   dwriteitem->Draw();
-   box->Update(dt);
-   box->Draw();
+   //wnd.Gfx().OneBoxX12Update(dt);
+   //wnd.Gfx().OneBoxX12LoadConstant();
+   //wnd.Gfx().OneBoxX12Draw();
+   boxX12->Update(dt);
+   boxX12->Draw();
+   boxX12->LoadConstant();
 
-   for (auto &b : boxes)
+   dwriteitem->Draw();
+   boxX11->Update(dt);
+   boxX11->Draw();
+
+   //boxX12->Update(dt);
+   //boxX12->Draw();
+   //boxX12->LoadConstant();
+
+
+   wnd.Gfx().DrawCommandList();
+   for (auto &b : boxesX11)
    {
       b->Update(dt);
       b->Draw(wnd.Gfx());
    }
-
    wnd.Gfx().OnRenderEnd();
 
 }

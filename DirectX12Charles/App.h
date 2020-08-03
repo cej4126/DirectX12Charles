@@ -4,6 +4,7 @@
 #include "dwritedraw.h"
 #include "BoxX11.h"
 #include "OneBoxX11.h"
+#include "OneBoxX12.h"
 
 class App
 {
@@ -21,7 +22,9 @@ private:
 private:
    std::chrono::steady_clock::time_point lastTime;
    std::unique_ptr< class dwritedraw> dwriteitem;
-   std::vector<std::unique_ptr<class BoxX11>> boxes;
-   std::unique_ptr<class OneBoxX11 > box;
+   std::vector<std::unique_ptr<class BoxX11>> boxesX11;
+   std::unique_ptr<class OneBoxX11 > boxX11;
+
+   std::unique_ptr<class OneBoxX12 > boxX12;
 };
 

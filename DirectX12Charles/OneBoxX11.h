@@ -10,6 +10,8 @@ public:
 
 private:
    Graphics &gfx;
+   ID3D11Device *device;
+   ID3D11DeviceContext *context;
 
    struct VertexX11
    {
@@ -38,7 +40,7 @@ private:
          float a;
       } face_colors[6];
    };
-   struct ConstantBufferColor colorBuffer;
+   struct ConstantBufferColor colorBuffer = { 0.0 };
 
    float angle = 0.0f;
 
