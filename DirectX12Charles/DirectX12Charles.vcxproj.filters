@@ -45,9 +45,6 @@
     <ClInclude Include="ObjectX11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DrawBaseX11.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TransformX11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -58,6 +55,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OneBoxX12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawX12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BindableX12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -99,6 +105,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="OneBoxX12.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawX12.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BindableX12.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

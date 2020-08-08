@@ -1,4 +1,5 @@
 #include "BoxX11.h"
+#include "Geometry.h"
 using namespace std;
 
 BoxX11::BoxX11(Graphics &gfx, float range)
@@ -24,36 +25,45 @@ BoxX11::BoxX11(Graphics &gfx, float range)
    spacePitchRate = rand1_3pi(gen);
    spaceYawRate = rand1_3pi(gen);
 
+#ifdef FIX_ROTATION
+   boxRoll = 0.0f * 3.1415f;
+   boxPitch = 0.0 * 3.1415f;
+   boxYaw = 0.0f * 3.1415f;
+   boxRollRate = 0.0f;
+   boxPitchRate = 0.5f;
+   boxYawRate = 0.1f;
+
+   spaceRoll = 0.0f;
+   spacePitch = 0.0f;
+   spaceYaw = 0.0f;
+   spaceRollRate = 0.0f;
+   spacePitchRate = 0.0f;
+   spaceYawRate = 0.0f;
+#endif
+
+
+
    if (!isStaticSet())
    {
       std::unique_ptr < ObjectX11 > object = std::make_unique<ObjectX11>(gfx);
 
-      // Vertices
-      const std::vector<Vertex> vertices =
+      struct Vertex
       {
-         { -1.0f,-1.0f,-1.0f },
-         { 1.0f,-1.0f,-1.0f },
-         { -1.0f,1.0f,-1.0f },
-         { 1.0f,1.0f,-1.0f },
-         { -1.0f,-1.0f,1.0f },
-         { 1.0f,-1.0f,1.0f },
-         { -1.0f,1.0f,1.0f },
-         { 1.0f,1.0f,1.0f },
+         XMFLOAT3 pos;
       };
+      //auto model = Cube::Make<Vertex>();
+      //auto model = Plane::Make<Vertex>();
+      //auto model = Cylinder::Make<Vertex>();
+      //auto model = Cone::Make<Vertex>();
+      auto model = Prism::Make<Vertex>();
+      //auto model = Sphere::Make<Vertex>();
 
-      object->AddVertexBuffer(vertices);
+      model.Transform(XMMatrixScaling(1.0f, 1.0f, 1.0f));
 
-      // indies
-      const std::vector<unsigned short> indices =
-      {
-         0,2,1, 2,3,1,
-         1,3,5, 3,7,5,
-         2,6,3, 3,6,7,
-         4,5,7, 4,7,6,
-         0,4,2, 2,4,6,
-         0,1,4, 1,5,4
-      };
-      object->AddIndexBuffer(indices);
+      object->AddVertexBuffer(model.vectices);
+
+      object->AddIndexBuffer(model.indices);
+
       object->AddShaders(L"VertexShaderX11.cso", L"PixelShaderX11.cso");
 
       struct ConstantBuffer2
@@ -65,7 +75,7 @@ BoxX11::BoxX11(Graphics &gfx, float range)
             float b;
             float a;
          } face_colors[6];
-      };
+   };
       const ConstantBuffer2 cb2 =
       {
          {
@@ -88,7 +98,7 @@ BoxX11::BoxX11(Graphics &gfx, float range)
       };
       object->AddInputLayout(ied);
 
-      addStaticBind(std::move(object), (UINT)indices.size());
+      addStaticBind(std::move(object), (UINT)model.indices.size());
    }
 
    std::unique_ptr < TransformX11 > trans = std::make_unique<TransformX11>(gfx, *this);
@@ -109,8 +119,14 @@ void BoxX11::Update(float dt) noexcept
 
 XMMATRIX BoxX11::GetTransformXM() const noexcept
 {
+#ifndef FIX_ROTATION
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *
       DirectX::XMMatrixRotationRollPitchYaw(spacePitch, spaceYaw, spaceRoll) *
       DirectX::XMMatrixTranslation(8.0f, -4.0f, 20.0f);
+#else
+   return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
+      DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f) *
+      DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
+#endif
 }

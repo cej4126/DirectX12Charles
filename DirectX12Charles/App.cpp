@@ -19,6 +19,7 @@ App::App()
    //wnd.Gfx().OneBoxX12LoadDepend_A();
 
    for (auto i = 0; i < 4; i++)
+   //for (auto i = 0; i < 1; i++)
    {
       float range = rangedist(rng);
       boxesX11.push_back(std::make_unique<BoxX11>(wnd.Gfx(), range));
@@ -71,9 +72,6 @@ void App::DoFrame()
 
    wnd.Gfx().OnRender();
 
-   //wnd.Gfx().OneBoxX12Update(dt);
-   //wnd.Gfx().OneBoxX12LoadConstant();
-   //wnd.Gfx().OneBoxX12Draw();
    boxX12->Update(dt);
    boxX12->Draw();
    boxX12->LoadConstant();
@@ -81,11 +79,6 @@ void App::DoFrame()
    dwriteitem->Draw();
    boxX11->Update(dt);
    boxX11->Draw();
-
-   //boxX12->Update(dt);
-   //boxX12->Draw();
-   //boxX12->LoadConstant();
-
 
    wnd.Gfx().DrawCommandList();
    for (auto &b : boxesX11)

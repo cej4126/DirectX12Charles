@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-#include "DrawBaseX11.h"
+#include "DrawX11.h"
 #include "ObjectX11.h"
 #include "TransformX11.h"
 
@@ -12,16 +12,6 @@ public:
    XMMATRIX GetTransformXM() const noexcept override;
 
 private:
-   struct Vertex
-   {
-      struct
-      {
-         float x;
-         float y;
-         float z;
-      } pos;
-   };
-
    BindableX11 *object = nullptr;
    float range = 0;
 
