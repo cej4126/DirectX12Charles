@@ -13,16 +13,6 @@ private:
    ID3D11Device *device;
    ID3D11DeviceContext *context;
 
-   struct VertexX11
-   {
-      struct
-      {
-         float x;
-         float y;
-         float z;
-      } pos;
-   };
-
    struct MatrixBufferType
    {
       XMMATRIX transform;
@@ -53,5 +43,6 @@ private:
    Microsoft::WRL::ComPtr<ID3D11InputLayout> x11InputLayout;
 
    UINT indiceX11Count;
+   UINT vertexStride;
 };
 

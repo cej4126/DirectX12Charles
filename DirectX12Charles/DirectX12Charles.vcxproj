@@ -144,6 +144,7 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="BindableX11.h" />
     <ClInclude Include="BindableX12.h" />
+    <ClInclude Include="BoxX12.h" />
     <ClInclude Include="BoxX11.h" />
     <ClInclude Include="DrawX11.h" />
     <ClInclude Include="DrawX12.h" />
@@ -152,16 +153,19 @@
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="ObjectX11.h" />
+    <ClInclude Include="ObjectX12.h" />
     <ClInclude Include="OneBoxX11.h" />
     <ClInclude Include="OneBoxX12.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TransformX11.h" />
+    <ClInclude Include="TransformX12.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="BindableX11.cpp" />
     <ClCompile Include="BindableX12.cpp" />
+    <ClCompile Include="BoxX12.cpp" />
     <ClCompile Include="BoxX11.cpp" />
     <ClCompile Include="DrawX11.cpp" />
     <ClCompile Include="DrawX12.cpp" />
@@ -170,9 +174,11 @@
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="ObjectX11.cpp" />
+    <ClCompile Include="ObjectX12.cpp" />
     <ClCompile Include="OneBoxX11.cpp" />
     <ClCompile Include="OneBoxX12.cpp" />
     <ClCompile Include="TransformX11.cpp" />
+    <ClCompile Include="TransformX12.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>

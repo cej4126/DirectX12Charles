@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "OneBoxX11.h"
+#include "Geometry.h"
 using namespace Microsoft::WRL;
 
 OneBoxX11::OneBoxX11(Graphics &gfx)
@@ -8,58 +9,37 @@ OneBoxX11::OneBoxX11(Graphics &gfx)
    device(gfx.GetDeviceX11()),
    context(gfx.GetContextX11())
 {
-   // create vertex buffer
-   const VertexX11 verticesX11[] =
+   struct Vertex
    {
-      { -1.0f, -1.0f, -1.0f },
-      {  1.0f, -1.0f, -1.0f },
-      { -1.0f,  1.0f, -1.0f },
-      {  1.0f,  1.0f, -1.0f },
-
-      { -1.0f, -1.0f,  1.0f },
-      {  1.0f, -1.0f,  1.0f },
-      { -1.0f,  1.0f,  1.0f },
-      {  1.0f,  1.0f,  1.0f },
+      XMFLOAT3 pos;
    };
+   auto model = Cube::Make<Vertex>();
+
+   vertexStride = sizeof(Vertex);
 
    D3D11_BUFFER_DESC verticesX11Desc = {};
    verticesX11Desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
    verticesX11Desc.Usage = D3D11_USAGE_DEFAULT;
    verticesX11Desc.CPUAccessFlags = 0u;
    verticesX11Desc.MiscFlags = 0u;
-   verticesX11Desc.ByteWidth = sizeof(verticesX11);
-   verticesX11Desc.StructureByteStride = sizeof(VertexX11);
+   verticesX11Desc.ByteWidth = UINT(sizeof(Vertex) * model.vertices.size());
+   verticesX11Desc.StructureByteStride = sizeof(Vertex);
    D3D11_SUBRESOURCE_DATA verticeX11Data = {};
-   verticeX11Data.pSysMem = verticesX11;
+   verticeX11Data.pSysMem = model.vertices.data();
    ThrowIfFailed(device->CreateBuffer(&verticesX11Desc, &verticeX11Data, &x11VertexBuffer));
 
-   const unsigned short indicesX11Right[] =
-   {
-      0,2,1, 2,3,1,  // Back Face
-      1,3,5, 3,7,5,  // Left Face
-      2,6,3, 3,6,7,  // Top Face
-      4,5,7, 4,7,6,  // Front Face
-      0,4,2, 2,4,6,  // Right Face
-      0,1,4, 1,5,4   // Bottom Face
-   };
-
-   unsigned short indicesX11[36];
-   for (int i = 0; i < 36; i++)
-   {
-      indicesX11[i] = indicesX11Right[i];
-   }
+   indiceX11Count = (UINT)model.indices.size();
 
    D3D11_BUFFER_DESC indicesX11Desc = {};
    indicesX11Desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
    indicesX11Desc.Usage = D3D11_USAGE_DEFAULT;
    indicesX11Desc.CPUAccessFlags = 0u;
    indicesX11Desc.MiscFlags = 0u;
-   indicesX11Desc.ByteWidth = sizeof(indicesX11);
+   indicesX11Desc.ByteWidth = indiceX11Count * sizeof(unsigned short);
    indicesX11Desc.StructureByteStride = sizeof(unsigned short);
    D3D11_SUBRESOURCE_DATA indiceX11Data = {};
-   indiceX11Data.pSysMem = indicesX11;
+   indiceX11Data.pSysMem = model.indices.data();
    ThrowIfFailed(device->CreateBuffer(&indicesX11Desc, &indiceX11Data, &x11IndexBuffer));
-   indiceX11Count = (UINT)std::size(indicesX11);
 
    // Constant Buffer Matrix
    matrixBuffer.transform = XMMatrixIdentity();
@@ -138,9 +118,8 @@ void OneBoxX11::Update(float dt)
 void OneBoxX11::Draw()
 {
    // Bind vertex buffer to pipeline
-   const UINT stride = sizeof(VertexX11);
    const UINT offset = 0u;
-   context->IASetVertexBuffers(0u, 1u, x11VertexBuffer.GetAddressOf(), &stride, &offset);
+   context->IASetVertexBuffers(0u, 1u, x11VertexBuffer.GetAddressOf(), &vertexStride, &offset);
 
    context->IASetIndexBuffer(x11IndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
 

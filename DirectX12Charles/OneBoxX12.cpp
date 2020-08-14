@@ -1,5 +1,5 @@
 #include "OneBoxX12.h"
-
+#include "Geometry.h"
 using namespace Microsoft::WRL;
 
 OneBoxX12::OneBoxX12(Graphics &gfx)
@@ -10,12 +10,12 @@ OneBoxX12::OneBoxX12(Graphics &gfx)
 {
    LoadDepend();
 }
+
 void OneBoxX12::LoadDepend()
 {
    CreateRootSignature();
    CreateShader();
-   LoadVertexBuffer();
-   LoadIndexBuffer();
+   LoadDrawBuffer();
    CreatePipelineState();
    CreateConstant();
 }
@@ -44,6 +44,8 @@ void OneBoxX12::Draw()
    commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
    commandList->IASetIndexBuffer(&indexBufferView);
 
+   int ConstantBufferPerObjectAlignedSize = (sizeof(XMMATRIX) + 255) & ~255;
+
    commandList->SetGraphicsRootConstantBufferView(0,
       matrixBufferUploadHeaps->GetGPUVirtualAddress() + 0 * ConstantBufferPerObjectAlignedSize);
 
@@ -55,6 +57,7 @@ void OneBoxX12::Draw()
 
 void OneBoxX12::LoadConstant()
 {
+   int ConstantBufferPerObjectAlignedSize = (sizeof(matrixBuffer) + 255) & ~255;
    memcpy(matrixBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &matrixBuffer, sizeof(matrixBuffer));
 }
 
@@ -99,23 +102,15 @@ void OneBoxX12::CreateRootSignature()
       signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
 }
 
-void OneBoxX12::LoadVertexBuffer()
+void OneBoxX12::LoadDrawBuffer()
 {
-   // Define the geometry for a triangle.
-   Vertex verticesX12[] =
+   struct Vertex
    {
-      { -1.0f, -1.0f, -1.0f },
-      {  1.0f, -1.0f, -1.0f },
-      { -1.0f,  1.0f, -1.0f },
-      {  1.0f,  1.0f, -1.0f },
-
-      { -1.0f, -1.0f,  1.0f },
-      {  1.0f, -1.0f,  1.0f },
-      { -1.0f,  1.0f,  1.0f },
-      {  1.0f,  1.0f,  1.0f },
+      XMFLOAT3 pos;
    };
-   const UINT vertexCount = (UINT)std::size(verticesX12);
-   const UINT vertexBufferSize = sizeof(verticesX12);
+   auto model = Cube::Make<Vertex>();
+
+   const UINT vertexBufferSize = (UINT)(sizeof(Vertex) * model.vertices.size());
 
    D3D12_HEAP_PROPERTIES heapProps;
    ZeroMemory(&heapProps, sizeof(heapProps));
@@ -160,7 +155,7 @@ void OneBoxX12::LoadVertexBuffer()
 
    // copy data to the upload heap
    D3D12_SUBRESOURCE_DATA vertexData = {};
-   vertexData.pData = reinterpret_cast<BYTE *>(verticesX12);
+   vertexData.pData = model.vertices.data(); //reinterpret_cast<BYTE *>(
    vertexData.RowPitch = vertexBufferSize;
    vertexData.SlicePitch = vertexBufferSize;
 
@@ -183,30 +178,10 @@ void OneBoxX12::LoadVertexBuffer()
    vertexBufferView.BufferLocation = vertexDefaultBuffer->GetGPUVirtualAddress();
    vertexBufferView.StrideInBytes = sizeof(Vertex);
    vertexBufferView.SizeInBytes = vertexBufferSize;
-}
 
-void OneBoxX12::LoadIndexBuffer()
-{
-   const unsigned short indicesX12Right[] =
-   {
-      0,2,1, 2,3,1,  // Back Face
-      1,3,5, 3,7,5,  // Left Face
-      2,6,3, 3,6,7,  // Top Face
-      4,5,7, 4,7,6,  // Front Face
-      0,4,2, 2,4,6,  // Right Face
-      0,1,4, 1,5,4   // Bottom Face
-   };
+   indicesCount = (UINT)model.indices.size();
+   const UINT indicesBufferSize = (UINT)(sizeof(unsigned short) * model.indices.size());
 
-   unsigned short indicesX12[36];
-   for (int i = 0; i < 36; i++)
-   {
-      indicesX12[i] = indicesX12Right[i];
-   }
-
-   indicesCount = (UINT)std::size(indicesX12);
-   const UINT indicesBufferSize = sizeof(indicesX12);
-
-   D3D12_HEAP_PROPERTIES heapProps;
    ZeroMemory(&heapProps, sizeof(heapProps));
    heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
    heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -214,7 +189,6 @@ void OneBoxX12::LoadIndexBuffer()
    heapProps.CreationNodeMask = 1;
    heapProps.VisibleNodeMask = 1;
 
-   D3D12_RESOURCE_DESC resourceDesc;
    ZeroMemory(&resourceDesc, sizeof(resourceDesc));
    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
    resourceDesc.Alignment = 0;
@@ -251,7 +225,7 @@ void OneBoxX12::LoadIndexBuffer()
 
    // copy data to the upload heap
    D3D12_SUBRESOURCE_DATA indexData = {};
-   indexData.pData = reinterpret_cast<BYTE *>(indicesX12);
+   indexData.pData = model.indices.data(); // reinterpret_cast<BYTE *>(indicesX12);
    indexData.RowPitch = indicesBufferSize;
    indexData.SlicePitch = indicesBufferSize;
 
@@ -260,7 +234,6 @@ void OneBoxX12::LoadIndexBuffer()
       indexUploadBuffer.Get(),
       &indexData); // pSrcData
 
-   D3D12_RESOURCE_BARRIER resourceBarrier;
    resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
    resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
    resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
@@ -363,7 +336,7 @@ void OneBoxX12::CreateConstant()
    readRange.Begin = 1;
    readRange.End = 0;
    ThrowIfFailed(colorBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&colorBufferGPUAddress)));
-
+   int ConstantBufferPerObjectAlignedSize = (sizeof(ConstantBufferColor) + 255) & ~255;
    memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
 }
 

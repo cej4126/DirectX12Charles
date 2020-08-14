@@ -13,7 +13,7 @@ public:
 
 private:
    BindableX11 *object = nullptr;
-   float range = 0;
+   float range = 0.0f;
 
    float boxRoll;
    float boxPitch;

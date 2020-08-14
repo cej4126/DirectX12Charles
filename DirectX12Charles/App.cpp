@@ -12,14 +12,20 @@ App::App()
    lastTime = std::chrono::steady_clock::now();
 
    dwriteitem = std::make_unique<dwritedraw>(wnd.Gfx());
-   
+
    boxX11 = std::make_unique<OneBoxX11>(wnd.Gfx());
    boxX12 = std::make_unique<OneBoxX12>(wnd.Gfx());
 
-   //wnd.Gfx().OneBoxX12LoadDepend_A();
+   int MaxBoxX12Count = 4;
+   for (auto i = 0; i < MaxBoxX12Count; i++)
+   {
+      float range = rangedist(rng);
+      boxesX12.push_back(std::make_unique<BoxX12>(wnd.Gfx(), range));
+   }
+   wnd.Gfx().CreateMatrixConstantX12(MaxBoxX12Count);
 
-   for (auto i = 0; i < 4; i++)
-   //for (auto i = 0; i < 1; i++)
+   int MaxBoxX11Count = 4;
+   for (auto i = 0; i < MaxBoxX11Count; i++)
    {
       float range = rangedist(rng);
       boxesX11.push_back(std::make_unique<BoxX11>(wnd.Gfx(), range));
@@ -28,6 +34,7 @@ App::App()
    wnd.Gfx().RunCommandList();
 
    wnd.Gfx().SetProjectionX11(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
+   wnd.Gfx().SetProjectionX12(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
 }
 
 int App::Go()
@@ -76,11 +83,20 @@ void App::DoFrame()
    boxX12->Draw();
    boxX12->LoadConstant();
 
+   int index = 0;
+   for (auto &b : boxesX12)
+   {
+      b->Update(dt);
+      b->Draw(wnd.Gfx(), index);
+      ++index;
+   }
+
    dwriteitem->Draw();
    boxX11->Update(dt);
    boxX11->Draw();
 
    wnd.Gfx().DrawCommandList();
+
    for (auto &b : boxesX11)
    {
       b->Update(dt);

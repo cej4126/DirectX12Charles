@@ -51,16 +51,14 @@ BoxX11::BoxX11(Graphics &gfx, float range)
       {
          XMFLOAT3 pos;
       };
-      //auto model = Cube::Make<Vertex>();
+      auto model = Cube::Make<Vertex>();
       //auto model = Plane::Make<Vertex>();
       //auto model = Cylinder::Make<Vertex>();
       //auto model = Cone::Make<Vertex>();
-      auto model = Prism::Make<Vertex>();
+      //auto model = Prism::Make<Vertex>();
       //auto model = Sphere::Make<Vertex>();
 
-      model.Transform(XMMatrixScaling(1.0f, 1.0f, 1.0f));
-
-      object->AddVertexBuffer(model.vectices);
+      object->AddVertexBuffer(model.vertices);
 
       object->AddIndexBuffer(model.indices);
 
@@ -75,7 +73,7 @@ BoxX11::BoxX11(Graphics &gfx, float range)
             float b;
             float a;
          } face_colors[6];
-   };
+      };
       const ConstantBuffer2 cb2 =
       {
          {

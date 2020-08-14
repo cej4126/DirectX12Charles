@@ -13,12 +13,24 @@ public:
    Graphics &operator=(const Graphics &) = delete;
    ~Graphics() = default;
 
+   struct MatrixBufferType
+   {
+      XMMATRIX transform;
+   };
+   MatrixBufferType matrixBuffer;
+   int ConstantBufferPerObjectAlignedSize = (sizeof(matrixBuffer) + 255) & ~255;
+
+
    void RunCommandList();
    void OnRenderBegin();
    void OnRender();
    void DrawCommandList();
    void OnRenderEnd();
    void CleanUp();
+
+
+   void CreateMatrixConstantX12(UINT count);
+   void SetMatrixConstantX12(UINT index, XMMATRIX matrix) noexcept;
 
    UINT64 UpdateSubresource(
       _In_ ID3D12Resource *pDestinationResource,
@@ -28,8 +40,11 @@ public:
    ID3D12Device *GetDeviceX12() noexcept { return device.Get(); }
    ID3D12GraphicsCommandList *GetCommandListX12() noexcept { return commandList.Get(); }
 
-   void SetProjectionX11(FXMMATRIX proj) noexcept { projection = proj; }
-   XMMATRIX GetProjectionX11() const noexcept { return projection; }
+   void SetProjectionX11(FXMMATRIX proj) noexcept { projectionX11 = proj; }
+   XMMATRIX GetProjectionX11() const noexcept { return projectionX11; }
+
+   void SetProjectionX12(FXMMATRIX proj) noexcept { projectionX12 = proj; }
+   XMMATRIX GetProjectionX12() const noexcept { return projectionX12; }
 
    ID3D11DeviceContext *GetContextX11() noexcept { return x11DeviceContext.Get(); }
    ID3D11Device *GetDeviceX11() noexcept { return x11Device.Get(); }
@@ -56,6 +71,10 @@ private:
    void LoadBase2D();
    void OnRender2DWrite();
 
+private:
+   Microsoft::WRL::ComPtr <ID3D12Resource> MatrixBufferUploadHeaps;
+   UINT8 *matrixBufferGPUAddress;
+
 protected:
    static const UINT bufferCount = 3;
 
@@ -64,7 +83,8 @@ protected:
    float aspectRatio;
    HWND hWnd;
 
-   XMMATRIX projection;
+   XMMATRIX projectionX11;
+   XMMATRIX projectionX12;
 
    Microsoft::WRL::ComPtr <IDXGIFactory4> m_DxgiFactory4;
    Microsoft::WRL::ComPtr <IDXGIAdapter3> adapter;
@@ -113,5 +133,6 @@ protected:
    Microsoft::WRL::ComPtr<ID2D1Factory3> m_d2dFactory;
    Microsoft::WRL::ComPtr<ID2D1Device2> m_d2dDevice;
    Microsoft::WRL::ComPtr<IDWriteFactory> m_dWriteFactory;
+
 };
 

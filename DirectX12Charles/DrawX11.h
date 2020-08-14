@@ -3,8 +3,6 @@
 #include "Graphics.h"
 #include "BindableX11.h"
 
-class BindableX11;
-
 class DrawX11
 {
    template<class T>
@@ -12,9 +10,9 @@ class DrawX11
 public:
    DrawX11() = default;
    DrawX11(const DrawX11 &) = delete;
-   void Draw(Graphics &gfx) const noexcept;
    virtual ~DrawX11() = default;
 
+   void Draw(Graphics &gfx) const noexcept;
    virtual void Update(float dt) noexcept = 0;
    virtual XMMATRIX GetTransformXM() const noexcept = 0;
 
@@ -30,7 +28,6 @@ template<class T>
 class DrawBaseX11 : public DrawX11   // DrawableBase
 {
 public:
-
    bool isStaticSet() { return !staticBinds.empty(); }
    static void addStaticBind(std::unique_ptr < BindableX11 > bind, UINT indexBuffer)
    {

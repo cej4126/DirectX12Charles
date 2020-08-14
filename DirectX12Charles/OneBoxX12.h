@@ -22,16 +22,6 @@ private:
    };
    MatrixBufferType matrixBuffer;
 
-   //struct VertexX11
-   //{
-   //   struct
-   //   {
-   //      float x;
-   //      float y;
-   //      float z;
-   //   } pos;
-   //};
-
    struct Vertex
    {
       Vertex(float x, float y, float z) : pos(x, y, z) {}
@@ -50,8 +40,6 @@ private:
    };
    struct ConstantBufferColor colorBuffer;
 
-   int ConstantBufferPerObjectAlignedSize = (sizeof(matrixBuffer) + 255) & ~255;
-
    Microsoft::WRL::ComPtr <ID3D12Resource> matrixBufferUploadHeaps;
    UINT8 *matrixBufferGPUAddress;
 
@@ -60,8 +48,7 @@ private:
    float angle = 0.0f;
 
    void CreateRootSignature();
-   void LoadVertexBuffer();
-   void LoadIndexBuffer();
+   void LoadDrawBuffer();
    void CreateShader();
    void CreateConstant();
    void CreatePipelineState();
