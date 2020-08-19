@@ -10,6 +10,7 @@ ShapeColorBlendedX11::ShapeColorBlendedX11(Graphics &gfx, float range)
    mt19937 gen(rd());
    uniform_real_distribution<float> rand2pi(0.0f, 3.1415f * 2.0f);
    uniform_real_distribution<float> rand1_3pi(0.0f, 3.1415f * 0.7f);
+   uniform_real_distribution<float> randcolor(0.0f, 1.0f);
 
    boxRoll = rand2pi(gen);
    boxPitch = rand2pi(gen);
@@ -65,43 +66,20 @@ ShapeColorBlendedX11::ShapeColorBlendedX11(Graphics &gfx, float range)
       //auto model = Prism::Make<Vertex>();
       //auto model = Sphere::Make<Vertex>();
 
-      model.vertices[0].color = { 255,   0,   0, 255 };
-      model.vertices[1].color = { 255, 255,   0, 255 };
-      model.vertices[2].color = {   0, 255,   0, 255 };
-      model.vertices[3].color = {   0, 255, 255, 255 };
-      model.vertices[4].color = {   0,   0, 255, 255 };
-      model.vertices[5].color = { 255,   0, 255, 255 };
-      model.vertices[6].color = { 125,   0, 255, 255 };
-      model.vertices[7].color = { 255, 125, 255, 255 };
+      for (int i = 0; i < model.vertices.size(); i++)
+      {
+         unsigned char r = (UINT)(255 * randcolor(gen));
+         unsigned char b = (UINT)(255 * randcolor(gen));
+         unsigned char g = (UINT)(255 * randcolor(gen));
+         model.vertices[i].color = { r, b, g, 255 };
 
+      }
 
       object->AddVertexBuffer(model.vertices);
-
+      indexCount = (UINT)model.indices.size();
       object->AddIndexBuffer(model.indices);
 
       object->AddShaders(L"ColorBlendedVSX11.cso", L"ColorBlendedPSX11.cso");
-
-      //struct ConstantBuffer2
-      //{
-      //   struct
-      //   {
-      //      float r;
-      //      float g;
-      //      float b;
-      //      float a;
-      //   } face_colors[6];
-      //};
-      //const ConstantBuffer2 cb2 =
-      //{
-      //   {
-      //      {1.0f, 0.0f, 1.0f, 1.0f},
-      //      {1.0f, 0.0f, 0.0f, 1.0f},
-      //      {0.0f, 1.0f, 0.0f, 1.0f},
-      //      {0.0f, 0.0f, 1.0f, 1.0f},
-      //      {1.0f, 1.0f, 0.0f, 1.0f},
-      //      {0.0f, 1.0f, 1.0f, 1.0f},
-      //   }
-      //};
 
       //// Pixel Constant Buffer
       object->AddPixelConstantBuffer(nullptr, false);
@@ -145,4 +123,9 @@ XMMATRIX ShapeColorBlendedX11::GetTransformXM() const noexcept
       DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f) *
       DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
 #endif
+}
+
+UINT ShapeColorBlendedX11::getIndexCount() const noexcept
+{
+   return indexCount;
 }

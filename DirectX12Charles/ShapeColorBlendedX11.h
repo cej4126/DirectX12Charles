@@ -11,6 +11,7 @@ public:
    ShapeColorBlendedX11(Graphics &gfx, float range);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
+   UINT getIndexCount() const noexcept override;
 
 private:
    BindableX11 *object = nullptr;
@@ -29,4 +30,6 @@ private:
    float spaceRollRate;
    float spacePitchRate;
    float spaceYawRate;
+
+   UINT indexCount;
 };

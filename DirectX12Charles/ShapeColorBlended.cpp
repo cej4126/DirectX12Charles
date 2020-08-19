@@ -10,6 +10,7 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, float range)
    mt19937 gen(rd());
    uniform_real_distribution<float> rand2pi(0.0f, 3.1415f * 2.0f);
    uniform_real_distribution<float> rand1_3pi(0.0f, 3.1415f * 0.7f);
+   uniform_real_distribution<float> randcolor(0.0f, 1.0f);
 
    boxRoll = rand2pi(gen);
    boxPitch = rand2pi(gen);
@@ -50,16 +51,25 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, float range)
          XMFLOAT3 pos;
          XMFLOAT4 color;
       };
-      auto model = Cube::Make<Vertex>();
+      auto model = Shape::Make<Vertex>();
+      //auto model = Cube::Make<Vertex>();
+      for (int i = 0; i < model.vertices.size(); i++)
+      {
+         float r = randcolor(gen);
+         float b = randcolor(gen);
+         float g = randcolor(gen);
+         model.vertices[i].color = { r, b, g, 1.0f };
 
-      model.vertices[0].color = { 1.0f, 0.0f, 0.0f, 1.0f };
-      model.vertices[1].color = { 1.0f, 1.0f, 0.0f, 1.0f };
-      model.vertices[2].color = { 0.0f, 1.0f, 0.0f, 1.0f };
-      model.vertices[3].color = { 0.0f, 1.0f, 1.0f, 1.0f };
-      model.vertices[4].color = { 0.0f, 0.0f, 1.0f, 1.0f };
-      model.vertices[5].color = { 1.0f, 0.0f, 1.0f, 1.0f };
-      model.vertices[6].color = { 0.5f, 0.0f, 1.0f, 1.0f };
-      model.vertices[7].color = { 1.0f, 0.5f, 1.0f, 1.0f };
+      }
+
+      //model.vertices[0].color = { 1.0f, 0.0f, 0.0f, 1.0f };
+      //model.vertices[1].color = { 1.0f, 1.0f, 0.0f, 1.0f };
+      //model.vertices[2].color = { 0.0f, 1.0f, 0.0f, 1.0f };
+      //model.vertices[3].color = { 0.0f, 1.0f, 1.0f, 1.0f };
+      //model.vertices[4].color = { 0.0f, 0.0f, 1.0f, 1.0f };
+      //model.vertices[5].color = { 1.0f, 0.0f, 1.0f, 1.0f };
+      //model.vertices[6].color = { 0.5f, 0.0f, 1.0f, 1.0f };
+      //model.vertices[7].color = { 1.0f, 0.5f, 1.0f, 1.0f };
 
       object->CreateRootSignature(1);
       object->LoadDrawBuffer(model.vertices, model.indices);

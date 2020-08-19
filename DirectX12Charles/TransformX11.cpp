@@ -22,4 +22,7 @@ void TransformX11::Bind(Graphics &gfx) noexcept
    GetContext(gfx)->Unmap(pTransformConstantBuffer.Get(), 0u);
 
    GetContext(gfx)->VSSetConstantBuffers(0u, 1u, pTransformConstantBuffer.GetAddressOf());
+
+   GetContext(gfx)->DrawIndexed(parentTransform.getIndexCount(), 0u, 0u);
+
 }

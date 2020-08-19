@@ -34,6 +34,5 @@ public:
 private:
    // Vetrix Constant Buffer
    Microsoft::WRL::ComPtr<ID3D11Buffer> pTransformConstantBuffer;
-   //static std::unique_ptr<XMMATRIX> pVertexcbuf;
    const DrawX11 &parentTransform;
 };

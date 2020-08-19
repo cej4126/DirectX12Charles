@@ -41,8 +41,6 @@ ShapeColorIndexX11::ShapeColorIndexX11(Graphics &gfx, float range)
    spaceYawRate = 0.0f;
 #endif
 
-
-
    if (!isStaticSet())
    {
       std::unique_ptr < ObjectX11 > object = std::make_unique<ObjectX11>(gfx);
@@ -51,7 +49,9 @@ ShapeColorIndexX11::ShapeColorIndexX11(Graphics &gfx, float range)
       {
          XMFLOAT3 pos;
       };
-      auto model = Cube::Make<Vertex>();
+
+      auto model = Shape::Make<Vertex>();
+      //auto model = Cube::Make<Vertex>();
       //auto model = Plane::Make<Vertex>();
       //auto model = Cylinder::Make<Vertex>();
       //auto model = Cone::Make<Vertex>();
@@ -59,7 +59,7 @@ ShapeColorIndexX11::ShapeColorIndexX11(Graphics &gfx, float range)
       //auto model = Sphere::Make<Vertex>();
 
       object->AddVertexBuffer(model.vertices);
-
+      indexCount = (UINT)model.indices.size();
       object->AddIndexBuffer(model.indices);
 
       object->AddShaders(L"ColorIndexVSX11.cso", L"ColorIndexPSX11.cso");
@@ -127,4 +127,9 @@ XMMATRIX ShapeColorIndexX11::GetTransformXM() const noexcept
       DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f) *
       DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
 #endif
+}
+
+UINT ShapeColorIndexX11::getIndexCount() const noexcept
+{
+   return indexCount;
 }
