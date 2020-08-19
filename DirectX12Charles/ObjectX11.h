@@ -31,19 +31,23 @@ public:
 
    // Pixel Constant Buffer
    template<typename C>
-   void AddPixelConstantBuffer(const C &consts)
+   void AddPixelConstantBuffer(const C &consts, bool active)
    {
-      D3D11_BUFFER_DESC cbd;
-      cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-      cbd.Usage = D3D11_USAGE_DYNAMIC;
-      cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-      cbd.MiscFlags = 0u;
-      cbd.ByteWidth = sizeof(consts);
-      cbd.StructureByteStride = 0u;
+      pixelConstantBufferActive = active;
+      if (active)
+      {
+         D3D11_BUFFER_DESC cbd;
+         cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+         cbd.Usage = D3D11_USAGE_DYNAMIC;
+         cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+         cbd.MiscFlags = 0u;
+         cbd.ByteWidth = sizeof(consts);
+         cbd.StructureByteStride = 0u;
 
-      D3D11_SUBRESOURCE_DATA csd = {};
-      csd.pSysMem = &consts;
-      ThrowIfFailed(GetDevice(gfx)->CreateBuffer(&cbd, &csd, &pPixelConstantBuffer));
+         D3D11_SUBRESOURCE_DATA csd = {};
+         csd.pSysMem = &consts;
+         ThrowIfFailed(GetDevice(gfx)->CreateBuffer(&cbd, &csd, &pPixelConstantBuffer));
+      }
    }
 
    // Layout
@@ -71,6 +75,7 @@ private:
    Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShader;
 
    // Pixel Constant Buffer
+   bool pixelConstantBufferActive = false;
    Microsoft::WRL::ComPtr<ID3D11Buffer> pPixelConstantBuffer;
 
    // Layout

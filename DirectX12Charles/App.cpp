@@ -13,14 +13,22 @@ App::App()
 
    dwriteitem = std::make_unique<dwritedraw>(wnd.Gfx());
 
-   boxX11 = std::make_unique<OneBoxX11>(wnd.Gfx());
-   boxX12 = std::make_unique<OneBoxX12>(wnd.Gfx());
+   oneCubeColorIndexX11 = std::make_unique<OneBoxX11>(wnd.Gfx());
+   oneCubeColorIndex = std::make_unique<OneBoxX12>(wnd.Gfx());
 
    int MaxBoxX12Count = 4;
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
       float range = rangedist(rng);
-      boxesX12.push_back(std::make_unique<BoxX12>(wnd.Gfx(), range));
+
+      if ((i % 2) == 0)
+      {
+         drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), range));
+      }
+      else
+      {
+         drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), range));
+      }
    }
    wnd.Gfx().CreateMatrixConstantX12(MaxBoxX12Count);
 
@@ -28,7 +36,14 @@ App::App()
    for (auto i = 0; i < MaxBoxX11Count; i++)
    {
       float range = rangedist(rng);
-      boxesX11.push_back(std::make_unique<BoxX11>(wnd.Gfx(), range));
+      if ((i % 2) == 0)
+      {
+         drawItemsX11.push_back(std::make_unique<ShapeColorIndexX11>(wnd.Gfx(), range));
+      }
+      else
+      {
+         drawItemsX11.push_back(std::make_unique<ShapeColorBlendedX11>(wnd.Gfx(), range));
+      }
    }
 
    wnd.Gfx().RunCommandList();
@@ -79,12 +94,12 @@ void App::DoFrame()
 
    wnd.Gfx().OnRender();
 
-   boxX12->Update(dt);
-   boxX12->Draw();
-   boxX12->LoadConstant();
+   oneCubeColorIndex->Update(dt);
+   oneCubeColorIndex->Draw();
+   oneCubeColorIndex->LoadConstant();
 
    int index = 0;
-   for (auto &b : boxesX12)
+   for (auto &b : drawItems)
    {
       b->Update(dt);
       b->Draw(wnd.Gfx(), index);
@@ -92,16 +107,16 @@ void App::DoFrame()
    }
 
    dwriteitem->Draw();
-   boxX11->Update(dt);
-   boxX11->Draw();
+   oneCubeColorIndexX11->Update(dt);
+   oneCubeColorIndexX11->Draw();
 
    wnd.Gfx().DrawCommandList();
 
-   for (auto &b : boxesX11)
+   for (auto &b : drawItemsX11)
    {
       b->Update(dt);
       b->Draw(wnd.Gfx());
    }
-   wnd.Gfx().OnRenderEnd();
 
+   wnd.Gfx().OnRenderEnd();
 }

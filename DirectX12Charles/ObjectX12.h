@@ -8,9 +8,9 @@ class ObjectX12 : public BindableX12
 public:
    ObjectX12(Graphics &gfx);
 
-   void CreateRootSignature();
+   void CreateRootSignature(int constantCount);
    void CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath);
-   void CreateConstant();
+   void CreateConstant(bool ActiveFlag);
    void CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType);
 
    template<class V>
@@ -173,7 +173,7 @@ private:
    };
    struct ConstantBufferColor colorBuffer;
 
-
+   bool colorBufferActive = false;
    Microsoft::WRL::ComPtr <ID3D12Resource> colorBufferUploadHeaps;
    UINT8 *colorBufferGPUAddress;
 

@@ -9,6 +9,15 @@ template<class T>
 class Geometry
 {
 public:
+   //typedef enum
+   //{
+   //   Cone,
+   //   Cube,
+   //   Prism,
+   //   Plane,
+   //   Sphere;
+   //} shapeType;
+
    Geometry() = default;
    Geometry(std::vector<T> vert_in, std::vector<unsigned short> indices_in)
       :

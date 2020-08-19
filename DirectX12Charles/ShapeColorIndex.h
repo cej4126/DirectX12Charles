@@ -4,11 +4,12 @@
 #include "ObjectX12.h"
 #include "DrawX12.h"
 #include "TransformX12.h"
+#include "Geometry.h"
 
-class BoxX12 : public DrawBaseX12 <BoxX12>
+class ShapeColorIndex : public DrawBaseX12 <ShapeColorIndex>
 {
 public:
-   BoxX12(Graphics &gfx, float range);
+   ShapeColorIndex(Graphics &gfx, float range);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
 
@@ -29,5 +30,6 @@ private:
    float spaceRollRate = 0.0f;
    float spacePitchRate = 0.0f;
    float spaceYawRate = 0.0f;
+   //Geometry::shapeType shape;
 };
 

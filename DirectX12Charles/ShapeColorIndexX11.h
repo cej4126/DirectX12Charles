@@ -4,10 +4,10 @@
 #include "ObjectX11.h"
 #include "TransformX11.h"
 
-class BoxX11 : public DrawBaseX11 <BoxX11>
+class ShapeColorIndexX11 : public DrawBaseX11 <ShapeColorIndexX11>
 {
 public:
-   BoxX11(Graphics &gfx, float range);
+   ShapeColorIndexX11(Graphics &gfx, float range);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
 

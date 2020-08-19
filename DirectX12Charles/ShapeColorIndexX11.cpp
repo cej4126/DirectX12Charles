@@ -1,8 +1,8 @@
-#include "BoxX11.h"
+#include "ShapeColorIndexX11.h"
 #include "Geometry.h"
 using namespace std;
 
-BoxX11::BoxX11(Graphics &gfx, float range)
+ShapeColorIndexX11::ShapeColorIndexX11(Graphics &gfx, float range)
    :
    range(range)
 {
@@ -62,7 +62,7 @@ BoxX11::BoxX11(Graphics &gfx, float range)
 
       object->AddIndexBuffer(model.indices);
 
-      object->AddShaders(L"VertexShaderX11.cso", L"PixelShaderX11.cso");
+      object->AddShaders(L"ColorIndexVSX11.cso", L"ColorIndexPSX11.cso");
 
       struct ConstantBuffer2
       {
@@ -87,12 +87,12 @@ BoxX11::BoxX11(Graphics &gfx, float range)
       };
 
       // Pixel Constant Buffer
-      object->AddPixelConstantBuffer(cb2);
+      object->AddPixelConstantBuffer(cb2, true);
 
       // Layout
       const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
       {
-         { "PositionX",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+          { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
       };
       object->AddInputLayout(ied);
 
@@ -105,7 +105,7 @@ BoxX11::BoxX11(Graphics &gfx, float range)
    AddBind(std::move(trans));
 }
 
-void BoxX11::Update(float dt) noexcept
+void ShapeColorIndexX11::Update(float dt) noexcept
 {
    boxRoll += boxRollRate * dt;
    boxPitch += boxPitchRate * dt;
@@ -115,7 +115,7 @@ void BoxX11::Update(float dt) noexcept
    spaceYaw += spaceYawRate * dt;
 }
 
-XMMATRIX BoxX11::GetTransformXM() const noexcept
+XMMATRIX ShapeColorIndexX11::GetTransformXM() const noexcept
 {
 #ifndef FIX_ROTATION
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *

@@ -1,8 +1,8 @@
-#include "BoxX12.h"
+#include "ShapeColorBlended.h"
 #include "Geometry.h"
 using namespace std;
 
-BoxX12::BoxX12(Graphics & gfx, float range)
+ShapeColorBlended::ShapeColorBlended(Graphics &gfx, float range)
    :
    range(range)
 {
@@ -48,20 +48,31 @@ BoxX12::BoxX12(Graphics & gfx, float range)
       struct Vertex
       {
          XMFLOAT3 pos;
+         XMFLOAT4 color;
       };
       auto model = Cube::Make<Vertex>();
 
-      object->CreateRootSignature();
+      model.vertices[0].color = { 1.0f, 0.0f, 0.0f, 1.0f };
+      model.vertices[1].color = { 1.0f, 1.0f, 0.0f, 1.0f };
+      model.vertices[2].color = { 0.0f, 1.0f, 0.0f, 1.0f };
+      model.vertices[3].color = { 0.0f, 1.0f, 1.0f, 1.0f };
+      model.vertices[4].color = { 0.0f, 0.0f, 1.0f, 1.0f };
+      model.vertices[5].color = { 1.0f, 0.0f, 1.0f, 1.0f };
+      model.vertices[6].color = { 0.5f, 0.0f, 1.0f, 1.0f };
+      model.vertices[7].color = { 1.0f, 0.5f, 1.0f, 1.0f };
+
+      object->CreateRootSignature(1);
       object->LoadDrawBuffer(model.vertices, model.indices);
-      object->CreateShader(L"VertexShader.cso", L"PixelShader.cso");
+      object->CreateShader(L"ColorBlendedVS.cso", L"ColorBlendedPS.cso");
       // Define the vertex input layout.
       const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
       {
-          { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+          { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+          { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
       };
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-      object->CreateConstant();
+      object->CreateConstant(false);
 
       addStaticBind(std::move(object), (UINT)model.indices.size());
    }
@@ -70,7 +81,7 @@ BoxX12::BoxX12(Graphics & gfx, float range)
    AddBind(std::move(trans));
 }
 
-void BoxX12::Update(float dt) noexcept
+void ShapeColorBlended::Update(float dt) noexcept
 {
    boxRoll += boxRollRate * dt;
    boxPitch += boxPitchRate * dt;
@@ -80,7 +91,7 @@ void BoxX12::Update(float dt) noexcept
    spaceYaw += spaceYawRate * dt;
 }
 
-XMMATRIX BoxX12::GetTransformXM() const noexcept
+XMMATRIX ShapeColorBlended::GetTransformXM() const noexcept
 {
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *

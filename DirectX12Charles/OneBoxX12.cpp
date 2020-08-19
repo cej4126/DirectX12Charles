@@ -249,10 +249,10 @@ void OneBoxX12::LoadDrawBuffer()
 
 void OneBoxX12::CreateShader()
 {
-   ThrowIfFailed(D3DReadFileToBlob(L"VertexShader.cso", vertexShaderBlob.ReleaseAndGetAddressOf()));
+   ThrowIfFailed(D3DReadFileToBlob(L"ColorIndexVS.cso", vertexShaderBlob.ReleaseAndGetAddressOf()));
 
    // create pixel shader
-   ThrowIfFailed(D3DReadFileToBlob(L"PixelShader.cso", pixelShaderBlob.ReleaseAndGetAddressOf()));
+   ThrowIfFailed(D3DReadFileToBlob(L"ColorIndexPS.cso", pixelShaderBlob.ReleaseAndGetAddressOf()));
 }
 
 void OneBoxX12::CreateConstant()

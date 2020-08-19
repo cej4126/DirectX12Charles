@@ -89,18 +89,18 @@ OneBoxX11::OneBoxX11(Graphics &gfx)
 
    // create pixel shader
    ComPtr<ID3DBlob> pBlobPixel;
-   ThrowIfFailed(D3DReadFileToBlob(L"PixelShaderX11.cso", &pBlobPixel));
+   ThrowIfFailed(D3DReadFileToBlob(L"ColorIndexPSX11.cso", &pBlobPixel));
    ThrowIfFailed(device->CreatePixelShader(pBlobPixel->GetBufferPointer(), pBlobPixel->GetBufferSize(), nullptr, &x11PixelShader));
 
    // create vertex shader
    ComPtr<ID3DBlob> pBlobVertex;
-   ThrowIfFailed(D3DReadFileToBlob(L"VertexShaderX11.cso", &pBlobVertex));
+   ThrowIfFailed(D3DReadFileToBlob(L"ColorIndexVSX11.cso", &pBlobVertex));
    ThrowIfFailed(device->CreateVertexShader(pBlobVertex->GetBufferPointer(), pBlobVertex->GetBufferSize(), nullptr, &x11VertexShader));
 
    // input (vertex) layout
    const D3D11_INPUT_ELEMENT_DESC ied[] =
    {
-      { "POSITIONX", 0, DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA, 0 },
    };
 
    ThrowIfFailed(device->CreateInputLayout(

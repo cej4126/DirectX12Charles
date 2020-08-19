@@ -2,8 +2,11 @@
 #include "stdafx.h"
 #include "Window.h"
 #include "dwritedraw.h"
-#include "BoxX11.h"
-#include "BoxX12.h"
+#include "ShapeColorIndexX11.h"
+#include "ShapeColorIndex.h"
+#include "ShapeColorBlendedX11.h"
+#include "ShapeColorBlended.h"
+
 #include "OneBoxX11.h"
 #include "OneBoxX12.h"
 
@@ -23,10 +26,11 @@ private:
 private:
    std::chrono::steady_clock::time_point lastTime;
    std::unique_ptr< class dwritedraw> dwriteitem;
-   std::vector<std::unique_ptr<class BoxX11>> boxesX11;
-   std::vector<std::unique_ptr<class BoxX12>> boxesX12;
 
-   std::unique_ptr<class OneBoxX11 > boxX11;
-   std::unique_ptr<class OneBoxX12 > boxX12;
+   std::vector<std::unique_ptr<class DrawX11>> drawItemsX11;
+   std::vector<std::unique_ptr<class DrawX12>> drawItems;
+
+   std::unique_ptr<class OneBoxX11 > oneCubeColorIndexX11;
+   std::unique_ptr<class OneBoxX12 > oneCubeColorIndex;
 };
 

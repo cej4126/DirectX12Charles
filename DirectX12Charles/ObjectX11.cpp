@@ -74,7 +74,10 @@ void ObjectX11::Bind(Graphics &gfx) noexcept
    // Topology
    GetContext(gfx)->IASetPrimitiveTopology(topologyType);
 
-   GetContext(gfx)->PSSetConstantBuffers(0u, 1u, pPixelConstantBuffer.GetAddressOf());
+   if (pixelConstantBufferActive)
+   {
+      GetContext(gfx)->PSSetConstantBuffers(0u, 1u, pPixelConstantBuffer.GetAddressOf());
+   }
 
    GetContext(gfx)->DrawIndexed(indexCount, 0u, 0u);
 }
