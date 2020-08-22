@@ -1,8 +1,7 @@
 #include "ShapeColorBlended.h"
-#include "Geometry.h"
 using namespace std;
 
-ShapeColorBlended::ShapeColorBlended(Graphics &gfx, float range)
+ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float range)
    :
    range(range)
 {
@@ -51,7 +50,10 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, float range)
          XMFLOAT3 pos;
          XMFLOAT4 color;
       };
-      auto model = Shape::Make<Vertex>();
+
+      auto model = gfx.shape.GetShapeData<Vertex>();
+
+      //auto model = ShapeTemp::Make<Vertex>();
       //auto model = Cube::Make<Vertex>();
       for (int i = 0; i < model.vertices.size(); i++)
       {
@@ -88,6 +90,10 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, float range)
    }
 
    std::unique_ptr < TransformX12 > trans = std::make_unique<TransformX12>(gfx, *this);
+   UINT start = gfx.shape.getStartIndex(type);
+   UINT count = gfx.shape.getStartCount(type);
+   trans->setIndices(start, count);
+
    AddBind(std::move(trans));
 }
 

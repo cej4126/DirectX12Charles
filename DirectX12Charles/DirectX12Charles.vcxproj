@@ -151,7 +151,7 @@
     <ClInclude Include="DrawX11.h" />
     <ClInclude Include="DrawX12.h" />
     <ClInclude Include="dwritedraw.h" />
-    <ClInclude Include="Geometry.h" />
+    <ClInclude Include="Shape.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="ObjectX11.h" />
@@ -174,7 +174,7 @@
     <ClCompile Include="DrawX11.cpp" />
     <ClCompile Include="DrawX12.cpp" />
     <ClCompile Include="dwritedraw.cpp" />
-    <ClCompile Include="Geometry.cpp" />
+    <ClCompile Include="Shape.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="ObjectX11.cpp" />

@@ -65,7 +65,8 @@ private:
    Microsoft::WRL::ComPtr <ID3D12Resource> indexDefaultBuffer;
    Microsoft::WRL::ComPtr <ID3D12Resource> indexUploadBuffer;
    D3D12_INDEX_BUFFER_VIEW indexBufferView;
-   UINT indicesCount;
 
+   UINT indicesCount;
+   UINT indicesStart;
 };
 

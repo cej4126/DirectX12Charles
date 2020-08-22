@@ -1,8 +1,7 @@
 #include "ShapeColorBlendedX11.h"
-#include "Geometry.h"
 using namespace std;
 
-ShapeColorBlendedX11::ShapeColorBlendedX11(Graphics &gfx, float range)
+ShapeColorBlendedX11::ShapeColorBlendedX11(Graphics &gfx, Shape::shapeType type, float range)
    :
    range(range)
 {
@@ -42,24 +41,24 @@ ShapeColorBlendedX11::ShapeColorBlendedX11(Graphics &gfx, float range)
    spaceYawRate = 0.0f;
 #endif
 
-
+   struct Vertex
+   {
+      XMFLOAT3 pos;
+      struct
+      {
+         unsigned char r;
+         unsigned char g;
+         unsigned char b;
+         unsigned char a;
+      } color;
+   };
 
    if (!isStaticSet())
    {
-      std::unique_ptr < ObjectX11 > object = std::make_unique<ObjectX11>(gfx);
+      auto model = gfx.shape.GetShapeData<Vertex>();
+      //      auto model = CubeTemp::Make<Vertex>();
 
-      struct Vertex
-      {
-         XMFLOAT3 pos;
-         struct
-         {
-            unsigned char r;
-            unsigned char g;
-            unsigned char b;
-            unsigned char a;
-         } color;
-      };
-      auto model = Cube::Make<Vertex>();
+      std::unique_ptr < ObjectX11 > object = std::make_unique<ObjectX11>(gfx);
       //auto model = Plane::Make<Vertex>();
       //auto model = Cylinder::Make<Vertex>();
       //auto model = Cone::Make<Vertex>();
@@ -76,7 +75,6 @@ ShapeColorBlendedX11::ShapeColorBlendedX11(Graphics &gfx, float range)
       }
 
       object->AddVertexBuffer(model.vertices);
-      indexCount = (UINT)model.indices.size();
       object->AddIndexBuffer(model.indices);
 
       object->AddShaders(L"ColorBlendedVSX11.cso", L"ColorBlendedPSX11.cso");
@@ -97,6 +95,7 @@ ShapeColorBlendedX11::ShapeColorBlendedX11(Graphics &gfx, float range)
 
    std::unique_ptr < TransformX11 > trans = std::make_unique<TransformX11>(gfx, *this);
    trans->AddTransformConstantBuffer();
+   trans->setIndices(gfx.shape.getStartIndex(type), gfx.shape.getStartCount(type));
 
    AddBind(std::move(trans));
 }
@@ -123,9 +122,4 @@ XMMATRIX ShapeColorBlendedX11::GetTransformXM() const noexcept
       DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f) *
       DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
 #endif
-}
-
-UINT ShapeColorBlendedX11::getIndexCount() const noexcept
-{
-   return indexCount;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "Shape.h"
 
 using namespace DirectX;
 
@@ -53,6 +54,8 @@ public:
    IDWriteFactory *Get2dWriteFactory() noexcept { return m_dWriteFactory.Get(); }
    int GetWidth() { return width; }
    int GetHeight() { return height; }
+
+   Shape shape;
 
 private:
    void WaitForPreviousFrame();

@@ -1,4 +1,5 @@
 #include "App.h"
+#include "Shape.h"
 
 App::App()
    :
@@ -16,34 +17,26 @@ App::App()
    oneCubeColorIndexX11 = std::make_unique<OneBoxX11>(wnd.Gfx());
    oneCubeColorIndex = std::make_unique<OneBoxX12>(wnd.Gfx());
 
-   int MaxBoxX12Count = 4;
+   int MaxBoxX12Count = 12;
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
+      Shape::shapeType type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::ShapeCount));
       float range = rangedist(rng);
 
-      if ((i % 2) == 0)
-      {
-         drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), range));
-      }
-      else
-      {
-         drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), range));
-      }
+      drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
+      drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
    }
    wnd.Gfx().CreateMatrixConstantX12(MaxBoxX12Count);
 
-   int MaxBoxX11Count = 4;
+   int MaxBoxX11Count = 12;
+   Shape::shapeType type = Shape::Cube;
    for (auto i = 0; i < MaxBoxX11Count; i++)
    {
+      Shape::shapeType type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::ShapeCount));
       float range = rangedist(rng);
-      if ((i % 2) == 0)
-      {
-         drawItemsX11.push_back(std::make_unique<ShapeColorIndexX11>(wnd.Gfx(), range));
-      }
-      else
-      {
-         drawItemsX11.push_back(std::make_unique<ShapeColorBlendedX11>(wnd.Gfx(), range));
-      }
+
+      drawItemsX11.push_back(std::make_unique<ShapeColorIndexX11>(wnd.Gfx(), type, range));
+      drawItemsX11.push_back(std::make_unique<ShapeColorBlendedX11>(wnd.Gfx(), type, range));
    }
 
    wnd.Gfx().RunCommandList();

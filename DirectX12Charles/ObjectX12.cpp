@@ -1,6 +1,4 @@
 #include "ObjectX12.h"
-#include "Geometry.h"
-#include "Graphics.h"
 using namespace Microsoft::WRL;
 
 
@@ -31,7 +29,6 @@ void ObjectX12::Bind(Graphics &gfx, int drawStep) noexcept
       {
          commandList->SetGraphicsRootConstantBufferView(1, colorBufferUploadHeaps->GetGPUVirtualAddress());
       }
-      commandList->DrawIndexedInstanced(indicesCount, 1u, 0u, 0u, 0u);
    }
 }
 

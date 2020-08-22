@@ -16,4 +16,5 @@ void TransformX12::Bind(Graphics &gfx, int index) noexcept
 
    gfx.SetMatrixConstantX12(index, matrixBuffer);
 
+   commandList->DrawIndexedInstanced(indicesCount, 1u, indicesStart, 0u, 0u);
 }

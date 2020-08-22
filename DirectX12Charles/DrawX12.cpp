@@ -7,15 +7,16 @@ void DrawX12::Draw(Graphics &gfx, int index) const noexcept
       b->Bind(gfx, 0);
    }
 
+   for (auto &b : GetStaticBinds())
+   {
+      b->Bind(gfx, 2);
+   }
+
    for (auto &b : binds)
    {
       b->Bind(gfx, index);
    }
 
-   for (auto &b : GetStaticBinds())
-   {
-      b->Bind(gfx, 2);
-   }
 }
 
 void DrawX12::AddBind(std::unique_ptr<BindableX12> bind) noexcept

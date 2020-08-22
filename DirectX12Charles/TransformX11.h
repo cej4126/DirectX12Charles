@@ -8,6 +8,11 @@ class TransformX11 : public BindableX11
 {
 public:
    TransformX11(Graphics &gfx, const DrawX11 &parent);
+   void setIndices(UINT start, UINT count)
+   {
+      indicesStart = start;
+      indicesCount = count;
+   }
 
    // Vertex Constant Buffer
    void AddTransformConstantBuffer()
@@ -35,4 +40,6 @@ private:
    // Vetrix Constant Buffer
    Microsoft::WRL::ComPtr<ID3D11Buffer> pTransformConstantBuffer;
    const DrawX11 &parentTransform;
+   UINT indicesStart = 0;
+   UINT indicesCount = 0;
 };

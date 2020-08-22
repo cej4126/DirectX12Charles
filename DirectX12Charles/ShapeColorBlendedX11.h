@@ -3,15 +3,14 @@
 #include "DrawX11.h"
 #include "ObjectX11.h"
 #include "TransformX11.h"
-#include "Geometry.h"
+#include "Shape.h"
 
 class ShapeColorBlendedX11 : public DrawBaseX11 <ShapeColorBlendedX11>
 {
 public:
-   ShapeColorBlendedX11(Graphics &gfx, float range);
+   ShapeColorBlendedX11(Graphics &gfx, Shape::shapeType type, float range);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
-   UINT getIndexCount() const noexcept override;
 
 private:
    BindableX11 *object = nullptr;
@@ -30,6 +29,4 @@ private:
    float spaceRollRate;
    float spacePitchRate;
    float spaceYawRate;
-
-   UINT indexCount;
 };

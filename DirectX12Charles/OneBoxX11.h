@@ -1,5 +1,6 @@
 #pragma once
 #include "Graphics.h"
+#include "Shape.h"
 
 class OneBoxX11
 {
@@ -42,7 +43,8 @@ private:
    Microsoft::WRL::ComPtr<ID3D11VertexShader> x11VertexShader;
    Microsoft::WRL::ComPtr<ID3D11InputLayout> x11InputLayout;
 
-   UINT indiceX11Count;
+   UINT indicesCount;
+   UINT indicesStart;
    UINT vertexStride;
 };
 

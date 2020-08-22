@@ -1,5 +1,4 @@
 #include "OneBoxX12.h"
-#include "Geometry.h"
 using namespace Microsoft::WRL;
 
 OneBoxX12::OneBoxX12(Graphics &gfx)
@@ -52,7 +51,7 @@ void OneBoxX12::Draw()
    commandList->SetGraphicsRootConstantBufferView(1,
       colorBufferUploadHeaps->GetGPUVirtualAddress() + 0 * ConstantBufferPerObjectAlignedSize);
 
-   commandList->DrawIndexedInstanced(indicesCount, 1u, 0u, 0u, 0u);
+   commandList->DrawIndexedInstanced(indicesCount, 1u, indicesStart, 0u, 0u);
 }
 
 void OneBoxX12::LoadConstant()
@@ -108,7 +107,9 @@ void OneBoxX12::LoadDrawBuffer()
    {
       XMFLOAT3 pos;
    };
-   auto model = Cube::Make<Vertex>();
+   auto model = gfx.shape.GetShapeData<Vertex>();
+   indicesStart = gfx.shape.getStartIndex(Shape::Cube);
+   indicesCount = gfx.shape.getStartCount(Shape::Cube);
 
    const UINT vertexBufferSize = (UINT)(sizeof(Vertex) * model.vertices.size());
 
@@ -179,7 +180,6 @@ void OneBoxX12::LoadDrawBuffer()
    vertexBufferView.StrideInBytes = sizeof(Vertex);
    vertexBufferView.SizeInBytes = vertexBufferSize;
 
-   indicesCount = (UINT)model.indices.size();
    const UINT indicesBufferSize = (UINT)(sizeof(unsigned short) * model.indices.size());
 
    ZeroMemory(&heapProps, sizeof(heapProps));
@@ -303,7 +303,6 @@ void OneBoxX12::CreateConstant()
          {0.0f, 1.0f, 1.0f, 1.0f},
       }
    };
-   //colorBuffer = cb;
    for (int i = 0; i < 6; i++)
    {
       colorBuffer.face_colors[i].r = cb.face_colors[i].r;

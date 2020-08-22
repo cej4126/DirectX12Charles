@@ -9,6 +9,7 @@
 #include <optional>
 #include <memory>
 #include <vector>
+#include <array>
 #include <wrl.h>
 #include <chrono>
 #include <random>

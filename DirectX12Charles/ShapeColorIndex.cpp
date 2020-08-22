@@ -1,7 +1,7 @@
 #include "ShapeColorIndex.h"
 using namespace std;
 
-ShapeColorIndex::ShapeColorIndex(Graphics &gfx, float range)
+ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float range)
    :
    range(range)
 {
@@ -48,7 +48,7 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, float range)
       {
          XMFLOAT3 pos;
       };
-      auto model = Cube::Make<Vertex>();
+      auto model = gfx.shape.GetShapeData<Vertex>();
 
       object->CreateRootSignature(2);
       object->LoadDrawBuffer(model.vertices, model.indices);
@@ -66,6 +66,10 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, float range)
    }
 
    std::unique_ptr < TransformX12 > trans = std::make_unique<TransformX12>(gfx, *this);
+   UINT start = gfx.shape.getStartIndex(type);
+   UINT count = gfx.shape.getStartCount(type);
+   trans->setIndices(start, count);
+
    AddBind(std::move(trans));
 }
 

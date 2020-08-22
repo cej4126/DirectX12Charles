@@ -8,7 +8,7 @@
 class ShapeColorBlended : public DrawBaseX12 <ShapeColorBlended>
 {
 public:
-   ShapeColorBlended(Graphics &gfx, float range);
+   ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float range);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
 
