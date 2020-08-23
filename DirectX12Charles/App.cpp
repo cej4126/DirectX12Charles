@@ -32,7 +32,7 @@ App::App()
    }
    wnd.Gfx().CreateMatrixConstantX12(MaxBoxX12Count);
 
-   int MaxBoxX11Count = 1;
+   int MaxBoxX11Count = 12;
    Shape::shapeType type = Shape::Cube;
    for (auto i = 0; i < MaxBoxX11Count; i++)
    {

@@ -158,7 +158,8 @@ void Shape::CreatePlane(int divisions_x, int divisions_y)
                bottomLeft,
                XMVectorSet(float(x) * divisionSize_x, y_pos, 0.0f, 0.0f)
             );
-            XMStoreFloat3(&vertices[i].pos, v);
+            XMStoreFloat3(&vertices.back().pos, v);
+            //XMStoreFloat3(&vertices[i + startVertices].pos, v);
          }
       }
    }
