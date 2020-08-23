@@ -43,7 +43,7 @@ public:
       Cube,
       Cone,
       Prism,
-      //Plane,
+      Plane,
       Cylinder,
       Sphere,
       ShapeCount

@@ -144,6 +144,7 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="BindableX11.h" />
     <ClInclude Include="BindableX12.h" />
+    <ClInclude Include="GDIPlusManager.h" />
     <ClInclude Include="ShapeColorBlended.h" />
     <ClInclude Include="ShapeColorBlendedX11.h" />
     <ClInclude Include="ShapeColorIndex.h" />
@@ -159,6 +160,7 @@
     <ClInclude Include="OneBoxX11.h" />
     <ClInclude Include="OneBoxX12.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Surface.h" />
     <ClInclude Include="TransformX11.h" />
     <ClInclude Include="TransformX12.h" />
     <ClInclude Include="Window.h" />
@@ -167,6 +169,7 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="BindableX11.cpp" />
     <ClCompile Include="BindableX12.cpp" />
+    <ClCompile Include="GDIPlusManager.cpp" />
     <ClCompile Include="ShapeColorBlended.cpp" />
     <ClCompile Include="ShapeColorBlendedX11.cpp" />
     <ClCompile Include="ShapeColorIndex.cpp" />
@@ -181,6 +184,7 @@
     <ClCompile Include="ObjectX12.cpp" />
     <ClCompile Include="OneBoxX11.cpp" />
     <ClCompile Include="OneBoxX12.cpp" />
+    <ClCompile Include="Surface.cpp" />
     <ClCompile Include="TransformX11.cpp" />
     <ClCompile Include="TransformX12.cpp" />
     <ClCompile Include="Window.cpp" />
@@ -235,6 +239,9 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)%(Filename).cso</ObjectFileOutput>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Images\test.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

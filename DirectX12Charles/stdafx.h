@@ -14,6 +14,10 @@
 #include <chrono>
 #include <random>
 
+#include <string>
+#include <assert.h>
+#include <memory>
+
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>

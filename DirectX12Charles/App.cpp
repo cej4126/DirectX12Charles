@@ -1,5 +1,9 @@
 #include "App.h"
 #include "Shape.h"
+#include "Surface.h"
+#include "GDIPlusManager.h"
+
+GDIPlusManager gdipm;
 
 App::App()
    :
@@ -28,7 +32,7 @@ App::App()
    }
    wnd.Gfx().CreateMatrixConstantX12(MaxBoxX12Count);
 
-   int MaxBoxX11Count = 12;
+   int MaxBoxX11Count = 1;
    Shape::shapeType type = Shape::Cube;
    for (auto i = 0; i < MaxBoxX11Count; i++)
    {
@@ -38,6 +42,9 @@ App::App()
       drawItemsX11.push_back(std::make_unique<ShapeColorIndexX11>(wnd.Gfx(), type, range));
       drawItemsX11.push_back(std::make_unique<ShapeColorBlendedX11>(wnd.Gfx(), type, range));
    }
+
+   const auto s = Surface::FromFile("..\\..\\DirectX12Charles\\Images\\test.png");
+   //const auto s = Surface::FromFile("..\\..\\DirectX12Charles\\Images\\kappa50.png");
 
    wnd.Gfx().RunCommandList();
 
