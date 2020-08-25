@@ -6,16 +6,17 @@
 
 Shape::Shape()
 {
+   CreatePlane(1, 1);
    CreateCube();
    CreateCone(24);
    CratePrism();
-   CreatePlane(1, 1);
    CreateCylinder(24);
    CreateSphere(12, 24);
 }
 
 void Shape::CreateCube()
 {
+   shapeType type = Cube;
    UINT startIndices = (UINT)indices.size();
    UINT startVertices = (UINT)vertices.size();
    constexpr float side = 1.0f;
@@ -43,12 +44,15 @@ void Shape::CreateCube()
       indices.push_back(cubeindices[i] + startVertices);
    }
 
-   shapeIndiceStart[Cube] = startIndices;
-   shapeIndiceCount[Cube] = (UINT)indices.size() - startIndices;
+   shapedata[type].indiceStart = startIndices;
+   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
+   shapedata[type].verticesStart = startVertices;
+   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
 }
 
 void Shape::CreateCone(int longDiv)
 {
+   shapeType type = Cone;
    UINT startIndices = (UINT)indices.size();
    UINT startVertices = (UINT)vertices.size();
 
@@ -92,12 +96,15 @@ void Shape::CreateCone(int longDiv)
       indices.push_back(iTip + startVertices);
    }
 
-   shapeIndiceStart[Cone] = startIndices;
-   shapeIndiceCount[Cone] = (UINT)indices.size() - startIndices;
+   shapedata[type].indiceStart = startIndices;
+   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
+   shapedata[type].verticesStart = startVertices;
+   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
 }
 
 void Shape::CratePrism()
 {
+   shapeType type = Prism;
    UINT startIndices = (UINT)indices.size();
    UINT startVertices = (UINT)vertices.size();
 
@@ -126,17 +133,20 @@ void Shape::CratePrism()
       indices.push_back(prismindices[i] + startVertices);
    }
 
-   shapeIndiceStart[Prism] = startIndices;
-   shapeIndiceCount[Prism] = (UINT)indices.size() - startIndices;
+   shapedata[type].indiceStart = startIndices;
+   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
+   shapedata[type].verticesStart = startVertices;
+   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
 }
 
 void Shape::CreatePlane(int divisions_x, int divisions_y)
 {
-   assert(divisions_x >= 1);
-   assert(divisions_y >= 1);
-
+   shapeType type = Plane;
    UINT startIndices = (UINT)indices.size();
    UINT startVertices = (UINT)vertices.size();
+
+   assert(divisions_x >= 1);
+   assert(divisions_y >= 1);
 
    constexpr float width = 2.0f;
    constexpr float height = 2.0f;
@@ -158,8 +168,8 @@ void Shape::CreatePlane(int divisions_x, int divisions_y)
                bottomLeft,
                XMVectorSet(float(x) * divisionSize_x, y_pos, 0.0f, 0.0f)
             );
+            vertices.emplace_back();
             XMStoreFloat3(&vertices.back().pos, v);
-            //XMStoreFloat3(&vertices[i + startVertices].pos, v);
          }
       }
    }
@@ -186,17 +196,19 @@ void Shape::CreatePlane(int divisions_x, int divisions_y)
       }
    }
 
-   shapeIndiceStart[Plane] = startIndices;
-   shapeIndiceCount[Plane] = (UINT)indices.size() - startIndices;
+   shapedata[type].indiceStart = startIndices;
+   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
+   shapedata[type].verticesStart = startVertices;
+   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
 }
 
 void Shape::CreateCylinder(int longDiv)
 {
-   assert(longDiv >= 3);
-
+   shapeType type = Cylinder;
    UINT startIndices = (UINT)indices.size();
    UINT startVertices = (UINT)vertices.size();
 
+   assert(longDiv >= 3);
    const auto base = XMVectorSet(1.0f, 0.0f, -1.0f, 0.0f);
    const auto offset = XMVectorSet(0.0f, 0.0f, 2.0f, 0.0f);
    const float longitudeAngle = 2.0f * (float)M_PI / longDiv;
@@ -260,17 +272,20 @@ void Shape::CreateCylinder(int longDiv)
       indices.push_back(((i + 3) % mod + 2) + startVertices);
    }
 
-   shapeIndiceStart[Cylinder] = startIndices;
-   shapeIndiceCount[Cylinder] = (UINT)indices.size() - startIndices;
+   shapedata[type].indiceStart = startIndices;
+   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
+   shapedata[type].verticesStart = startVertices;
+   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
 }
 
 void Shape::CreateSphere(int latDiv, int longDiv)
 {
-   assert(latDiv >= 3);
-   assert(longDiv >= 3);
-
+   shapeType type = Sphere;
    UINT startIndices = (UINT)indices.size();
    UINT startVertices = (UINT)vertices.size();
+
+   assert(latDiv >= 3);
+   assert(longDiv >= 3);
 
    constexpr float radius = 1.0f;
    const auto base = XMVectorSet(0.0f, 0.0f, radius, 0.0f);
@@ -348,6 +363,8 @@ void Shape::CreateSphere(int latDiv, int longDiv)
    indices.push_back(calcIdx(latDiv - 2, longDiv - 1) + startVertices);
    indices.push_back(iSouthPole + startVertices);
 
-   shapeIndiceStart[Sphere] = startIndices;
-   shapeIndiceCount[Sphere] = (UINT)indices.size() - startIndices;
+   shapedata[type].indiceStart = startIndices;
+   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
+   shapedata[type].verticesStart = startVertices;
+   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
 }

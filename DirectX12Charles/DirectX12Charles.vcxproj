@@ -159,6 +159,8 @@
     <ClInclude Include="ObjectX12.h" />
     <ClInclude Include="OneBoxX11.h" />
     <ClInclude Include="OneBoxX12.h" />
+    <ClInclude Include="ShapeTexture.h" />
+    <ClInclude Include="ShapeTextureX11.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Surface.h" />
     <ClInclude Include="TransformX11.h" />
@@ -184,6 +186,8 @@
     <ClCompile Include="ObjectX12.cpp" />
     <ClCompile Include="OneBoxX11.cpp" />
     <ClCompile Include="OneBoxX12.cpp" />
+    <ClCompile Include="ShapeTexture.cpp" />
+    <ClCompile Include="ShapeTextureX11.cpp" />
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="TransformX11.cpp" />
     <ClCompile Include="TransformX12.cpp" />
@@ -238,6 +242,18 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)%(Filename).cso</ObjectFileOutput>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="TexturePSX11.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="TextureVSX11.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

@@ -108,8 +108,8 @@ void OneBoxX12::LoadDrawBuffer()
       XMFLOAT3 pos;
    };
    auto model = gfx.shape.GetShapeData<Vertex>();
-   indicesStart = gfx.shape.getStartIndex(Shape::Cube);
-   indicesCount = gfx.shape.getStartCount(Shape::Cube);
+   indicesStart = gfx.shape.getIndiceStart(Shape::Cube);
+   indicesCount = gfx.shape.getIndiceCount(Shape::Cube);
 
    const UINT vertexBufferSize = (UINT)(sizeof(Vertex) * model.vertices.size());
 

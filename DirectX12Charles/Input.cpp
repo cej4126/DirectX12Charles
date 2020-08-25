@@ -27,7 +27,7 @@ void Input::OnKeyPressed(unsigned char keycode) noexcept
 
 void Input::OnKeyReleased(unsigned char keycode) noexcept
 {
-   keyStates[keycode] = true;
+   keyStates[keycode] = false;
    keyBuffer.push(Input::KeyEvent(Input::KeyEvent::KeyType::KeyRelease, keycode));
    TrimBuffer(keyBuffer);
 }

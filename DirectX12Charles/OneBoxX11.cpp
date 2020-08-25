@@ -17,8 +17,8 @@ OneBoxX11::OneBoxX11(Graphics &gfx)
    //auto model = CubeTemp::Make<Vertex>();
 
    vertexStride = sizeof(Vertex);
-   indicesStart = gfx.shape.getStartIndex(Shape::Cube);
-   indicesCount = gfx.shape.getStartCount(Shape::Cube);
+   indicesStart = gfx.shape.getIndiceStart(Shape::Cube);
+   indicesCount = gfx.shape.getIndiceCount(Shape::Cube);
 
    D3D11_BUFFER_DESC verticesX11Desc = {};
    verticesX11Desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -38,7 +38,7 @@ OneBoxX11::OneBoxX11(Graphics &gfx)
    indicesX11Desc.Usage = D3D11_USAGE_DEFAULT;
    indicesX11Desc.CPUAccessFlags = 0u;
    indicesX11Desc.MiscFlags = 0u;
-   indicesX11Desc.ByteWidth = indicesCount * sizeof(unsigned short);
+   indicesX11Desc.ByteWidth = model.indices.size() * sizeof(unsigned short);
    indicesX11Desc.StructureByteStride = sizeof(unsigned short);
    D3D11_SUBRESOURCE_DATA indiceX11Data = {};
    indiceX11Data.pSysMem = model.indices.data();

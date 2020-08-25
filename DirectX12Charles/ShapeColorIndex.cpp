@@ -53,6 +53,7 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
       object->CreateRootSignature(2);
       object->LoadDrawBuffer(model.vertices, model.indices);
       object->CreateShader(L"ColorIndexVS.cso", L"ColorIndexPS.cso");
+
       // Define the vertex input layout.
       const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
       {
@@ -66,8 +67,8 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
    }
 
    std::unique_ptr < TransformX12 > trans = std::make_unique<TransformX12>(gfx, *this);
-   UINT start = gfx.shape.getStartIndex(type);
-   UINT count = gfx.shape.getStartCount(type);
+   UINT start = gfx.shape.getIndiceStart(type);
+   UINT count = gfx.shape.getIndiceCount(type);
    trans->setIndices(start, count);
 
    AddBind(std::move(trans));

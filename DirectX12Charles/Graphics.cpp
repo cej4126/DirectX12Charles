@@ -243,10 +243,10 @@ void Graphics::CreateMatrixConstantX12(UINT count)
 {
    // I think the default buffer is 4K
    int ConstantBufferPerObjectAlignedSize = (sizeof(XMMATRIX) + 255) & ~255;
-   if (count * ConstantBufferPerObjectAlignedSize > 4096)
-   {
-      throw;
-   }
+//   if (count * ConstantBufferPerObjectAlignedSize > 4096)
+//   {
+//      throw;
+//   }
    // Matrix Constant buffer
    D3D12_HEAP_PROPERTIES constantHeapUpload = {};
    constantHeapUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;

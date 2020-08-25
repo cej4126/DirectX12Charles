@@ -40,10 +40,10 @@ class Shape
 public:
    typedef enum
    {
+      Plane,
       Cube,
       Cone,
       Prism,
-      Plane,
       Cylinder,
       Sphere,
       ShapeCount
@@ -69,10 +69,19 @@ public:
       }
    };
 
+   typedef struct
+   {
+      UINT verticesStart;
+      UINT verticesCount;
+      UINT indiceStart;
+      UINT indiceCount;
+   } ShapeDataType;
 
    Shape();
-   UINT getStartIndex(shapeType type) { return shapeIndiceStart[type];  }
-   UINT getStartCount(shapeType type) { return shapeIndiceCount[type]; }
+   UINT getIndiceStart(shapeType type) { return shapedata[type].indiceStart; }
+   UINT getIndiceCount(shapeType type) { return shapedata[type].indiceCount; }
+   UINT getVerticesStart(shapeType type) { return shapedata[type].verticesStart; }
+   UINT getVerticesCount(shapeType type) { return shapedata[type].verticesCount; }
 
    template<class V>
    ShapeData<V> GetShapeData()
@@ -95,8 +104,7 @@ private:
    void CreateCylinder(int longDiv);
    void CreateSphere(int latDiv, int longDiv);
 
-
-   std::array<UINT, ShapeCount> shapeIndiceStart;
+   std::array<ShapeDataType, ShapeCount> shapedata;
    std::array<UINT, ShapeCount> shapeIndiceCount;
    std::vector<Vertex> vertices;
    std::vector<unsigned short>indices;

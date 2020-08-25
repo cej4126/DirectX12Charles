@@ -40,13 +40,13 @@ ShapeColorIndexX11::ShapeColorIndexX11(Graphics &gfx, Shape::shapeType type, flo
    spaceYawRate = 0.0f;
 #endif
 
-   struct Vertex
-   {
-      XMFLOAT3 pos;
-   };
-   
    if (!isStaticSet())
    {
+      struct Vertex
+      {
+         XMFLOAT3 pos;
+      };
+
       auto model = gfx.shape.GetShapeData<Vertex>();
 
       std::unique_ptr < ObjectX11 > object = std::make_unique<ObjectX11>(gfx);
@@ -93,8 +93,8 @@ ShapeColorIndexX11::ShapeColorIndexX11(Graphics &gfx, Shape::shapeType type, flo
 
    std::unique_ptr < TransformX11 > trans = std::make_unique<TransformX11>(gfx, *this);
    trans->AddTransformConstantBuffer();
-   UINT start = gfx.shape.getStartIndex(type);
-   UINT count = gfx.shape.getStartCount(type);
+   UINT start = gfx.shape.getIndiceStart(type);
+   UINT count = gfx.shape.getIndiceCount(type);
    trans->setIndices(start, count);
 
    AddBind(std::move(trans));

@@ -1,7 +1,10 @@
-#include "ShapeColorBlendedX11.h"
+#include "ShapeTextureX11.h"
 using namespace std;
 
-ShapeColorBlendedX11::ShapeColorBlendedX11(Graphics &gfx, Shape::shapeType type, float range)
+//#define FIX_ROTATION
+
+
+ShapeTextureX11::ShapeTextureX11(Graphics &gfx, Shape::shapeType type, float range)
    :
    range(range)
 {
@@ -9,7 +12,6 @@ ShapeColorBlendedX11::ShapeColorBlendedX11(Graphics &gfx, Shape::shapeType type,
    mt19937 gen(rd());
    uniform_real_distribution<float> rand2pi(0.0f, 3.1415f * 2.0f);
    uniform_real_distribution<float> rand1_3pi(0.0f, 3.1415f * 0.7f);
-   uniform_real_distribution<float> randcolor(0.0f, 1.0f);
 
    boxRoll = rand2pi(gen);
    boxPitch = rand2pi(gen);
@@ -30,8 +32,8 @@ ShapeColorBlendedX11::ShapeColorBlendedX11(Graphics &gfx, Shape::shapeType type,
    boxPitch = 0.0 * 3.1415f;
    boxYaw = 0.0f * 3.1415f;
    boxRollRate = 0.0f;
-   boxPitchRate = 0.5f;
-   boxYawRate = 0.1f;
+   boxPitchRate = 0.0f;
+   boxYawRate = 0.0f;
 
    spaceRoll = 0.0f;
    spacePitch = 0.0f;
@@ -48,39 +50,44 @@ ShapeColorBlendedX11::ShapeColorBlendedX11(Graphics &gfx, Shape::shapeType type,
          XMFLOAT3 pos;
          struct
          {
-            unsigned char r;
-            unsigned char g;
-            unsigned char b;
-            unsigned char a;
-         } color;
+            float u;
+            float v;
+         } tex;
       };
 
       auto model = gfx.shape.GetShapeData<Vertex>();
-
-      std::unique_ptr < ObjectX11 > object = std::make_unique<ObjectX11>(gfx);
-
-      for (int i = 0; i < model.vertices.size(); i++)
+      for (int i = 0; i < static_cast<int>(Shape::ShapeCount); i++)
       {
-         unsigned char r = (UINT)(255 * randcolor(gen));
-         unsigned char b = (UINT)(255 * randcolor(gen));
-         unsigned char g = (UINT)(255 * randcolor(gen));
-         model.vertices[i].color = { r, b, g, 255 };
-
+         Shape::shapeType type = static_cast<Shape::shapeType>(i);
+//         Shape::shapeType type = Shape::Plane;
+         UINT start = gfx.shape.getVerticesStart(type);
+         UINT count = gfx.shape.getVerticesCount(type);
+         if ((type != Shape::Cone) && (type != Shape::Prism) && (type != Shape::Cylinder) && (type != Shape::Sphere))
+         {
+            assert((count % 4) == 0);
+            for (unsigned int j = start; j < start + count; j += 4)
+            {
+               model.vertices[(size_t)(j + 0)].tex = { 0.0f,0.0f };
+               model.vertices[(size_t)(j + 1)].tex = { 1.0f,0.0f };
+               model.vertices[(size_t)(j + 2)].tex = { 0.0f,1.0f };
+               model.vertices[(size_t)(j + 3)].tex = { 1.0f,1.0f };
+            }
+         }
       }
 
+      std::unique_ptr < ObjectX11 > object = std::make_unique<ObjectX11>(gfx);
+      object->AddTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\kappa50.png"));
       object->AddVertexBuffer(model.vertices);
+      object->AddSampler();
       object->AddIndexBuffer(model.indices);
 
-      object->AddShaders(L"ColorBlendedVSX11.cso", L"ColorBlendedPSX11.cso");
-
-      //// Pixel Constant Buffer
-      object->AddPixelConstantBuffer(nullptr, false);
+      object->AddShaders(L"TextureVSX11.cso", L"TexturePSX11.cso");
 
       // Layout
       const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
       {
-         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-         { "Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+          { "Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+          { "TexCoord", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
       };
       object->AddInputLayout(ied);
 
@@ -89,12 +96,14 @@ ShapeColorBlendedX11::ShapeColorBlendedX11(Graphics &gfx, Shape::shapeType type,
 
    std::unique_ptr < TransformX11 > trans = std::make_unique<TransformX11>(gfx, *this);
    trans->AddTransformConstantBuffer();
-   trans->setIndices(gfx.shape.getIndiceStart(type), gfx.shape.getIndiceCount(type));
+   UINT start = gfx.shape.getIndiceStart(type);
+   UINT count = gfx.shape.getIndiceCount(type);
+   trans->setIndices(start, count);
 
    AddBind(std::move(trans));
 }
 
-void ShapeColorBlendedX11::Update(float dt) noexcept
+void ShapeTextureX11::Update(float dt) noexcept
 {
    boxRoll += boxRollRate * dt;
    boxPitch += boxPitchRate * dt;
@@ -104,7 +113,7 @@ void ShapeColorBlendedX11::Update(float dt) noexcept
    spaceYaw += spaceYawRate * dt;
 }
 
-XMMATRIX ShapeColorBlendedX11::GetTransformXM() const noexcept
+XMMATRIX ShapeTextureX11::GetTransformXM() const noexcept
 {
 #ifndef FIX_ROTATION
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *

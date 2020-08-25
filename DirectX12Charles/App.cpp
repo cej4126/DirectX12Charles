@@ -38,13 +38,14 @@ App::App()
    {
       Shape::shapeType type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::ShapeCount));
       float range = rangedist(rng);
+      
+      drawItemsX11.push_back(std::make_unique<ShapeTextureX11>(wnd.Gfx(), Shape::Plane, range));
+      //drawItemsX11.push_back(std::make_unique<ShapeTextureX11>(wnd.Gfx(), Shape::Cube, range));
+      //drawItemsX11.push_back(std::make_unique<ShapeTextureX11>(wnd.Gfx(), type, range));
 
       drawItemsX11.push_back(std::make_unique<ShapeColorIndexX11>(wnd.Gfx(), type, range));
       drawItemsX11.push_back(std::make_unique<ShapeColorBlendedX11>(wnd.Gfx(), type, range));
    }
-
-   const auto s = Surface::FromFile("..\\..\\DirectX12Charles\\Images\\test.png");
-   //const auto s = Surface::FromFile("..\\..\\DirectX12Charles\\Images\\kappa50.png");
 
    wnd.Gfx().RunCommandList();
 
@@ -89,6 +90,10 @@ float App::TimePeek()
 void App::DoFrame()
 {
    auto dt = TimeMark();
+   if (wnd.input.KeyIsPressed(VK_SPACE))
+   {
+      dt = 0.0f;
+   }
 
    wnd.Gfx().OnRenderBegin();
 

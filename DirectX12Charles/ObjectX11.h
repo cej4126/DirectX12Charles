@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "BindableX11.h"
 #include "Graphics.h"
+#include "Surface.h"
 
 class ObjectX11 : public BindableX11
 {
@@ -50,6 +51,9 @@ public:
       }
    }
 
+   void AddTexture(const Surface &surface);
+   void AddSampler();
+
    // Layout
    void AddInputLayout(const std::vector<D3D11_INPUT_ELEMENT_DESC> &layout);
 
@@ -77,6 +81,13 @@ private:
    // Pixel Constant Buffer
    bool pixelConstantBufferActive = false;
    Microsoft::WRL::ComPtr<ID3D11Buffer> pPixelConstantBuffer;
+
+   // Texture
+   bool textureActive = false;
+   Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
+   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
+   bool SamplerActive = false;
+   Microsoft::WRL::ComPtr<ID3D11SamplerState> pSampler;
 
    // Layout
    Microsoft::WRL::ComPtr<ID3D11InputLayout> pInputLayout;

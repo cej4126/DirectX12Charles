@@ -53,8 +53,6 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
 
       auto model = gfx.shape.GetShapeData<Vertex>();
 
-      //auto model = ShapeTemp::Make<Vertex>();
-      //auto model = Cube::Make<Vertex>();
       for (int i = 0; i < model.vertices.size(); i++)
       {
          float r = randcolor(gen);
@@ -63,15 +61,6 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
          model.vertices[i].color = { r, b, g, 1.0f };
 
       }
-
-      //model.vertices[0].color = { 1.0f, 0.0f, 0.0f, 1.0f };
-      //model.vertices[1].color = { 1.0f, 1.0f, 0.0f, 1.0f };
-      //model.vertices[2].color = { 0.0f, 1.0f, 0.0f, 1.0f };
-      //model.vertices[3].color = { 0.0f, 1.0f, 1.0f, 1.0f };
-      //model.vertices[4].color = { 0.0f, 0.0f, 1.0f, 1.0f };
-      //model.vertices[5].color = { 1.0f, 0.0f, 1.0f, 1.0f };
-      //model.vertices[6].color = { 0.5f, 0.0f, 1.0f, 1.0f };
-      //model.vertices[7].color = { 1.0f, 0.5f, 1.0f, 1.0f };
 
       object->CreateRootSignature(1);
       object->LoadDrawBuffer(model.vertices, model.indices);
@@ -90,8 +79,8 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
    }
 
    std::unique_ptr < TransformX12 > trans = std::make_unique<TransformX12>(gfx, *this);
-   UINT start = gfx.shape.getStartIndex(type);
-   UINT count = gfx.shape.getStartCount(type);
+   UINT start = gfx.shape.getIndiceStart(type);
+   UINT count = gfx.shape.getIndiceCount(type);
    trans->setIndices(start, count);
 
    AddBind(std::move(trans));

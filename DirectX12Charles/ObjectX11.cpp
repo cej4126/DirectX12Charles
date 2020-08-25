@@ -41,6 +41,54 @@ void ObjectX11::AddShaders(const std::wstring &vertexPath, const std::wstring &p
 
 }
 
+void ObjectX11::AddTexture(const Surface &surface)
+{
+   textureActive = true;
+
+   D3D11_TEXTURE2D_DESC textureDesc = {};
+   textureDesc.Height = surface.GetHeight();
+   textureDesc.Width = surface.GetWidth();
+   textureDesc.MipLevels = 1;
+   textureDesc.ArraySize = 1;
+   textureDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+   textureDesc.SampleDesc.Count = 1;
+   textureDesc.SampleDesc.Quality = 0;
+   textureDesc.Usage = D3D11_USAGE_DEFAULT;
+   textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+   textureDesc.CPUAccessFlags = 0;
+   textureDesc.MiscFlags = 0;
+
+   D3D11_SUBRESOURCE_DATA subresource = {};
+   subresource.pSysMem = surface.GetBufferPtr();
+   subresource.SysMemPitch = surface.GetWidth() * sizeof(Surface::Color);
+
+
+   ThrowIfFailed(GetDevice(gfx)->CreateTexture2D(
+      &textureDesc, &subresource, &pTexture));
+   
+   D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+   srvDesc.Format = textureDesc.Format;
+   srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+   srvDesc.Texture2D.MostDetailedMip = 0;
+   srvDesc.Texture2D.MipLevels = 1;
+
+   ThrowIfFailed(GetDevice(gfx)->CreateShaderResourceView(
+      pTexture.Get(), &srvDesc, &pTextureView));
+}
+
+void ObjectX11::AddSampler()
+{
+   SamplerActive = true;
+
+   D3D11_SAMPLER_DESC samplerDesc = {};
+   samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+   samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+   samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+   samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+
+   ThrowIfFailed(GetDevice(gfx)->CreateSamplerState(&samplerDesc, &pSampler));
+}
+
 void ObjectX11::AddInputLayout(const std::vector<D3D11_INPUT_ELEMENT_DESC> &layout)
 {
    ThrowIfFailed(GetDevice(gfx)->CreateInputLayout(
@@ -77,6 +125,16 @@ void ObjectX11::Bind(Graphics &gfx) noexcept
    if (pixelConstantBufferActive)
    {
       GetContext(gfx)->PSSetConstantBuffers(0u, 1u, pPixelConstantBuffer.GetAddressOf());
+   }
+
+   if (SamplerActive)
+   {
+      GetContext(gfx)->PSSetSamplers(0u, 1u, pSampler.GetAddressOf());
+   }
+
+   if (textureActive)
+   {
+      GetContext(gfx)->PSSetShaderResources(0u, 1u, pTextureView.GetAddressOf());
    }
 
    //GetContext(gfx)->DrawIndexed(indexCount, 0u, 0u);
