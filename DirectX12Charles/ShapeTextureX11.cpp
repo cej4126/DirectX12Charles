@@ -59,7 +59,7 @@ ShapeTextureX11::ShapeTextureX11(Graphics &gfx, Shape::shapeType type, float ran
       for (int i = 0; i < static_cast<int>(Shape::ShapeCount); i++)
       {
          Shape::shapeType type = static_cast<Shape::shapeType>(i);
-//         Shape::shapeType type = Shape::Plane;
+         //         Shape::shapeType type = Shape::Plane;
          UINT start = gfx.shape.getVerticesStart(type);
          UINT count = gfx.shape.getVerticesCount(type);
          if ((type != Shape::Cone) && (type != Shape::Prism) && (type != Shape::Cylinder) && (type != Shape::Sphere))
@@ -76,7 +76,8 @@ ShapeTextureX11::ShapeTextureX11(Graphics &gfx, Shape::shapeType type, float ran
       }
 
       std::unique_ptr < ObjectX11 > object = std::make_unique<ObjectX11>(gfx);
-      object->AddTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\kappa50.png"));
+      //object->AddTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\kappa50.png"));
+      object->AddTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
       object->AddVertexBuffer(model.vertices);
       object->AddSampler();
       object->AddIndexBuffer(model.indices);

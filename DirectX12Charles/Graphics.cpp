@@ -243,11 +243,11 @@ void Graphics::CreateMatrixConstantX12(UINT count)
 {
    // I think the default buffer is 4K
    int ConstantBufferPerObjectAlignedSize = (sizeof(XMMATRIX) + 255) & ~255;
-//   if (count * ConstantBufferPerObjectAlignedSize > 4096)
-//   {
-//      throw;
-//   }
-   // Matrix Constant buffer
+   //   if (count * ConstantBufferPerObjectAlignedSize > 4096)
+   //   {
+   //      throw;
+   //   }
+      // Matrix Constant buffer
    D3D12_HEAP_PROPERTIES constantHeapUpload = {};
    constantHeapUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
    constantHeapUpload.CreationNodeMask = 1;
@@ -523,19 +523,21 @@ void Graphics::OnRender()
 
 void Graphics::DrawCommandList()
 {
-   //// Indicate that the back buffer will now be used to present.
-   //if (!DWriteFlag)
-   //{
-   //   D3D12_RESOURCE_BARRIER resourceBarrier;
+#ifdef NOT_USE_DWRITE
+   // Indicate that the back buffer will now be used to present.
+   if (!DWriteFlag)
+   {
+      D3D12_RESOURCE_BARRIER resourceBarrier;
 
-   //   resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-   //   resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-   //   resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-   //   resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-   //   resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-   //   resourceBarrier.Transition.pResource = swapChainBuffers[frameIndex].Get();
-   //   commandList->ResourceBarrier(1, &resourceBarrier);
-   //}
+      resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+      resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+      resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+      resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+      resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+      resourceBarrier.Transition.pResource = swapChainBuffers[frameIndex].Get();
+      commandList->ResourceBarrier(1, &resourceBarrier);
+   }
+#endif
 
    ThrowIfFailed(commandList->Close());
 

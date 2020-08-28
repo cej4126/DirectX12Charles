@@ -2,19 +2,21 @@
 #include "stdafx.h"
 #include "BindableX12.h"
 #include "Graphics.h"
+#include "Surface.h"
 
 class ObjectX12 : public BindableX12
 {
 public:
    ObjectX12(Graphics &gfx);
 
-   void CreateRootSignature(int constantCount);
+   void CreateTexture(const Surface &surface);
+   void CreateRootSignature(bool constantFlag, bool textureFlag);
    void CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath);
-   void CreateConstant(bool ActiveFlag);
+   void CreateConstant();
    void CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType);
 
    template<class V>
-   void LoadDrawBuffer(const std::vector<V> &vertices, const std::vector<unsigned short> &indices)
+   void LoadVerticesBuffer(const std::vector<V> &vertices)
    {
       const UINT vertexBufferSize = (UINT)(sizeof(V) * vertices.size());
 
@@ -85,73 +87,10 @@ public:
       vertexBufferView.StrideInBytes = sizeof(V);
       vertexBufferView.SizeInBytes = vertexBufferSize;
 
-      indicesCount = (UINT)indices.size();
-      const UINT indicesBufferSize = (UINT)(sizeof(unsigned short) * indices.size());
-
-      ZeroMemory(&heapProps, sizeof(heapProps));
-      heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
-      heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-      heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-      heapProps.CreationNodeMask = 1;
-      heapProps.VisibleNodeMask = 1;
-
-      ZeroMemory(&resourceDesc, sizeof(resourceDesc));
-      resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-      resourceDesc.Alignment = 0;
-      resourceDesc.Width = indicesBufferSize;
-      resourceDesc.Height = 1;
-      resourceDesc.DepthOrArraySize = 1;
-      resourceDesc.MipLevels = 1;
-      resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
-      resourceDesc.SampleDesc.Count = 1;
-      resourceDesc.SampleDesc.Quality = 0;
-      resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-      resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-      ThrowIfFailed(device->CreateCommittedResource(
-         &heapProps,
-         D3D12_HEAP_FLAG_NONE,
-         &resourceDesc,
-         D3D12_RESOURCE_STATE_COPY_DEST,
-         nullptr,
-         IID_PPV_ARGS(&indexDefaultBuffer)));
-      indexDefaultBuffer->SetName(L"index Default Buffer");
-
-      // Upload heap
-      heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
-
-      ThrowIfFailed(device->CreateCommittedResource(
-         &heapProps,
-         D3D12_HEAP_FLAG_NONE,
-         &resourceDesc,
-         D3D12_RESOURCE_STATE_GENERIC_READ,
-         nullptr,
-         IID_PPV_ARGS(&indexUploadBuffer)));
-      indexUploadBuffer->SetName(L"index Upload Buffer");
-
-      // copy data to the upload heap
-      D3D12_SUBRESOURCE_DATA indexData = {};
-      indexData.pData = indices.data(); // reinterpret_cast<BYTE *>(indicesX12);
-      indexData.RowPitch = indicesBufferSize;
-      indexData.SlicePitch = indicesBufferSize;
-
-      gfx.UpdateSubresource(
-         indexDefaultBuffer.Get(),
-         indexUploadBuffer.Get(),
-         &indexData); // pSrcData
-
-      resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-      resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-      resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-      resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-      resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-      resourceBarrier.Transition.pResource = indexDefaultBuffer.Get();
-      commandList->ResourceBarrier(1, &resourceBarrier);
-
-      indexBufferView.BufferLocation = indexDefaultBuffer->GetGPUVirtualAddress();
-      indexBufferView.Format = DXGI_FORMAT_R16_UINT;
-      indexBufferView.SizeInBytes = indicesBufferSize;
    }
+
+   void LoadIndicesBuffer(const std::vector<unsigned short> &indices);
+
 
    void Bind(Graphics &gfx, int drawStep) noexcept override;
    //void Bind(Graphics &gfx) noexcept override;
@@ -177,6 +116,10 @@ private:
    Microsoft::WRL::ComPtr <ID3D12Resource> colorBufferUploadHeaps;
    UINT8 *colorBufferGPUAddress;
 
+   bool textureActive = false;
+   Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer;
+   Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >mainDescriptorHeap;
+   Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap;
 
    Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
    D3D12_INPUT_LAYOUT_DESC inputLayoutDesc;

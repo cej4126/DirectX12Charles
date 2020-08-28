@@ -205,9 +205,27 @@
     <FxCompile Include="TextureVSX11.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="TexturePS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="TextureVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Images\test.png">
+      <Filter>Images</Filter>
+    </Image>
+    <Image Include="Images\280893.jpg">
+      <Filter>Images</Filter>
+    </Image>
+    <Image Include="Images\cobalt-city.jpg">
+      <Filter>Images</Filter>
+    </Image>
+    <Image Include="Images\kappa50.png">
+      <Filter>Images</Filter>
+    </Image>
+    <Image Include="Images\picture3.jpg">
       <Filter>Images</Filter>
     </Image>
   </ItemGroup>

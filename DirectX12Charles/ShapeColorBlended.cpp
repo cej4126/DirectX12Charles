@@ -62,8 +62,9 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
 
       }
 
-      object->CreateRootSignature(1);
-      object->LoadDrawBuffer(model.vertices, model.indices);
+      object->CreateRootSignature(false, true);
+      object->LoadVerticesBuffer(model.vertices);
+      object->LoadIndicesBuffer(model.indices);
       object->CreateShader(L"ColorBlendedVS.cso", L"ColorBlendedPS.cso");
       // Define the vertex input layout.
       const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
@@ -73,7 +74,6 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
       };
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-      object->CreateConstant(false);
 
       addStaticBind(std::move(object), (UINT)model.indices.size());
    }

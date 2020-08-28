@@ -7,6 +7,7 @@
 #include "ShapeColorBlendedX11.h"
 #include "ShapeColorBlended.h"
 #include "ShapeTextureX11.h"
+#include "ShapeTexture.h"
 
 #include "OneBoxX11.h"
 #include "OneBoxX12.h"

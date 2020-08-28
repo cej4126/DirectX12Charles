@@ -49,7 +49,7 @@ void dwritedraw::Draw()
       x11d2dtextBrush.Get()
    );
 
-   textRect.left = 800;
+   textRect.left = 520;
    gfx.Get2dContext()->DrawText(
       textx11,
       _countof(textx11) - 1,

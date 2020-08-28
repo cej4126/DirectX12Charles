@@ -29,11 +29,23 @@ void ObjectX12::Bind(Graphics &gfx, int drawStep) noexcept
       {
          commandList->SetGraphicsRootConstantBufferView(1, colorBufferUploadHeaps->GetGPUVirtualAddress());
       }
+
+      if (textureActive)
+      {
+         // set the descriptor heap
+         ID3D12DescriptorHeap *descriptorHeaps[] = { mainDescriptorHeap.Get() };
+         commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
+         // set the descriptor table to the descriptor heap (parameter 1, as constant buffer root descriptor is parameter index 0)
+         commandList->SetGraphicsRootDescriptorTable(1, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+      }
    }
 }
 
-void ObjectX12::CreateRootSignature(int constantCount)
+void ObjectX12::CreateRootSignature(bool constantFlag, bool textureFlag)
 {
+   int rootCount = 1;
+
    D3D12_ROOT_DESCRIPTOR rootCBVDescriptor;
    rootCBVDescriptor.RegisterSpace = 0;
    rootCBVDescriptor.ShaderRegister = 0;
@@ -44,8 +56,9 @@ void ObjectX12::CreateRootSignature(int constantCount)
    rootParameters[0].Descriptor = rootCBVDescriptor;
    rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 
-   if (constantCount > 1)
+   if (constantFlag)
    {
+      ++rootCount;
       // Constant buffer for the color
       rootCBVDescriptor.RegisterSpace = 0;
       rootCBVDescriptor.ShaderRegister = 1;
@@ -54,17 +67,61 @@ void ObjectX12::CreateRootSignature(int constantCount)
       rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
    }
 
+   if (textureFlag)
+   {
+      ++rootCount;
+
+      D3D12_ROOT_DESCRIPTOR rootCBVDescriptor;
+      rootCBVDescriptor.RegisterSpace = 0;
+      rootCBVDescriptor.ShaderRegister = 0;
+
+      // create a descriptor range (descriptor table) and fill it out
+      // this is a range of descriptors inside a descriptor heap
+      D3D12_DESCRIPTOR_RANGE  descriptorTableRanges[1]; // only one range right now
+      descriptorTableRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // this is a range of shader resource views (descriptors)
+      descriptorTableRanges[0].NumDescriptors = 1; // we only have one texture right now, so the range is only 1
+      descriptorTableRanges[0].BaseShaderRegister = 0; // start index of the shader registers in the range
+      descriptorTableRanges[0].RegisterSpace = 0; // space 0. can usually be zero
+      descriptorTableRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // this appends the range to the end of the root signature descriptor tables
+
+      // create a descriptor table
+      D3D12_ROOT_DESCRIPTOR_TABLE descriptorTable;
+      descriptorTable.NumDescriptorRanges = _countof(descriptorTableRanges); // we only have one range
+      descriptorTable.pDescriptorRanges = &descriptorTableRanges[0]; // the pointer to the beginning of our ranges array
+
+      // fill out the parameter for our descriptor table. Remember it's a good idea to sort parameters by frequency of change. Our constant
+      // buffer will be changed multiple times per frame, while our descriptor table will not be changed at all (in this tutorial)
+      rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // this is a descriptor table
+      rootParameters[1].DescriptorTable = descriptorTable; // this is our descriptor table for this root parameter
+      rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
+   }
+
+   // create a static sampler
+   D3D12_STATIC_SAMPLER_DESC sampler = {};
+   sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+   sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+   sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+   sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+   sampler.MipLODBias = 0;
+   sampler.MaxAnisotropy = 0;
+   sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+   sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+   sampler.MinLOD = 0.0f;
+   sampler.MaxLOD = D3D12_FLOAT32_MAX;
+   sampler.ShaderRegister = 0;
+   sampler.RegisterSpace = 0;
+   sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
    // Create an basic root signature.
    D3D12_ROOT_SIGNATURE_DESC rsDesc;
    rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
       D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
       D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
       D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
-   //rsDesc.NumParameters = _countof(rootParameters);
-   rsDesc.NumParameters = constantCount;
+   rsDesc.NumParameters = rootCount;
    rsDesc.pParameters = rootParameters;
-   rsDesc.NumStaticSamplers = 0;
-   rsDesc.pStaticSamplers = nullptr;
+   rsDesc.NumStaticSamplers = 1;
+   rsDesc.pStaticSamplers = &sampler;
 
    ComPtr<ID3DBlob> signature;
    ComPtr<ID3DBlob> error;
@@ -85,69 +142,235 @@ void ObjectX12::CreateShader(const std::wstring &vertexPath, const std::wstring 
    ThrowIfFailed(D3DReadFileToBlob(pixelPath.c_str(), pixelShaderBlob.ReleaseAndGetAddressOf()));
 }
 
-void ObjectX12::CreateConstant(bool ActiveFlag)
+void ObjectX12::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
 {
-   colorBufferActive = ActiveFlag;
-   if (ActiveFlag)
+   indicesCount = (UINT)indices.size();
+   const UINT indicesBufferSize = (UINT)(sizeof(unsigned short) * indices.size());
+
+   D3D12_HEAP_PROPERTIES heapProps;
+   ZeroMemory(&heapProps, sizeof(heapProps));
+   heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+   heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+   heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+   heapProps.CreationNodeMask = 1;
+   heapProps.VisibleNodeMask = 1;
+
+   D3D12_RESOURCE_DESC resourceDesc;
+   ZeroMemory(&resourceDesc, sizeof(resourceDesc));
+   resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+   resourceDesc.Alignment = 0;
+   resourceDesc.Width = indicesBufferSize;
+   resourceDesc.Height = 1;
+   resourceDesc.DepthOrArraySize = 1;
+   resourceDesc.MipLevels = 1;
+   resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+   resourceDesc.SampleDesc.Count = 1;
+   resourceDesc.SampleDesc.Quality = 0;
+   resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+   resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+   ThrowIfFailed(device->CreateCommittedResource(
+      &heapProps,
+      D3D12_HEAP_FLAG_NONE,
+      &resourceDesc,
+      D3D12_RESOURCE_STATE_COPY_DEST,
+      nullptr,
+      IID_PPV_ARGS(&indexDefaultBuffer)));
+   indexDefaultBuffer->SetName(L"index Default Buffer");
+
+   // Upload heap
+   heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
+
+   ThrowIfFailed(device->CreateCommittedResource(
+      &heapProps,
+      D3D12_HEAP_FLAG_NONE,
+      &resourceDesc,
+      D3D12_RESOURCE_STATE_GENERIC_READ,
+      nullptr,
+      IID_PPV_ARGS(&indexUploadBuffer)));
+   indexUploadBuffer->SetName(L"index Upload Buffer");
+
+   // copy data to the upload heap
+   D3D12_SUBRESOURCE_DATA indexData = {};
+   indexData.pData = indices.data(); // reinterpret_cast<BYTE *>(indicesX12);
+   indexData.RowPitch = indicesBufferSize;
+   indexData.SlicePitch = indicesBufferSize;
+
+   gfx.UpdateSubresource(
+      indexDefaultBuffer.Get(),
+      indexUploadBuffer.Get(),
+      &indexData); // pSrcData
+
+   D3D12_RESOURCE_BARRIER resourceBarrier;
+   resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+   resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+   resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+   resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+   resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+   resourceBarrier.Transition.pResource = indexDefaultBuffer.Get();
+   commandList->ResourceBarrier(1, &resourceBarrier);
+
+   indexBufferView.BufferLocation = indexDefaultBuffer->GetGPUVirtualAddress();
+   indexBufferView.Format = DXGI_FORMAT_R16_UINT;
+   indexBufferView.SizeInBytes = indicesBufferSize;
+}
+
+void ObjectX12::CreateTexture(const Surface &surface)
+{
+   textureActive = true;
+   //const UINT indicesBufferSize = (UINT)(sizeof(unsigned short) * indices.size());
+
+   D3D12_HEAP_PROPERTIES heapProps;
+   ZeroMemory(&heapProps, sizeof(heapProps));
+   heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+   heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+   heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+   heapProps.CreationNodeMask = 1;
+   heapProps.VisibleNodeMask = 1;
+
+   D3D12_RESOURCE_DESC resourceDesc;
+   ZeroMemory(&resourceDesc, sizeof(resourceDesc));
+   resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+   //resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+   resourceDesc.Alignment = 0;
+   resourceDesc.Width = surface.GetWidth();
+   resourceDesc.Height = surface.GetHeight();
+   resourceDesc.DepthOrArraySize = 1;
+   resourceDesc.MipLevels = 1;
+   //resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+   resourceDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+   resourceDesc.SampleDesc.Count = 1;
+   resourceDesc.SampleDesc.Quality = 0;
+   resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+   //resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+   resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+   ThrowIfFailed(device->CreateCommittedResource(
+      &heapProps,
+      D3D12_HEAP_FLAG_NONE,
+      &resourceDesc,
+      D3D12_RESOURCE_STATE_COPY_DEST,
+      nullptr,
+      IID_PPV_ARGS(&textureBuffer)));
+   textureBuffer->SetName(L"Texture Default Buffer");
+
+   // Upload heap
+   heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
+   UINT64 textureUploadBufferSize;
+   device->GetCopyableFootprints(&resourceDesc, 0, 1, 0, nullptr, nullptr, nullptr, &textureUploadBufferSize);
+
+   resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+   resourceDesc.Width = textureUploadBufferSize;
+   resourceDesc.Height = 1;
+   resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+   resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
+   ThrowIfFailed(device->CreateCommittedResource(
+      &heapProps,
+      D3D12_HEAP_FLAG_NONE,
+      &resourceDesc,
+      D3D12_RESOURCE_STATE_GENERIC_READ,
+      nullptr,
+      IID_PPV_ARGS(&textureBufferUploadHeap)));
+   textureBufferUploadHeap->SetName(L"Texture Upload Buffer");
+
+   // copy data to the upload heap
+   D3D12_SUBRESOURCE_DATA TextureData = {};
+   TextureData.pData = surface.GetBufferPtr();
+   TextureData.RowPitch = surface.GetWidth() * sizeof(Surface::Color);
+   TextureData.SlicePitch = surface.GetWidth() * sizeof(Surface::Color) * surface.GetHeight();
+
+   gfx.UpdateSubresource(
+      textureBuffer.Get(),
+      textureBufferUploadHeap.Get(),
+      &TextureData); // pSrcData
+
+   D3D12_RESOURCE_BARRIER resourceBarrier;
+   resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+   resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+   resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+   resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+   resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+   resourceBarrier.Transition.pResource = textureBuffer.Get();
+   commandList->ResourceBarrier(1, &resourceBarrier);
+
+   // create the descriptor heap that will store our srv
+   D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+   heapDesc.NumDescriptors = 1;
+   heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+   heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+   ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mainDescriptorHeap)));
+
+   // now we create a shader resource view (descriptor that points to the texture and describes it)
+   D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+   srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+   srvDesc.Format = resourceDesc.Format;
+   srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+   srvDesc.Texture2D.MipLevels = 1;
+   device->CreateShaderResourceView(textureBuffer.Get(), &srvDesc, mainDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+
+}
+
+void ObjectX12::CreateConstant()
+{
+   colorBufferActive = true;
+   // lookup table for cube face colors
+   ConstantBufferColor cb =
    {
-      // lookup table for cube face colors
-      ConstantBufferColor cb =
       {
-         {
-            {1.0f, 0.0f, 1.0f, 1.0f},
-            {1.0f, 0.0f, 0.0f, 1.0f},
-            {0.0f, 1.0f, 0.0f, 1.0f},
-            {0.0f, 0.0f, 1.0f, 1.0f},
-            {1.0f, 1.0f, 0.0f, 1.0f},
-            {0.0f, 1.0f, 1.0f, 1.0f},
-         }
-      };
-      //colorBuffer = cb;
-      for (int i = 0; i < 6; i++)
-      {
-         colorBuffer.face_colors[i].r = cb.face_colors[i].r;
-         colorBuffer.face_colors[i].g = cb.face_colors[i].g;
-         colorBuffer.face_colors[i].b = cb.face_colors[i].b;
-         colorBuffer.face_colors[i].a = cb.face_colors[i].a;
+         {1.0f, 0.0f, 1.0f, 1.0f},
+         {1.0f, 0.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f, 0.0f, 1.0f},
+         {0.0f, 0.0f, 1.0f, 1.0f},
+         {1.0f, 1.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f, 1.0f, 1.0f},
       }
-
-      D3D12_RESOURCE_DESC constantHeapDesc = {};
-      constantHeapDesc.Alignment = 0;
-      constantHeapDesc.DepthOrArraySize = 1;
-      constantHeapDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-      constantHeapDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-      constantHeapDesc.Format = DXGI_FORMAT_UNKNOWN;
-      constantHeapDesc.Height = 1;
-      constantHeapDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-      constantHeapDesc.SampleDesc.Count = 1;
-      constantHeapDesc.SampleDesc.Quality = 0;
-      constantHeapDesc.Width = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-      constantHeapDesc.MipLevels = 1;
-
-      D3D12_HEAP_PROPERTIES constantHeapUpload = {};
-      constantHeapUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-      constantHeapUpload.CreationNodeMask = 1;
-      constantHeapUpload.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-      constantHeapUpload.Type = D3D12_HEAP_TYPE_UPLOAD;
-      constantHeapUpload.VisibleNodeMask = 1;
-
-      ThrowIfFailed(device->CreateCommittedResource(
-         &constantHeapUpload,
-         D3D12_HEAP_FLAG_NONE,
-         &constantHeapDesc,
-         D3D12_RESOURCE_STATE_GENERIC_READ,
-         nullptr,
-         IID_PPV_ARGS(&colorBufferUploadHeaps)));
-
-      D3D12_RANGE readRange;
-      readRange.Begin = 1;
-      readRange.End = 0;
-      ThrowIfFailed(colorBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&colorBufferGPUAddress)));
-
-      int ConstantBufferPerObjectAlignedSize = (sizeof(cb) + 255) & ~255;
-
-      memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
+   };
+   //colorBuffer = cb;
+   for (int i = 0; i < 6; i++)
+   {
+      colorBuffer.face_colors[i].r = cb.face_colors[i].r;
+      colorBuffer.face_colors[i].g = cb.face_colors[i].g;
+      colorBuffer.face_colors[i].b = cb.face_colors[i].b;
+      colorBuffer.face_colors[i].a = cb.face_colors[i].a;
    }
+
+   D3D12_RESOURCE_DESC constantHeapDesc = {};
+   constantHeapDesc.Alignment = 0;
+   constantHeapDesc.DepthOrArraySize = 1;
+   constantHeapDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+   constantHeapDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+   constantHeapDesc.Format = DXGI_FORMAT_UNKNOWN;
+   constantHeapDesc.Height = 1;
+   constantHeapDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+   constantHeapDesc.SampleDesc.Count = 1;
+   constantHeapDesc.SampleDesc.Quality = 0;
+   constantHeapDesc.Width = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+   constantHeapDesc.MipLevels = 1;
+
+   D3D12_HEAP_PROPERTIES constantHeapUpload = {};
+   constantHeapUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+   constantHeapUpload.CreationNodeMask = 1;
+   constantHeapUpload.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+   constantHeapUpload.Type = D3D12_HEAP_TYPE_UPLOAD;
+   constantHeapUpload.VisibleNodeMask = 1;
+
+   ThrowIfFailed(device->CreateCommittedResource(
+      &constantHeapUpload,
+      D3D12_HEAP_FLAG_NONE,
+      &constantHeapDesc,
+      D3D12_RESOURCE_STATE_GENERIC_READ,
+      nullptr,
+      IID_PPV_ARGS(&colorBufferUploadHeaps)));
+
+   D3D12_RANGE readRange;
+   readRange.Begin = 1;
+   readRange.End = 0;
+   ThrowIfFailed(colorBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&colorBufferGPUAddress)));
+
+   int ConstantBufferPerObjectAlignedSize = (sizeof(cb) + 255) & ~255;
+
+   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
 }
 
 void ObjectX12::CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType)

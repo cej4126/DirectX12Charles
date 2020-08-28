@@ -50,8 +50,9 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
       };
       auto model = gfx.shape.GetShapeData<Vertex>();
 
-      object->CreateRootSignature(2);
-      object->LoadDrawBuffer(model.vertices, model.indices);
+      object->CreateRootSignature(true, false);
+      object->LoadVerticesBuffer(model.vertices);
+      object->LoadIndicesBuffer(model.indices);
       object->CreateShader(L"ColorIndexVS.cso", L"ColorIndexPS.cso");
 
       // Define the vertex input layout.
@@ -61,7 +62,7 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
       };
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-      object->CreateConstant(true);
+      object->CreateConstant();
 
       addStaticBind(std::move(object), (UINT)model.indices.size());
    }
