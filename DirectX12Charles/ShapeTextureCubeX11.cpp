@@ -1,10 +1,9 @@
-#include "ShapeTextureX11.h"
+#include "ShapeTextureCubeX11.h"
 using namespace std;
 
 //#define FIX_ROTATION
 
-
-ShapeTextureX11::ShapeTextureX11(Graphics &gfx, Shape::shapeType type, float range)
+ShapeTextureCubeX11::ShapeTextureCubeX11(Graphics &gfx, float range)
    :
    range(range)
 {
@@ -42,6 +41,12 @@ ShapeTextureX11::ShapeTextureX11(Graphics &gfx, Shape::shapeType type, float ran
    spacePitchRate = 0.0f;
    spaceYawRate = 0.0f;
 #endif
+   Shape::shapeType type = Shape::TextureCube;
+
+   UINT verticesStart = gfx.shape.getVerticesStart(type);
+   UINT verticesCount = gfx.shape.getVerticesCount(type);
+   UINT indicesStart = gfx.shape.getIndiceStart(type);
+   UINT indicesCount = gfx.shape.getIndiceCount(type);
 
    if (!isStaticSet())
    {
@@ -56,31 +61,76 @@ ShapeTextureX11::ShapeTextureX11(Graphics &gfx, Shape::shapeType type, float ran
       };
 
       auto model = gfx.shape.GetShapeData<Vertex>();
-      for (int i = 0; i < static_cast<int>(Shape::ShapeCount); i++)
+
+      std::vector< Vertex > vertices(verticesCount);
+      for (UINT i = 0; i < verticesCount; i++)
       {
-         Shape::shapeType type = static_cast<Shape::shapeType>(i);
-         //         Shape::shapeType type = Shape::Plane;
-         UINT start = gfx.shape.getVerticesStart(type);
-         UINT count = gfx.shape.getVerticesCount(type);
-         if ((type != Shape::Cone) && (type != Shape::Prism) && (type != Shape::Cylinder) && (type != Shape::Sphere))
-         {
-            assert((count % 4) == 0);
-            for (unsigned int j = start; j < start + count; j += 4)
-            {
-               model.vertices[(size_t)(j + 0)].tex = { 0.0f,0.0f };
-               model.vertices[(size_t)(j + 1)].tex = { 1.0f,0.0f };
-               model.vertices[(size_t)(j + 2)].tex = { 0.0f,1.0f };
-               model.vertices[(size_t)(j + 3)].tex = { 1.0f,1.0f };
-            }
-         }
+         int index = verticesStart + i;
+         vertices[i] = model.vertices[index];
+      }
+
+      const float u1 = 0.0f;
+      const float u2 = 1.0f / 3.0f;
+      const float u3 = 2.0f / 3.0f;
+      const float u4 = 1.0f;
+      const float v1 = 0.0f;
+      const float v2 = 1.0f / 4.0f;
+      const float v3 = 2.0f / 4.0f;
+      const float v4 = 3.0f / 4.0f;
+      const float v5 = 1.0f;
+      // Y
+      // |
+      // Z - X
+      // Front
+      vertices[ 0].tex = { u3, v2 };
+      vertices[ 1].tex = { u3, v3 };
+      vertices[ 2].tex = { u2, v3 };
+      vertices[ 3].tex = { u2, v2 };
+
+      // Top
+      vertices[ 4].tex = { u4, v2 };
+      vertices[ 5].tex = { u4, v3 };
+      vertices[ 6].tex = { u3, v3 };
+      vertices[ 7].tex = { u3, v2 };
+
+      // Back
+      vertices[ 8].tex = { u3, v4 };
+      vertices[ 9].tex = { u3, v5 };
+      vertices[10].tex = { u2, v5 };
+      vertices[11].tex = { u2, v4 };
+
+      // Bottom
+      vertices[12].tex = { u2, v2 };
+      vertices[13].tex = { u2, v3 };
+      vertices[14].tex = { u1, v3 };
+      vertices[15].tex = { u1, v2 };
+
+      // Right
+      vertices[16].tex = { u3, v3 };
+      vertices[17].tex = { u3, v4 };
+      vertices[18].tex = { u2, v4 };
+      vertices[19].tex = { u2, v3 };
+
+      // Left
+      vertices[20].tex = { u3, v1 };
+      vertices[21].tex = { u3, v2 };
+      vertices[22].tex = { u2, v2 };
+      vertices[23].tex = { u2, v1 };
+
+      std::vector <unsigned short> indices(indicesCount);
+      for (UINT i = 0; i < indicesCount; i++)
+      {
+         int index = indicesStart + i;
+         indices[i] = model.indices[index] - verticesStart;
       }
 
       std::unique_ptr < ObjectX11 > object = std::make_unique<ObjectX11>(gfx);
       //object->AddTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\kappa50.png"));
-      object->AddTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
-      object->AddVertexBuffer(model.vertices);
+      //object->AddTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
+      object->AddTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\cube.png"));
+      object->AddVertexBuffer(vertices);
       object->AddSampler();
-      object->AddIndexBuffer(model.indices);
+      object->AddIndexBuffer(indices);
 
       object->AddShaders(L"TextureVSX11.cso", L"TexturePSX11.cso");
 
@@ -97,14 +147,12 @@ ShapeTextureX11::ShapeTextureX11(Graphics &gfx, Shape::shapeType type, float ran
 
    std::unique_ptr < TransformX11 > trans = std::make_unique<TransformX11>(gfx, *this);
    trans->AddTransformConstantBuffer();
-   UINT start = gfx.shape.getIndiceStart(type);
-   UINT count = gfx.shape.getIndiceCount(type);
-   trans->setIndices(start, count);
+   trans->setIndices(0, indicesCount);
 
    AddBind(std::move(trans));
 }
 
-void ShapeTextureX11::Update(float dt) noexcept
+void ShapeTextureCubeX11::Update(float dt) noexcept
 {
    boxRoll += boxRollRate * dt;
    boxPitch += boxPitchRate * dt;
@@ -114,7 +162,7 @@ void ShapeTextureX11::Update(float dt) noexcept
    spaceYaw += spaceYawRate * dt;
 }
 
-XMMATRIX ShapeTextureX11::GetTransformXM() const noexcept
+XMMATRIX ShapeTextureCubeX11::GetTransformXM() const noexcept
 {
 #ifndef FIX_ROTATION
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
@@ -124,6 +172,7 @@ XMMATRIX ShapeTextureX11::GetTransformXM() const noexcept
 #else
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f) *
+      DirectX::XMMatrixScaling(3.0f, 3.0f, 3.0f) *
       DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
 #endif
 }

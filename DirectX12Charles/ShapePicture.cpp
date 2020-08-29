@@ -1,7 +1,7 @@
-#include "ShapeTexture.h"
+#include "ShapePicture.h"
 using namespace std;
 
-ShapeTexture::ShapeTexture(Graphics &gfx, Shape::shapeType type, float range)
+ShapePicture::ShapePicture(Graphics &gfx, float range)
    :
    range(range)
 {
@@ -40,6 +40,12 @@ ShapeTexture::ShapeTexture(Graphics &gfx, Shape::shapeType type, float range)
    spacePitchRate = 0.0f;
    spaceYawRate = 0.0f;
 #endif
+   Shape::shapeType type = Shape::Plane;
+
+   UINT verticesStart = gfx.shape.getVerticesStart(type);
+   UINT verticesCount = gfx.shape.getVerticesCount(type);
+   UINT indicesStart = gfx.shape.getIndiceStart(type);
+   UINT indicesCount = gfx.shape.getIndiceCount(type);
 
    if (!isStaticSet())
    {
@@ -56,30 +62,29 @@ ShapeTexture::ShapeTexture(Graphics &gfx, Shape::shapeType type, float range)
       };
 
       auto model = gfx.shape.GetShapeData<Vertex>();
-      for (int i = 0; i < static_cast<int>(Shape::ShapeCount); i++)
+
+      std::vector< Vertex > vertices(verticesCount);
+      for (UINT i = 0; i < verticesCount; i++)
       {
-         Shape::shapeType type = static_cast<Shape::shapeType>(i);
-         //         Shape::shapeType type = Shape::Plane;
-         UINT start = gfx.shape.getVerticesStart(type);
-         UINT count = gfx.shape.getVerticesCount(type);
-         if ((type != Shape::Cone) && (type != Shape::Prism) && (type != Shape::Cylinder) && (type != Shape::Sphere))
-         {
-            assert((count % 4) == 0);
-            for (unsigned int j = start; j < start + count; j += 4)
-            {
-               model.vertices[(size_t)(j + 0)].tex = { 0.0f,0.0f };
-               model.vertices[(size_t)(j + 1)].tex = { 1.0f,0.0f };
-               model.vertices[(size_t)(j + 2)].tex = { 0.0f,1.0f };
-               model.vertices[(size_t)(j + 3)].tex = { 1.0f,1.0f };
-            }
-         }
+         int index = verticesStart + i;
+         vertices[i] = model.vertices[index];
+      }
+      vertices[0].tex = { 0.0f,0.0f };
+      vertices[1].tex = { 1.0f,0.0f };
+      vertices[2].tex = { 0.0f,1.0f };
+      vertices[3].tex = { 1.0f,1.0f };
+      std::vector <unsigned short> indices(indicesCount);
+      for (UINT i = 0; i < indicesCount; i++)
+      {
+         int index = indicesStart + i;
+         indices[i] = model.indices[index] - verticesStart;
       }
 
       object->CreateTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
 
       object->CreateRootSignature(false, true);
-      object->LoadVerticesBuffer(model.vertices);
-      object->LoadIndicesBuffer(model.indices);
+      object->LoadVerticesBuffer(vertices);
+      object->LoadIndicesBuffer(indices);
       object->CreateShader(L"TextureVS.cso", L"TexturePS.cso");
       // Define the vertex input layout.
       const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
@@ -94,14 +99,12 @@ ShapeTexture::ShapeTexture(Graphics &gfx, Shape::shapeType type, float range)
    }
 
    std::unique_ptr < TransformX12 > trans = std::make_unique<TransformX12>(gfx, *this);
-   UINT start = gfx.shape.getIndiceStart(type);
-   UINT count = gfx.shape.getIndiceCount(type);
-   trans->setIndices(start, count);
+   trans->setIndices(0, indicesCount);
 
    AddBind(std::move(trans));
 }
 
-void ShapeTexture::Update(float dt) noexcept
+void ShapePicture::Update(float dt) noexcept
 {
    boxRoll += boxRollRate * dt;
    boxPitch += boxPitchRate * dt;
@@ -111,7 +114,7 @@ void ShapeTexture::Update(float dt) noexcept
    spaceYaw += spaceYawRate * dt;
 }
 
-XMMATRIX ShapeTexture::GetTransformXM() const noexcept
+XMMATRIX ShapePicture::GetTransformXM() const noexcept
 {
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *

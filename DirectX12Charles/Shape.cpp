@@ -6,12 +6,33 @@
 
 Shape::Shape()
 {
-   CreatePlane(1, 1);
-   CreateCube();
-   CreateCone(24);
-   CratePrism();
-   CreateCylinder(24);
-   CreateSphere(12, 24);
+   for (int i = 0; i < ShapeCount; i++)
+   {
+      switch (i)
+      {
+         case Cube:
+            CreateCube();
+            break;
+         case Cone:
+            CreateCone(24);
+            break;
+         case Prism:
+            CratePrism();
+            break;
+         case Cylinder:
+            CreateCylinder(24);
+            break;
+         case Sphere:
+            CreateSphere(12, 24);
+            break;
+         case Plane:
+            CreatePlane(1, 1);
+            break;
+         case TextureCube:
+            CreateTextureCube();
+            break;
+      }
+   }
 }
 
 void Shape::CreateCube()
@@ -362,6 +383,73 @@ void Shape::CreateSphere(int latDiv, int longDiv)
    indices.push_back(calcIdx(latDiv - 2, 0) + startVertices);
    indices.push_back(calcIdx(latDiv - 2, longDiv - 1) + startVertices);
    indices.push_back(iSouthPole + startVertices);
+
+   shapedata[type].indiceStart = startIndices;
+   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
+   shapedata[type].verticesStart = startVertices;
+   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
+}
+
+
+void Shape::CreateTextureCube()
+{
+   shapeType type = TextureCube;
+   UINT startIndices = (UINT)indices.size();
+   UINT startVertices = (UINT)vertices.size();
+   constexpr float side = 1.0f;
+
+   // Y
+   // |
+   //-Z - X
+   // Front                X      Y      Z
+   vertices.emplace_back(-side, side, -side); //  0
+   vertices.emplace_back(side, side, -side); //  1
+   vertices.emplace_back(side, -side, -side); //  2
+   vertices.emplace_back(-side, -side, -side); //  3
+
+   // Top
+   vertices.emplace_back(-side, side, side); //  4
+   vertices.emplace_back(side, side, side); //  5
+   vertices.emplace_back(side, side, -side); //  6
+   vertices.emplace_back(-side, side, -side); //  7
+
+   // Back
+   vertices.emplace_back(side, side, side); //  8
+   vertices.emplace_back(-side, side, side); //  9
+   vertices.emplace_back(-side, -side, side); // 10
+   vertices.emplace_back(side, -side, side); // 11
+
+   // Bottom
+   vertices.emplace_back(-side, -side, -side); // 12
+   vertices.emplace_back(side, -side, -side); // 13
+   vertices.emplace_back(side, -side, side); // 14
+   vertices.emplace_back(-side, -side, side); // 15
+
+   // Right
+   vertices.emplace_back(side, side, -side); // 16
+   vertices.emplace_back(side, side, side); // 17
+   vertices.emplace_back(side, -side, side); // 18
+   vertices.emplace_back(side, -side, -side); // 19
+
+   // Left
+   vertices.emplace_back(-side, side, side); // 20
+   vertices.emplace_back(-side, side, -side); // 21
+   vertices.emplace_back(-side, -side, -side); // 22
+   vertices.emplace_back(-side, -side, side); // 23
+
+   const unsigned short cubeindices[]
+   {
+          0, 2, 3,  0, 1, 2,  // Front
+          4, 6, 7,  4, 5, 6,  // Top
+          8,10,11,  8, 9,10,  // Back
+         12,14,15, 12,13,14,  // Bottom
+         16,18,19, 16,17,18,  // Right
+         20,22,23, 20,21,22   // Left
+   };
+   for (int i = 0; i < _countof(cubeindices); i++)
+   {
+      indices.push_back(cubeindices[i] + startVertices);
+   }
 
    shapedata[type].indiceStart = startIndices;
    shapedata[type].indiceCount = (UINT)indices.size() - startIndices;

@@ -6,8 +6,10 @@
 #include "ShapeColorIndex.h"
 #include "ShapeColorBlendedX11.h"
 #include "ShapeColorBlended.h"
-#include "ShapeTextureX11.h"
-#include "ShapeTexture.h"
+#include "ShapePictureX11.h"
+#include "ShapePicture.h"
+#include "ShapeTextureCubeX11.h"
+#include "ShapeTextureCube.h"
 
 #include "OneBoxX11.h"
 #include "OneBoxX12.h"

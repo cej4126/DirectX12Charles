@@ -40,12 +40,13 @@ class Shape
 public:
    typedef enum
    {
-      Plane,
       Cube,
       Cone,
       Prism,
       Cylinder,
       Sphere,
+      Plane,
+      TextureCube,
       ShapeCount
    } shapeType;
 
@@ -92,7 +93,7 @@ public:
          verts[i].pos = vertices[i].pos;
       }
 
-//      return{ std::move(verts), std::move(indices) };
+      //      return{ std::move(verts), std::move(indices) };
       return{ verts, indices };
    }
 
@@ -103,9 +104,9 @@ private:
    void CreatePlane(int divisions_x, int divisions_y);
    void CreateCylinder(int longDiv);
    void CreateSphere(int latDiv, int longDiv);
+   void CreateTextureCube();
 
    std::array<ShapeDataType, ShapeCount> shapedata;
-   std::array<UINT, ShapeCount> shapeIndiceCount;
    std::vector<Vertex> vertices;
    std::vector<unsigned short>indices;
 

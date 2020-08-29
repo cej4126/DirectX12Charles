@@ -5,10 +5,10 @@
 #include "TransformX11.h"
 #include "Shape.h"
 
-class ShapeTextureX11 : public DrawBaseX11 <ShapeTextureX11>
+class ShapeTextureCubeX11 : public DrawBaseX11 <ShapeTextureCubeX11>
 {
 public:
-   ShapeTextureX11(Graphics &gfx, Shape::shapeType type, float range);
+   ShapeTextureCubeX11(Graphics &gfx, float range);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
 

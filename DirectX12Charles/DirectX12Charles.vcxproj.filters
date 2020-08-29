@@ -90,10 +90,16 @@
     <ClInclude Include="GDIPlusManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShapeTextureX11.h">
+    <ClInclude Include="ShapePicture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShapeTexture.h">
+    <ClInclude Include="ShapePictureX11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapeTextureCube.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapeTextureCubeX11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -167,10 +173,16 @@
     <ClCompile Include="GDIPlusManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShapeTextureX11.cpp">
+    <ClCompile Include="ShapePicture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShapeTexture.cpp">
+    <ClCompile Include="ShapePictureX11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShapeTextureCube.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShapeTextureCubeX11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -226,6 +238,9 @@
       <Filter>Images</Filter>
     </Image>
     <Image Include="Images\picture3.jpg">
+      <Filter>Images</Filter>
+    </Image>
+    <Image Include="Images\cube.png">
       <Filter>Images</Filter>
     </Image>
   </ItemGroup>

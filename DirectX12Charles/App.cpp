@@ -24,10 +24,14 @@ App::App()
    int MaxBoxX12Count = 12;
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
-      Shape::shapeType type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::ShapeCount));
+      Shape::shapeType type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
       float range = rangedist(rng);
 
-      drawItems.push_back(std::make_unique<ShapeTexture>(wnd.Gfx(), Shape::Plane, range));
+      if ((i % 4) == 0)
+      {
+         drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));
+         drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), range));
+      }
       drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
       drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
    }
@@ -37,11 +41,14 @@ App::App()
    Shape::shapeType type = Shape::Cube;
    for (auto i = 0; i < MaxBoxX11Count; i++)
    {
-      Shape::shapeType type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::ShapeCount));
+      Shape::shapeType type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
       float range = rangedist(rng);
 
-      drawItemsX11.push_back(std::make_unique<ShapeTextureX11>(wnd.Gfx(), Shape::Plane, range));
-
+      if ((i % 4) == 0)
+      {
+         drawItemsX11.push_back(std::make_unique<ShapeTextureCubeX11>(wnd.Gfx(), range));
+         drawItemsX11.push_back(std::make_unique<ShapePictureX11>(wnd.Gfx(), range));
+      }
       drawItemsX11.push_back(std::make_unique<ShapeColorIndexX11>(wnd.Gfx(), type, range));
       drawItemsX11.push_back(std::make_unique<ShapeColorBlendedX11>(wnd.Gfx(), type, range));
    }
