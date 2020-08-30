@@ -27,4 +27,5 @@ private:
    HWND hWnd;
    HINSTANCE hInstance;
    std::unique_ptr<Graphics> pGfx;
+   bool graphicActive = false;
 };

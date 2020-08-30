@@ -12,7 +12,9 @@ TransformX12::TransformX12(Graphics &gfx, const DrawX12 &parent)
 void TransformX12::Bind(Graphics &gfx, int index) noexcept
 {
    XMMATRIX matrixBuffer = XMMatrixTranspose(
-      parentTransform.GetTransformXM() * gfx.GetProjectionX12());
+      parentTransform.GetTransformXM() *
+      gfx.GetCamera() *
+      gfx.GetProjection());
 
    gfx.SetMatrixConstantX12(index, matrixBuffer);
 

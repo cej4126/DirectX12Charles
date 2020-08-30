@@ -42,12 +42,10 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 
 void Graphics::LoadDriveX12()
 {
-   // Dwrite
    UINT dxgiFactoryFlags = 0;
 #if defined(_DEBUG) 
    dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
-   // end Dwrite
 
    // factory
    ThrowIfFailed(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&m_DxgiFactory4)));

@@ -44,8 +44,14 @@ public:
    void SetProjectionX11(FXMMATRIX proj) noexcept { projectionX11 = proj; }
    XMMATRIX GetProjectionX11() const noexcept { return projectionX11; }
 
-   void SetProjectionX12(FXMMATRIX proj) noexcept { projectionX12 = proj; }
-   XMMATRIX GetProjectionX12() const noexcept { return projectionX12; }
+   void SetProjection(FXMMATRIX proj) noexcept { projection = proj; }
+   XMMATRIX GetProjection() const noexcept { return projection; }
+
+   void SetCameraX11(FXMMATRIX cam) noexcept { cameraX11 = cam; };
+   XMMATRIX GetCameraX11() const noexcept { return cameraX11; };
+
+   void SetCamera(FXMMATRIX cam) noexcept { camera = cam; };
+   XMMATRIX GetCamera() const noexcept { return camera; };
 
    ID3D11DeviceContext *GetContextX11() noexcept { return x11DeviceContext.Get(); }
    ID3D11Device *GetDeviceX11() noexcept { return x11Device.Get(); }
@@ -87,7 +93,10 @@ protected:
    HWND hWnd;
 
    XMMATRIX projectionX11;
-   XMMATRIX projectionX12;
+   XMMATRIX projection;
+   XMMATRIX cameraX11;
+   XMMATRIX camera;
+
 
    Microsoft::WRL::ComPtr <IDXGIFactory4> m_DxgiFactory4;
    Microsoft::WRL::ComPtr <IDXGIAdapter3> adapter;

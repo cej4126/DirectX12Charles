@@ -10,7 +10,9 @@ TransformX11::TransformX11(Graphics &gfx, const DrawX11 &parent)
 void TransformX11::Bind(Graphics &gfx) noexcept
 {
    XMMATRIX consts = XMMatrixTranspose(
-      parentTransform.GetTransformXM() * gfx.GetProjectionX11());
+      parentTransform.GetTransformXM() *
+      gfx.GetCameraX11() *
+      gfx.GetProjectionX11());
 
    D3D11_MAPPED_SUBRESOURCE msr;
    ThrowIfFailed(GetContext(gfx)->Map(

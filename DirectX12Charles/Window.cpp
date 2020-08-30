@@ -54,6 +54,7 @@ Window::Window(int width, int height)
 
    // create graphics object
    pGfx = std::make_unique<Graphics>(hWnd, width, height);
+   graphicActive = true;
 }
 
 std::optional<int> Window::ProcessMessages() noexcept
@@ -123,108 +124,152 @@ LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
    {
       return true;
    }
-
-   switch (msg)
+   bool imguiActive = false;
+   if (graphicActive)
    {
-      case WM_CLOSE:
-         running = false;
-         pGfx->CleanUp();
-
-         PostQuitMessage(0);
-         return 0;
-      case WM_KILLFOCUS:
-         input.ClearState();
-         break;
-
-      case WM_KEYDOWN:
-      case WM_SYSKEYDOWN:
-         if (!(lParam & 0x40000000) || (input.AutorepeatIsEnabled()))
-         {
-            input.OnKeyPressed(static_cast<unsigned char>(wParam));
-         }
-         break;
-         return 0;
-         break;
-      case WM_KEYUP:
-      case WM_SYSKEYUP:
-         input.OnKeyReleased(static_cast<unsigned char>(wParam));
-         break;
-
-      case WM_MOUSEMOVE:
+      const auto imio = ImGui::GetIO();
+      switch (msg)
       {
-         const POINTS pt = MAKEPOINTS(lParam);
-         if ((pt.x >= 0) && (pt.x < width) && (pt.y >= 0) && (pt.y < height))
-         {
-            input.OnMouseMove(pt.x, pt.y);
-            if (!input.IsInWindow())
+         case WM_KEYDOWN:
+         case WM_SYSKEYDOWN:
+         case WM_KEYUP:
+         case WM_SYSKEYUP:
+         case WM_CHAR:
+         case WM_MOUSEMOVE:
+         case WM_LBUTTONDOWN:
+         case WM_RBUTTONDOWN:
+         case WM_LBUTTONUP:
+         case WM_RBUTTONUP:
+         case WM_MOUSEWHEEL:
+            // stifle this keyboard message if imgui wants to capture
+            if (imio.WantCaptureKeyboard)
             {
-               SetCapture(hWnd);
-               input.OnMouseEnter();
+               imguiActive = true;
             }
-         }
-         else
+            break;
+
+            //case WM_LBUTTONDOWN:
+            //{
+            //   // Not sure about the SetForegroundWindow
+            //   SetForegroundWindow(hWnd);
+            //   if (imio.WantCaptureKeyboard)
+            //   {
+            //      imguiActive = true;
+            //   }
+            //   break;
+      }
+   }
+
+   // If imGui does not want the input
+   if (!imguiActive)
+   {
+      switch (msg)
+      {
+         case WM_CLOSE:
+            running = false;
+            pGfx->CleanUp();
+
+            PostQuitMessage(0);
+            return 0;
+         case WM_KILLFOCUS:
+            input.ClearState();
+            break;
+
+         case WM_KEYDOWN:
+         case WM_SYSKEYDOWN:
+
+            if (!(lParam & 0x40000000) || (input.AutorepeatIsEnabled()))
+            {
+               input.OnKeyPressed(static_cast<unsigned char>(wParam));
+            }
+            break;
+            return 0;
+            break;
+         case WM_KEYUP:
+         case WM_SYSKEYUP:
+            input.OnKeyReleased(static_cast<unsigned char>(wParam));
+            break;
+
+         case WM_CHAR:
+            input.OnChar(static_cast<unsigned char>(wParam));
+            break;
+
+         case WM_MOUSEMOVE:
          {
-            if (wParam & (MK_LBUTTON | MK_RBUTTON))
+            const POINTS pt = MAKEPOINTS(lParam);
+            if ((pt.x >= 0) && (pt.x < width) && (pt.y >= 0) && (pt.y < height))
             {
                input.OnMouseMove(pt.x, pt.y);
+               if (!input.IsInWindow())
+               {
+                  SetCapture(hWnd);
+                  input.OnMouseEnter();
+               }
             }
-            // button up -> release capture / log event for leaving
             else
+            {
+               if (wParam & (MK_LBUTTON | MK_RBUTTON))
+               {
+                  input.OnMouseMove(pt.x, pt.y);
+               }
+               // button up -> release capture / log event for leaving
+               else
+               {
+                  ReleaseCapture();
+                  input.OnMouseLeave();
+               }
+            }
+            break;
+         }
+
+         case WM_LBUTTONDOWN:
+         {
+            SetForegroundWindow(hWnd);
+            const POINTS pt = MAKEPOINTS(lParam);
+            input.OnLeftPressed(pt.x, pt.y);
+            break;
+         }
+         case WM_RBUTTONDOWN:
+         {
+            const POINTS pt = MAKEPOINTS(lParam);
+            input.OnRightPressed(pt.x, pt.y);
+            break;
+         }
+         case WM_LBUTTONUP:
+         {
+            const POINTS pt = MAKEPOINTS(lParam);
+            input.OnLeftReleased(pt.x, pt.y);
+            // release mouse if outside of window
+            if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height)
             {
                ReleaseCapture();
                input.OnMouseLeave();
             }
+            break;
          }
-         break;
-      }
-
-      case WM_LBUTTONDOWN:
-      {
-         const POINTS pt = MAKEPOINTS(lParam);
-         input.OnLeftPressed(pt.x, pt.y);
-         SetForegroundWindow(hWnd);
-         break;
-      }
-      case WM_RBUTTONDOWN:
-      {
-         const POINTS pt = MAKEPOINTS(lParam);
-         input.OnRightPressed(pt.x, pt.y);
-         break;
-      }
-      case WM_LBUTTONUP:
-      {
-         const POINTS pt = MAKEPOINTS(lParam);
-         input.OnLeftReleased(pt.x, pt.y);
-         // release mouse if outside of window
-         if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height)
+         case WM_RBUTTONUP:
          {
-            ReleaseCapture();
-            input.OnMouseLeave();
+            const POINTS pt = MAKEPOINTS(lParam);
+            input.OnRightReleased(pt.x, pt.y);
+            // release mouse if outside of window
+            if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height)
+            {
+               ReleaseCapture();
+               input.OnMouseLeave();
+            }
+            break;
          }
-         break;
-      }
-      case WM_RBUTTONUP:
-      {
-         const POINTS pt = MAKEPOINTS(lParam);
-         input.OnRightReleased(pt.x, pt.y);
-         // release mouse if outside of window
-         if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height)
+         case WM_MOUSEWHEEL:
          {
-            ReleaseCapture();
-            input.OnMouseLeave();
+            const POINTS pt = MAKEPOINTS(lParam);
+            const int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+            input.OnWheelDelta(pt.x, pt.y, delta);
+            break;
          }
-         break;
-      }
-      case WM_MOUSEWHEEL:
-      {
-         const POINTS pt = MAKEPOINTS(lParam);
-         const int delta = GET_WHEEL_DELTA_WPARAM(wParam);
-         input.OnWheelDelta(pt.x, pt.y, delta);
-         break;
-      }
 
-      default:
-         break;
+         default:
+            break;
+      }
    }
 
    return DefWindowProc(hwnd, msg, wParam, lParam);

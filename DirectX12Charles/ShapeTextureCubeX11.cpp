@@ -167,12 +167,9 @@ XMMATRIX ShapeTextureCubeX11::GetTransformXM() const noexcept
 #ifndef FIX_ROTATION
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *
-      DirectX::XMMatrixRotationRollPitchYaw(spacePitch, spaceYaw, spaceRoll) *
-      DirectX::XMMatrixTranslation(8.0f, -4.0f, 20.0f);
+      DirectX::XMMatrixRotationRollPitchYaw(spacePitch, spaceYaw, spaceRoll);
 #else
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
-      DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f) *
-      DirectX::XMMatrixScaling(3.0f, 3.0f, 3.0f) *
-      DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
+      DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
 #endif
 }
