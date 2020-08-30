@@ -1,5 +1,9 @@
 #include "stdafx.h"
 #include "Window.h"
+#include "imgui.h"
+#include "imgui_impl_dx11.h"
+#include "imgui_impl_win32.h"
+
 
 // Window Stuff
 Window::Window(int width, int height)
@@ -110,8 +114,16 @@ LRESULT CALLBACK Window::HandleMsgMain(HWND hwnd, UINT msg, WPARAM wParam, LPARA
    return pWin->HandleMsg(hwnd, msg, wParam, lParam);
 }
 
+// Forward declare message handler from imgui_impl_win32.cpp
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+   if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
+   {
+      return true;
+   }
+
    switch (msg)
    {
       case WM_CLOSE:

@@ -2,6 +2,9 @@
 #include "Shape.h"
 #include "Surface.h"
 #include "GDIPlusManager.h"
+#include "imgui.h"
+#include "imgui_impl_dx11.h"
+#include "imgui_impl_win32.h"
 
 GDIPlusManager gdipm;
 
@@ -21,7 +24,7 @@ App::App()
    oneCubeColorIndexX11 = std::make_unique<OneBoxX11>(wnd.Gfx());
    oneCubeColorIndex = std::make_unique<OneBoxX12>(wnd.Gfx());
 
-   int MaxBoxX12Count = 12;
+   int MaxBoxX12Count = 6;
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
       Shape::shapeType type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
@@ -37,7 +40,7 @@ App::App()
    }
    wnd.Gfx().CreateMatrixConstantX12(MaxBoxX12Count);
 
-   int MaxBoxX11Count = 12;
+   int MaxBoxX11Count = 6;
    Shape::shapeType type = Shape::Cube;
    for (auto i = 0; i < MaxBoxX11Count; i++)
    {
@@ -95,11 +98,7 @@ float App::TimePeek()
 
 void App::DoFrame()
 {
-   auto dt = TimeMark();
-   if (wnd.input.KeyIsPressed(VK_SPACE))
-   {
-      dt = 0.0f;
-   }
+   auto dt = TimeMark() * speedFactor;
 
    wnd.Gfx().OnRenderBegin();
 
@@ -117,11 +116,31 @@ void App::DoFrame()
       ++index;
    }
 
+   // Start the Dear ImGui frame
+   ImGui_ImplDX11_NewFrame();
+   ImGui_ImplWin32_NewFrame();
+   ImGui::NewFrame();
+   ImGui::Begin("Simulation Speed");
+
+   ImGui::SliderFloat("Speed Factor", &speedFactor, 0.0f, 4.0f);
+   ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+      1000.0f / ImGui::GetIO().Framerate,
+      ImGui::GetIO().Framerate);
+
+   ImGui::End();
+
+   ImGui::Render();
+   ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+
    dwriteitem->Draw();
    oneCubeColorIndexX11->Update(dt);
    oneCubeColorIndexX11->Draw();
 
    wnd.Gfx().DrawCommandList();
+
+
+
 
    for (auto &b : drawItemsX11)
    {
@@ -130,4 +149,5 @@ void App::DoFrame()
    }
 
    wnd.Gfx().OnRenderEnd();
+
 }

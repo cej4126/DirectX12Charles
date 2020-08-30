@@ -439,12 +439,12 @@ void Shape::CreateTextureCube()
 
    const unsigned short cubeindices[]
    {
-          0, 2, 3,  0, 1, 2,  // Front
-          4, 6, 7,  4, 5, 6,  // Top
-          8,10,11,  8, 9,10,  // Back
-         12,14,15, 12,13,14,  // Bottom
-         16,18,19, 16,17,18,  // Right
-         20,22,23, 20,21,22   // Left
+       0, 2, 3,  0, 1, 2,  // Front
+       4, 6, 7,  4, 5, 6,  // Top
+       8,10,11,  8, 9,10,  // Back
+      12,14,15, 12,13,14,  // Bottom
+      16,18,19, 16,17,18,  // Right
+      20,22,23, 20,21,22   // Left
    };
    for (int i = 0; i < _countof(cubeindices); i++)
    {

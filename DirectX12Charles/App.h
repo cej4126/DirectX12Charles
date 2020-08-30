@@ -36,5 +36,7 @@ private:
 
    std::unique_ptr<class OneBoxX11 > oneCubeColorIndexX11;
    std::unique_ptr<class OneBoxX12 > oneCubeColorIndex;
+
+   float speedFactor = 1.0f;
 };
 

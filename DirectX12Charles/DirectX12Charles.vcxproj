@@ -145,6 +145,14 @@
     <ClInclude Include="BindableX11.h" />
     <ClInclude Include="BindableX12.h" />
     <ClInclude Include="GDIPlusManager.h" />
+    <ClInclude Include="imconfig.h" />
+    <ClInclude Include="imgui.h" />
+    <ClInclude Include="imgui_impl_dx11.h" />
+    <ClInclude Include="imgui_impl_win32.h" />
+    <ClInclude Include="imgui_internal.h" />
+    <ClInclude Include="imstb_rectpack.h" />
+    <ClInclude Include="imstb_textedit.h" />
+    <ClInclude Include="imstb_truetype.h" />
     <ClInclude Include="ShapeColorBlended.h" />
     <ClInclude Include="ShapeColorBlendedX11.h" />
     <ClInclude Include="ShapeColorIndex.h" />
@@ -174,6 +182,12 @@
     <ClCompile Include="BindableX11.cpp" />
     <ClCompile Include="BindableX12.cpp" />
     <ClCompile Include="GDIPlusManager.cpp" />
+    <ClCompile Include="imgui.cpp" />
+    <ClCompile Include="imgui_demo.cpp" />
+    <ClCompile Include="imgui_draw.cpp" />
+    <ClCompile Include="imgui_impl_dx11.cpp" />
+    <ClCompile Include="imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui_widgets.cpp" />
     <ClCompile Include="ShapeColorBlended.cpp" />
     <ClCompile Include="ShapeColorBlendedX11.cpp" />
     <ClCompile Include="ShapeColorIndex.cpp" />

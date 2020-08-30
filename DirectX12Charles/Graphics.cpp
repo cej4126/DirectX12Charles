@@ -1,4 +1,7 @@
 #include "Graphics.h"
+#include "imgui.h"
+#include "imgui_impl_dx11.h"
+#include "imgui_impl_win32.h"
 
 using namespace Microsoft::WRL;
 using namespace DirectX;
@@ -23,6 +26,18 @@ Graphics::Graphics(HWND hWnd, int width, int height)
    LoadBaseX12();
    LoadBaseX11();
    LoadBase2D();
+
+   // Setup Dear ImGui context
+   IMGUI_CHECKVERSION();
+   ImGui::CreateContext();
+   ImGuiIO &io = ImGui::GetIO(); (void)io;
+   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+   // Setup Dear ImGui style
+   ImGui::StyleColorsDark();
+
+   // Setup Platform/Renderer bindings
+   ImGui_ImplWin32_Init(hWnd);
+   ImGui_ImplDX11_Init(x11Device.Get(), x11DeviceContext.Get());
 }
 
 void Graphics::LoadDriveX12()
@@ -549,6 +564,7 @@ void Graphics::DrawCommandList()
 void Graphics::OnRenderEnd()
 {
    x11On12Device->ReleaseWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+
    x11DeviceContext->Flush();
    ThrowIfFailed(commandQueue->Signal(fence[frameIndex].Get(), fenceValue[frameIndex]));
 
