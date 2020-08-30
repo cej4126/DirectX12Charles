@@ -22,7 +22,7 @@ App::App()
    dwriteitem = std::make_unique<dwritedraw>(wnd.Gfx());
 
    oneCubeColorIndexX11 = std::make_unique<OneBoxX11>(wnd.Gfx());
-   oneCubeColorIndex = std::make_unique<OneBoxX12>(wnd.Gfx());
+   oneCubeColorIndex = std::make_unique<OneBox>(wnd.Gfx());
 
    int MaxBoxX12Count = 6;
    for (auto i = 0; i < MaxBoxX12Count; i++)
@@ -38,23 +38,7 @@ App::App()
       drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
       drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
    }
-   wnd.Gfx().CreateMatrixConstantX12(MaxBoxX12Count);
-
-   int MaxBoxX11Count = 6;
-   Shape::shapeType type = Shape::Cube;
-   for (auto i = 0; i < MaxBoxX11Count; i++)
-   {
-      Shape::shapeType type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
-      float range = rangedist(rng);
-
-      if ((i % 4) == 0)
-      {
-         drawItemsX11.push_back(std::make_unique<ShapeTextureCubeX11>(wnd.Gfx(), range));
-         drawItemsX11.push_back(std::make_unique<ShapePictureX11>(wnd.Gfx(), range));
-      }
-      drawItemsX11.push_back(std::make_unique<ShapeColorIndexX11>(wnd.Gfx(), type, range));
-      drawItemsX11.push_back(std::make_unique<ShapeColorBlendedX11>(wnd.Gfx(), type, range));
-   }
+   wnd.Gfx().CreateMatrixConstant(MaxBoxX12Count);
 
    wnd.Gfx().RunCommandList();
 
@@ -62,7 +46,6 @@ App::App()
    wnd.Gfx().SetCameraX11(XMMatrixTranslation(8.0f, -4.0f, 20.0f));
 
    wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
-   wnd.Gfx().SetCamera(XMMatrixTranslation(-8.0f, -4.0f, 20.0f));
 }
 
 int App::Go()
@@ -102,6 +85,7 @@ float App::TimePeek()
 void App::DoFrame()
 {
    auto dt = TimeMark() * speedFactor;
+   wnd.Gfx().SetCamera(cam.GetMatrix());
 
    wnd.Gfx().OnRenderBegin();
 
@@ -129,27 +113,18 @@ void App::DoFrame()
    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
       1000.0f / ImGui::GetIO().Framerate,
       ImGui::GetIO().Framerate);
-
    ImGui::End();
+
+   cam.CreateControlWindow();
 
    ImGui::Render();
    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
 
    dwriteitem->Draw();
    oneCubeColorIndexX11->Update(dt);
    oneCubeColorIndexX11->Draw();
 
    wnd.Gfx().DrawCommandList();
-
-
-
-
-   for (auto &b : drawItemsX11)
-   {
-      b->Update(dt);
-      b->Draw(wnd.Gfx());
-   }
 
    wnd.Gfx().OnRenderEnd();
 

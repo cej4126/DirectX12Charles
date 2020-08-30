@@ -142,8 +142,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
-    <ClInclude Include="BindableX11.h" />
-    <ClInclude Include="BindableX12.h" />
+    <ClInclude Include="Bindable.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="GDIPlusManager.h" />
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="imgui.h" />
@@ -153,34 +153,27 @@
     <ClInclude Include="imstb_rectpack.h" />
     <ClInclude Include="imstb_textedit.h" />
     <ClInclude Include="imstb_truetype.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="ShapeColorBlended.h" />
-    <ClInclude Include="ShapeColorBlendedX11.h" />
     <ClInclude Include="ShapeColorIndex.h" />
-    <ClInclude Include="ShapeColorIndexX11.h" />
-    <ClInclude Include="DrawX11.h" />
     <ClInclude Include="DrawX12.h" />
     <ClInclude Include="dwritedraw.h" />
     <ClInclude Include="Shape.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Input.h" />
-    <ClInclude Include="ObjectX11.h" />
-    <ClInclude Include="ObjectX12.h" />
     <ClInclude Include="OneBoxX11.h" />
-    <ClInclude Include="OneBoxX12.h" />
+    <ClInclude Include="OneBox.h" />
     <ClInclude Include="ShapePicture.h" />
-    <ClInclude Include="ShapePictureX11.h" />
     <ClInclude Include="ShapeTextureCube.h" />
-    <ClInclude Include="ShapeTextureCubeX11.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Surface.h" />
-    <ClInclude Include="TransformX11.h" />
-    <ClInclude Include="TransformX12.h" />
+    <ClInclude Include="Transform.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
-    <ClCompile Include="BindableX11.cpp" />
-    <ClCompile Include="BindableX12.cpp" />
+    <ClCompile Include="Bindable.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GDIPlusManager.cpp" />
     <ClCompile Include="imgui.cpp" />
     <ClCompile Include="imgui_demo.cpp" />
@@ -188,27 +181,20 @@
     <ClCompile Include="imgui_impl_dx11.cpp" />
     <ClCompile Include="imgui_impl_win32.cpp" />
     <ClCompile Include="imgui_widgets.cpp" />
+    <ClCompile Include="Object.cpp" />
     <ClCompile Include="ShapeColorBlended.cpp" />
-    <ClCompile Include="ShapeColorBlendedX11.cpp" />
     <ClCompile Include="ShapeColorIndex.cpp" />
-    <ClCompile Include="ShapeColorIndexX11.cpp" />
-    <ClCompile Include="DrawX11.cpp" />
     <ClCompile Include="DrawX12.cpp" />
     <ClCompile Include="dwritedraw.cpp" />
     <ClCompile Include="Shape.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Input.cpp" />
-    <ClCompile Include="ObjectX11.cpp" />
-    <ClCompile Include="ObjectX12.cpp" />
     <ClCompile Include="OneBoxX11.cpp" />
-    <ClCompile Include="OneBoxX12.cpp" />
+    <ClCompile Include="OneBox.cpp" />
     <ClCompile Include="ShapePicture.cpp" />
-    <ClCompile Include="ShapePictureX11.cpp" />
     <ClCompile Include="ShapeTextureCube.cpp" />
-    <ClCompile Include="ShapeTextureCubeX11.cpp" />
     <ClCompile Include="Surface.cpp" />
-    <ClCompile Include="TransformX11.cpp" />
-    <ClCompile Include="TransformX12.cpp" />
+    <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
@@ -217,17 +203,9 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="ColorBlendedPSX11.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-    </FxCompile>
     <FxCompile Include="ColorBlendedVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="ColorBlendedVSX11.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="ColorIndexPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -268,24 +246,12 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
     </FxCompile>
-    <FxCompile Include="TexturePSX11.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-    </FxCompile>
     <FxCompile Include="TextureVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="TextureVSX11.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

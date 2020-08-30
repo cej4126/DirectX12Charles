@@ -1,12 +1,12 @@
 #pragma once
 #include "stdafx.h"
 #include "Graphics.h"
-#include "ObjectX12.h"
+#include "Object.h"
 #include "DrawX12.h"
-#include "TransformX12.h"
+#include "Transform.h"
 #include "Shape.h"
 
-class ShapeColorIndex : public DrawBaseX12 <ShapeColorIndex>
+class ShapeColorIndex : public DrawBase <ShapeColorIndex>
 {
 public:
    ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float range);
@@ -14,7 +14,7 @@ public:
    XMMATRIX GetTransformXM() const noexcept override;
 
 private:
-   BindableX12 *object = nullptr;
+   Bindable *object = nullptr;
    float range = 0.0f;
 
    float boxRoll = 0.0f;

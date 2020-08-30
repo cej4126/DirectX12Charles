@@ -116,7 +116,7 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
       vertices[22].tex = { u2, v2 };
       vertices[23].tex = { u2, v1 };
 
-      std::unique_ptr<ObjectX12> object = std::make_unique< ObjectX12>(gfx);
+      std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
 
       std::vector <unsigned short> indices(indicesCount);
       for (UINT i = 0; i < indicesCount; i++)
@@ -143,7 +143,7 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
       addStaticBind(std::move(object), (UINT)model.indices.size());
    }
 
-   std::unique_ptr < TransformX12 > trans = std::make_unique<TransformX12>(gfx, *this);
+   std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
    trans->setIndices(0, indicesCount);
 
    AddBind(std::move(trans));

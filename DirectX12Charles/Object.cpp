@@ -1,16 +1,16 @@
-#include "ObjectX12.h"
+#include "Object.h"
 using namespace Microsoft::WRL;
 
 
-ObjectX12::ObjectX12(Graphics &gfx)
+Object::Object(Graphics &gfx)
    :
    gfx(gfx),
-   device(gfx.GetDeviceX12()),
-   commandList(gfx.GetCommandListX12())
+   device(gfx.GetDevice()),
+   commandList(gfx.GetCommandList())
 {
 }
 
-void ObjectX12::Bind(Graphics &gfx, int drawStep) noexcept
+void Object::Bind(Graphics &gfx, int drawStep) noexcept
 {
    //int drawStep = 0;
    if (drawStep == 0)
@@ -42,7 +42,7 @@ void ObjectX12::Bind(Graphics &gfx, int drawStep) noexcept
    }
 }
 
-void ObjectX12::CreateRootSignature(bool constantFlag, bool textureFlag)
+void Object::CreateRootSignature(bool constantFlag, bool textureFlag)
 {
    int rootCount = 1;
 
@@ -134,7 +134,7 @@ void ObjectX12::CreateRootSignature(bool constantFlag, bool textureFlag)
       signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
 }
 
-void ObjectX12::CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath)
+void Object::CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath)
 {
    ThrowIfFailed(D3DReadFileToBlob(vertexPath.c_str(), vertexShaderBlob.ReleaseAndGetAddressOf()));
 
@@ -142,7 +142,7 @@ void ObjectX12::CreateShader(const std::wstring &vertexPath, const std::wstring 
    ThrowIfFailed(D3DReadFileToBlob(pixelPath.c_str(), pixelShaderBlob.ReleaseAndGetAddressOf()));
 }
 
-void ObjectX12::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
+void Object::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
 {
    indicesCount = (UINT)indices.size();
    const UINT indicesBufferSize = (UINT)(sizeof(unsigned short) * indices.size());
@@ -215,7 +215,7 @@ void ObjectX12::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
    indexBufferView.SizeInBytes = indicesBufferSize;
 }
 
-void ObjectX12::CreateTexture(const Surface &surface)
+void Object::CreateTexture(const Surface &surface)
 {
    textureActive = true;
    //const UINT indicesBufferSize = (UINT)(sizeof(unsigned short) * indices.size());
@@ -311,7 +311,7 @@ void ObjectX12::CreateTexture(const Surface &surface)
 
 }
 
-void ObjectX12::CreateConstant()
+void Object::CreateConstant()
 {
    colorBufferActive = true;
    // lookup table for cube face colors
@@ -373,7 +373,7 @@ void ObjectX12::CreateConstant()
    memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
 }
 
-void ObjectX12::CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType)
+void Object::CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType)
 {
    topology = topologyType;
 

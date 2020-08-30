@@ -1,12 +1,12 @@
 #pragma once
-#include "BindableX12.h"
+#include "Bindable.h"
 #include "Graphics.h"
 #include "DrawX12.h"
 
-class TransformX12 : public BindableX12
+class Transform : public Bindable
 {
 public:
-   TransformX12(Graphics &gfx, const DrawX12 &parent);
+   Transform(Graphics &gfx, const DrawX12 &parent);
    void Bind(Graphics &gfx, int index) noexcept override;
    void setIndices(UINT start, UINT count)
    {

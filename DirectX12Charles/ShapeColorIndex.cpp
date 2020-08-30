@@ -42,7 +42,7 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
 
    if (!isStaticSet())
    {
-      std::unique_ptr<ObjectX12> object = std::make_unique< ObjectX12>(gfx);
+      std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
 
       struct Vertex
       {
@@ -67,7 +67,7 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
       addStaticBind(std::move(object), (UINT)model.indices.size());
    }
 
-   std::unique_ptr < TransformX12 > trans = std::make_unique<TransformX12>(gfx, *this);
+   std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);
    trans->setIndices(start, count);

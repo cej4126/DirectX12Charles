@@ -30,16 +30,16 @@ public:
    void CleanUp();
 
 
-   void CreateMatrixConstantX12(UINT count);
-   void SetMatrixConstantX12(UINT index, XMMATRIX matrix) noexcept;
+   void CreateMatrixConstant(UINT count);
+   void SetMatrixConstant(UINT index, XMMATRIX matrix) noexcept;
 
    UINT64 UpdateSubresource(
       _In_ ID3D12Resource *pDestinationResource,
       _In_ ID3D12Resource *pIntermediate,
       _In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA *pSrcData);
 
-   ID3D12Device *GetDeviceX12() noexcept { return device.Get(); }
-   ID3D12GraphicsCommandList *GetCommandListX12() noexcept { return commandList.Get(); }
+   ID3D12Device *GetDevice() noexcept { return device.Get(); }
+   ID3D12GraphicsCommandList *GetCommandList() noexcept { return commandList.Get(); }
 
    void SetProjectionX11(FXMMATRIX proj) noexcept { projectionX11 = proj; }
    XMMATRIX GetProjectionX11() const noexcept { return projectionX11; }
@@ -65,12 +65,12 @@ public:
 
 private:
    void WaitForPreviousFrame();
-   void LoadDriveX12();
-   void LoadBaseX12();
+   void LoadDrive();
+   void LoadBase();
    void CreateFence();
 
-   void LoadDepentX12();
-   void OnRenderX12(float dt);
+   void LoadDepent();
+   void OnRender(float dt);
 
    // DirectX 11
    void LoadBaseX11();

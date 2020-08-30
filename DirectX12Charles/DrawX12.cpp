@@ -19,7 +19,7 @@ void DrawX12::Draw(Graphics &gfx, int index) const noexcept
 
 }
 
-void DrawX12::AddBind(std::unique_ptr<BindableX12> bind) noexcept
+void DrawX12::AddBind(std::unique_ptr<Bindable> bind) noexcept
 {
    binds.push_back(std::move(bind));
 }

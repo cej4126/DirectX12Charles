@@ -1,16 +1,16 @@
-#include "OneBoxX12.h"
+#include "OneBox.h"
 using namespace Microsoft::WRL;
 
-OneBoxX12::OneBoxX12(Graphics &gfx)
+OneBox::OneBox(Graphics &gfx)
    :
    gfx(gfx),
-   device(gfx.GetDeviceX12()),
-   commandList(gfx.GetCommandListX12())
+   device(gfx.GetDevice()),
+   commandList(gfx.GetCommandList())
 {
    LoadDepend();
 }
 
-void OneBoxX12::LoadDepend()
+void OneBox::LoadDepend()
 {
    CreateRootSignature();
    CreateShader();
@@ -19,7 +19,7 @@ void OneBoxX12::LoadDepend()
    CreateConstant();
 }
 
-void OneBoxX12::Update(float dt)
+void OneBox::Update(float dt)
 {
    angle += 2.0f * dt;
 
@@ -34,7 +34,7 @@ void OneBoxX12::Update(float dt)
       XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 10.0f));
 }
 
-void OneBoxX12::Draw()
+void OneBox::Draw()
 {
    commandList->SetGraphicsRootSignature(rootSignature.Get());
    commandList->SetPipelineState(pipelineState.Get());
@@ -54,13 +54,13 @@ void OneBoxX12::Draw()
    commandList->DrawIndexedInstanced(indicesCount, 1u, indicesStart, 0u, 0u);
 }
 
-void OneBoxX12::LoadConstant()
+void OneBox::LoadConstant()
 {
    int ConstantBufferPerObjectAlignedSize = (sizeof(matrixBuffer) + 255) & ~255;
    memcpy(matrixBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &matrixBuffer, sizeof(matrixBuffer));
 }
 
-void OneBoxX12::CreateRootSignature()
+void OneBox::CreateRootSignature()
 {
    D3D12_ROOT_DESCRIPTOR rootCBVDescriptor;
    rootCBVDescriptor.RegisterSpace = 0;
@@ -101,7 +101,7 @@ void OneBoxX12::CreateRootSignature()
       signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
 }
 
-void OneBoxX12::LoadDrawBuffer()
+void OneBox::LoadDrawBuffer()
 {
    struct Vertex
    {
@@ -247,7 +247,7 @@ void OneBoxX12::LoadDrawBuffer()
    indexBufferView.SizeInBytes = indicesBufferSize;
 }
 
-void OneBoxX12::CreateShader()
+void OneBox::CreateShader()
 {
    ThrowIfFailed(D3DReadFileToBlob(L"ColorIndexVS.cso", vertexShaderBlob.ReleaseAndGetAddressOf()));
 
@@ -255,7 +255,7 @@ void OneBoxX12::CreateShader()
    ThrowIfFailed(D3DReadFileToBlob(L"ColorIndexPS.cso", pixelShaderBlob.ReleaseAndGetAddressOf()));
 }
 
-void OneBoxX12::CreateConstant()
+void OneBox::CreateConstant()
 {
    // Matrix Constant buffer
    D3D12_HEAP_PROPERTIES constantHeapUpload = {};
@@ -339,7 +339,7 @@ void OneBoxX12::CreateConstant()
    memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
 }
 
-void OneBoxX12::CreatePipelineState()
+void OneBox::CreatePipelineState()
 {
    // Define the vertex input layout.
    D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =

@@ -1,11 +1,11 @@
 #pragma once
 #include "stdafx.h"
 #include "Graphics.h"
-#include "ObjectX12.h"
+#include "Object.h"
 #include "DrawX12.h"
-#include "TransformX12.h"
+#include "Transform.h"
 
-class ShapeColorBlended : public DrawBaseX12 <ShapeColorBlended>
+class ShapeColorBlended : public DrawBase <ShapeColorBlended>
 {
 public:
    ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float range);
@@ -13,7 +13,7 @@ public:
    XMMATRIX GetTransformXM() const noexcept override;
 
 private:
-   BindableX12 *object = nullptr;
+   Bindable *object = nullptr;
    float range = 0.0f;
 
    float boxRoll = 0.0f;

@@ -22,8 +22,8 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 #endif
 
 
-   LoadDriveX12();
-   LoadBaseX12();
+   LoadDrive();
+   LoadBase();
    LoadBaseX11();
    LoadBase2D();
 
@@ -40,7 +40,7 @@ Graphics::Graphics(HWND hWnd, int width, int height)
    ImGui_ImplDX11_Init(x11Device.Get(), x11DeviceContext.Get());
 }
 
-void Graphics::LoadDriveX12()
+void Graphics::LoadDrive()
 {
    UINT dxgiFactoryFlags = 0;
 #if defined(_DEBUG) 
@@ -125,7 +125,7 @@ void Graphics::LoadDriveX12()
    frameIndex = swapChain->GetCurrentBackBufferIndex();
 }
 
-void Graphics::LoadBaseX12()
+void Graphics::LoadBase()
 {
    // Create Descriptopr Heap RTV
    D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
@@ -165,7 +165,7 @@ void Graphics::LoadBaseX12()
 
    CreateFence();
 
-   LoadDepentX12();
+   LoadDepent();
 
    viewport.TopLeftX = 0.0f;
    viewport.TopLeftY = 0.0f;
@@ -197,7 +197,7 @@ void Graphics::CreateFence()
    }
 }
 
-void Graphics::LoadDepentX12()
+void Graphics::LoadDepent()
 {
    // create a depth stencil descriptor heap
    D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
@@ -252,7 +252,7 @@ void Graphics::LoadDepentX12()
    device->CreateDepthStencilView(depthStencilBuffer.Get(), &depthStencilDesc, dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
-void Graphics::CreateMatrixConstantX12(UINT count)
+void Graphics::CreateMatrixConstant(UINT count)
 {
    // I think the default buffer is 4K
    int ConstantBufferPerObjectAlignedSize = (sizeof(XMMATRIX) + 255) & ~255;
@@ -295,7 +295,7 @@ void Graphics::CreateMatrixConstantX12(UINT count)
    ThrowIfFailed(MatrixBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&matrixBufferGPUAddress)));
 }
 
-void Graphics::SetMatrixConstantX12(UINT index, XMMATRIX matrix) noexcept
+void Graphics::SetMatrixConstant(UINT index, XMMATRIX matrix) noexcept
 {
 
    int ConstantBufferPerObjectAlignedSize = (sizeof(XMMATRIX) + 255) & ~255;
@@ -524,7 +524,7 @@ void Graphics::OnRenderBegin()
    frameIndex = swapChain->GetCurrentBackBufferIndex();
    WaitForPreviousFrame();
 
-   OnRenderX12(angle);
+   OnRender(angle);
 }
 
 void Graphics::OnRender()
@@ -571,7 +571,7 @@ void Graphics::OnRenderEnd()
 
 }
 
-void Graphics::OnRenderX12(float dt)
+void Graphics::OnRender(float dt)
 {
    ThrowIfFailed(commandAllocators[frameIndex]->Reset());
 

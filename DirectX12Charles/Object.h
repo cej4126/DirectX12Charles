@@ -1,13 +1,13 @@
 #pragma once
 #include "stdafx.h"
-#include "BindableX12.h"
+#include "Bindable.h"
 #include "Graphics.h"
 #include "Surface.h"
 
-class ObjectX12 : public BindableX12
+class Object : public Bindable
 {
 public:
-   ObjectX12(Graphics &gfx);
+   Object(Graphics &gfx);
 
    void CreateTexture(const Surface &surface);
    void CreateRootSignature(bool constantFlag, bool textureFlag);

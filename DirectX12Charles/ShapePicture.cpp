@@ -49,7 +49,7 @@ ShapePicture::ShapePicture(Graphics &gfx, float range)
 
    if (!isStaticSet())
    {
-      std::unique_ptr<ObjectX12> object = std::make_unique< ObjectX12>(gfx);
+      std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
 
       struct Vertex
       {
@@ -98,7 +98,7 @@ ShapePicture::ShapePicture(Graphics &gfx, float range)
       addStaticBind(std::move(object), (UINT)model.indices.size());
    }
 
-   std::unique_ptr < TransformX12 > trans = std::make_unique<TransformX12>(gfx, *this);
+   std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
    trans->setIndices(0, indicesCount);
 
    AddBind(std::move(trans));

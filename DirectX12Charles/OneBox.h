@@ -2,10 +2,10 @@
 #include "stdafx.h"
 #include "Graphics.h"
 
-class OneBoxX12
+class OneBox
 {
 public:
-   OneBoxX12(Graphics &gfx);
+   OneBox(Graphics &gfx);
    void Update(float dt);
    void Draw();
    void LoadConstant();
