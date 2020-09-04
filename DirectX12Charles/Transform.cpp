@@ -11,12 +11,17 @@ Transform::Transform(Graphics &gfx, const DrawX12 &parent)
 
 void Transform::Bind(Graphics &gfx, int index) noexcept
 {
-   XMMATRIX matrixBuffer = XMMatrixTranspose(
-      parentTransform.GetTransformXM() *
+   const auto model = parentTransform.GetTransformXM();
+   const Graphics::TransformMatrix contantMatrix =
+   {
+      XMMatrixTranspose(model),
+      XMMatrixTranspose(
+      model *
       gfx.GetCamera() *
-      gfx.GetProjection());
+      gfx.GetProjection())
+   };
 
-   gfx.SetMatrixConstant(index, matrixBuffer);
+   gfx.SetMatrixConstant(index, contantMatrix);
 
    commandList->DrawIndexedInstanced(indicesCount, 1u, indicesStart, 0u, 0u);
 }

@@ -1,4 +1,3 @@
-
 struct CBuf
 {
    float4 face_colors[6];

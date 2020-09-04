@@ -12,13 +12,19 @@ public:
    Graphics(HWND hWnd, int width, int height);
    Graphics(const Graphics &) = delete;
    Graphics &operator=(const Graphics &) = delete;
-   ~Graphics() = default;
+   ~Graphics();
 
-   struct MatrixBufferType
+   struct TransformMatrix
    {
-      XMMATRIX transform;
+      XMMATRIX modelViewProg;
+      XMMATRIX model;
    };
-   MatrixBufferType matrixBuffer;
+
+   //struct MatrixBufferType
+   //{
+   //   XMMATRIX transform;
+   //};
+   TransformMatrix matrixBuffer;
    int ConstantBufferPerObjectAlignedSize = (sizeof(matrixBuffer) + 255) & ~255;
 
 
@@ -31,7 +37,7 @@ public:
 
 
    void CreateMatrixConstant(UINT count);
-   void SetMatrixConstant(UINT index, XMMATRIX matrix) noexcept;
+   void SetMatrixConstant(UINT index, TransformMatrix matrix) noexcept;
 
    UINT64 UpdateSubresource(
       _In_ ID3D12Resource *pDestinationResource,

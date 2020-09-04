@@ -40,6 +40,11 @@ Graphics::Graphics(HWND hWnd, int width, int height)
    ImGui_ImplDX11_Init(x11Device.Get(), x11DeviceContext.Get());
 }
 
+Graphics::~Graphics()
+{
+   ImGui_ImplDX11_Shutdown();
+}
+
 void Graphics::LoadDrive()
 {
    UINT dxgiFactoryFlags = 0;
@@ -295,10 +300,10 @@ void Graphics::CreateMatrixConstant(UINT count)
    ThrowIfFailed(MatrixBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&matrixBufferGPUAddress)));
 }
 
-void Graphics::SetMatrixConstant(UINT index, XMMATRIX matrix) noexcept
+void Graphics::SetMatrixConstant(UINT index, TransformMatrix matrix) noexcept
 {
 
-   int ConstantBufferPerObjectAlignedSize = (sizeof(XMMATRIX) + 255) & ~255;
+   int ConstantBufferPerObjectAlignedSize = (sizeof(matrix) + 255) & ~255;
 
    commandList->SetGraphicsRootConstantBufferView(0,
       MatrixBufferUploadHeaps->GetGPUVirtualAddress() + index * ConstantBufferPerObjectAlignedSize);

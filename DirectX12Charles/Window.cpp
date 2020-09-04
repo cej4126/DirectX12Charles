@@ -127,7 +127,7 @@ LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
    bool imguiActive = false;
    if (graphicActive)
    {
-      const auto imio = ImGui::GetIO();
+      const auto &imio = ImGui::GetIO();
       switch (msg)
       {
          case WM_KEYDOWN:

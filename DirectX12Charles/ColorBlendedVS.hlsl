@@ -1,11 +1,7 @@
-//cbuffer ConstantBuffer : register(b0)
-//{
-//   float4x4 transform;
-//};
-
 struct Foo
 {
-   float4x4 transform;
+   matrix modelViewProj;
+   matrix model;
 };
 ConstantBuffer<Foo> mydata : register(b0);
 
@@ -19,8 +15,6 @@ VS_OUTPUT main(float3 position : POSITION, float4 color : COLOR)
 {
    VS_OUTPUT vso;
    vso.color = color;
-   vso.pos = mul(float4(position, 1.0f), mydata.transform);
-   //position[3] = 1.0f;
-   //vso.pos = mul(position, mydata.transform);
+   vso.pos = mul(float4(position, 1.0f), mydata.model);
    return vso;
 }

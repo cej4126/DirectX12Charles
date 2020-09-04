@@ -21,10 +21,12 @@ App::App()
 
    dwriteitem = std::make_unique<dwritedraw>(wnd.Gfx());
 
+   light = std::make_unique<ShapePointLight>(wnd.Gfx(), 1.0f);
+
    oneCubeColorIndexX11 = std::make_unique<OneBoxX11>(wnd.Gfx());
    oneCubeColorIndex = std::make_unique<OneBox>(wnd.Gfx());
 
-   int MaxBoxX12Count = 6;
+   int MaxBoxX12Count = 2;
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
       Shape::shapeType type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
@@ -91,11 +93,16 @@ void App::DoFrame()
 
    wnd.Gfx().OnRender();
 
-   oneCubeColorIndex->Update(dt);
-   oneCubeColorIndex->Draw();
-   oneCubeColorIndex->LoadConstant();
+   //   oneCubeColorIndex->Update(dt);
+   //   oneCubeColorIndex->Draw();
+   //   oneCubeColorIndex->LoadConstant();
 
    int index = 0;
+   auto &lightObject = light;
+   //lightObject->Update(dt);
+   lightObject->Draw(wnd.Gfx(), 0);
+   ++index;
+
    for (auto &b : drawItems)
    {
       b->Update(dt);
@@ -116,13 +123,14 @@ void App::DoFrame()
    ImGui::End();
 
    cam.CreateControlWindow();
+   lightObject->CreateLightControl();
 
    ImGui::Render();
    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
    dwriteitem->Draw();
-   oneCubeColorIndexX11->Update(dt);
-   oneCubeColorIndexX11->Draw();
+   //   oneCubeColorIndexX11->Update(dt);
+   //   oneCubeColorIndexX11->Draw();
 
    wnd.Gfx().DrawCommandList();
 

@@ -6,6 +6,8 @@
 class Transform : public Bindable
 {
 public:
+
+public:
    Transform(Graphics &gfx, const DrawX12 &parent);
    void Bind(Graphics &gfx, int index) noexcept override;
    void setIndices(UINT start, UINT count)

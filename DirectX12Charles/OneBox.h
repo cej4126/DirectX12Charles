@@ -16,11 +16,7 @@ private:
    ID3D12GraphicsCommandList *commandList;
    ID3D12Device *device;
 
-   struct MatrixBufferType
-   {
-      XMMATRIX transform;
-   };
-   MatrixBufferType matrixBuffer;
+   Graphics::TransformMatrix matrixBuffer;
 
    struct Vertex
    {

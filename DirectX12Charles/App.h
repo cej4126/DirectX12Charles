@@ -6,6 +6,7 @@
 #include "ShapeColorBlended.h"
 #include "ShapePicture.h"
 #include "ShapeTextureCube.h"
+#include "ShapePointLight.h"
 #include "Camera.h"
 #include "OneBoxX11.h"
 #include "OneBox.h"
@@ -31,8 +32,10 @@ private:
 
    std::unique_ptr<class OneBoxX11 > oneCubeColorIndexX11;
    std::unique_ptr<class OneBox > oneCubeColorIndex;
-   Camera cam;
 
+   std::unique_ptr<class ShapePointLight > light;
+
+   Camera cam;
    float speedFactor = 1.0f;
 };
 

@@ -311,68 +311,6 @@ void Object::CreateTexture(const Surface &surface)
 
 }
 
-void Object::CreateConstant()
-{
-   colorBufferActive = true;
-   // lookup table for cube face colors
-   ConstantBufferColor cb =
-   {
-      {
-         {1.0f, 0.0f, 1.0f, 1.0f},
-         {1.0f, 0.0f, 0.0f, 1.0f},
-         {0.0f, 1.0f, 0.0f, 1.0f},
-         {0.0f, 0.0f, 1.0f, 1.0f},
-         {1.0f, 1.0f, 0.0f, 1.0f},
-         {0.0f, 1.0f, 1.0f, 1.0f},
-      }
-   };
-   //colorBuffer = cb;
-   for (int i = 0; i < 6; i++)
-   {
-      colorBuffer.face_colors[i].r = cb.face_colors[i].r;
-      colorBuffer.face_colors[i].g = cb.face_colors[i].g;
-      colorBuffer.face_colors[i].b = cb.face_colors[i].b;
-      colorBuffer.face_colors[i].a = cb.face_colors[i].a;
-   }
-
-   D3D12_RESOURCE_DESC constantHeapDesc = {};
-   constantHeapDesc.Alignment = 0;
-   constantHeapDesc.DepthOrArraySize = 1;
-   constantHeapDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-   constantHeapDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-   constantHeapDesc.Format = DXGI_FORMAT_UNKNOWN;
-   constantHeapDesc.Height = 1;
-   constantHeapDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-   constantHeapDesc.SampleDesc.Count = 1;
-   constantHeapDesc.SampleDesc.Quality = 0;
-   constantHeapDesc.Width = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-   constantHeapDesc.MipLevels = 1;
-
-   D3D12_HEAP_PROPERTIES constantHeapUpload = {};
-   constantHeapUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-   constantHeapUpload.CreationNodeMask = 1;
-   constantHeapUpload.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-   constantHeapUpload.Type = D3D12_HEAP_TYPE_UPLOAD;
-   constantHeapUpload.VisibleNodeMask = 1;
-
-   ThrowIfFailed(device->CreateCommittedResource(
-      &constantHeapUpload,
-      D3D12_HEAP_FLAG_NONE,
-      &constantHeapDesc,
-      D3D12_RESOURCE_STATE_GENERIC_READ,
-      nullptr,
-      IID_PPV_ARGS(&colorBufferUploadHeaps)));
-
-   D3D12_RANGE readRange;
-   readRange.Begin = 1;
-   readRange.End = 0;
-   ThrowIfFailed(colorBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&colorBufferGPUAddress)));
-
-   int ConstantBufferPerObjectAlignedSize = (sizeof(cb) + 255) & ~255;
-
-   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
-}
-
 void Object::CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType)
 {
    topology = topologyType;

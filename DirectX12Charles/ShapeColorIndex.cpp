@@ -62,7 +62,41 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
       };
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-      object->CreateConstant();
+      // lookup table for cube face colors
+
+      struct ConstantBufferColor
+      {
+         struct
+         {
+            float r;
+            float g;
+            float b;
+            float a;
+         } face_colors[6];
+      };
+      struct ConstantBufferColor colorBuffer;
+
+      ConstantBufferColor cb =
+      {
+         {
+            {1.0f, 0.0f, 1.0f, 1.0f},
+            {1.0f, 0.0f, 0.0f, 1.0f},
+            {0.0f, 1.0f, 0.0f, 1.0f},
+            {0.0f, 0.0f, 1.0f, 1.0f},
+            {1.0f, 1.0f, 0.0f, 1.0f},
+            {0.0f, 1.0f, 1.0f, 1.0f},
+         }
+      };
+      //colorBuffer = cb;
+      for (int i = 0; i < 6; i++)
+      {
+         colorBuffer.face_colors[i].r = cb.face_colors[i].r;
+         colorBuffer.face_colors[i].g = cb.face_colors[i].g;
+         colorBuffer.face_colors[i].b = cb.face_colors[i].b;
+         colorBuffer.face_colors[i].a = cb.face_colors[i].a;
+      }
+
+      object->CreateConstant(colorBuffer);
 
       addStaticBind(std::move(object), (UINT)model.indices.size());
    }

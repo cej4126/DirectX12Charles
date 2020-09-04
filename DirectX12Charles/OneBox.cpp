@@ -26,12 +26,19 @@ void OneBox::Update(float dt)
    float offsetx = -4.5f;
    float offsety = 3.0f;
 
-   matrixBuffer.transform = XMMatrixTranspose(
+   matrixBuffer.model = XMMatrixTranspose(
       XMMatrixRotationZ(angle) *
       XMMatrixRotationY(angle) *
       XMMatrixScaling(0.5f, 0.5f, 0.5f) *
       XMMatrixTranslation(offsetx, offsety, 8.0f) *
       XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 10.0f));
+
+   //matrixBuffer.modelViewProg = XMMatrixTranspose(
+   //   XMMatrixRotationZ(angle) *
+   //   XMMatrixRotationY(angle) *
+   //   XMMatrixScaling(0.5f, 0.5f, 0.5f) *
+   //   XMMatrixTranslation(offsetx, offsety, 8.0f) *
+   //   XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 10.0f));
 }
 
 void OneBox::Draw()
@@ -164,7 +171,7 @@ void OneBox::LoadDrawBuffer()
    gfx.UpdateSubresource(
       vertexDefaultBuffer.Get(),
       vertexUploadBuffer.Get(),
-      &vertexData); // pSrcData
+      &vertexData);
 
    D3D12_RESOURCE_BARRIER resourceBarrier;
    resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
