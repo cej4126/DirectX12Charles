@@ -59,7 +59,7 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
       };
       struct PSColorConstant
       {
-         XMFLOAT3 color = { 1.0f,0.0f,0.0f };
+         XMFLOAT3 color = { 1.0f,1.0f,1.0f };
          float padding;
       } colorConst;
       object->CreateConstant(colorConst);
@@ -80,9 +80,9 @@ void ShapePointLight::CreateLightControl() noexcept
    if (ImGui::Begin("Light"))
    {
       ImGui::Text("Position");
-      ImGui::SliderFloat("X", &position.x, -60.0f, 60.0f, "%.1f");
-      ImGui::SliderFloat("Y", &position.y, -60.0f, 60.0f, "%.1f");
-      ImGui::SliderFloat("Z", &position.z, -60.0f, 60.0f, "%.1f");
+      ImGui::SliderFloat("X", &position.x, -30.0f, 30.0f, "%.1f");
+      ImGui::SliderFloat("Y", &position.y, -30.0f, 30.0f, "%.1f");
+      ImGui::SliderFloat("Z", &position.z, -30.0f, 30.0f, "%.1f");
       if (ImGui::Button("Reset"))
       {
          Reset();

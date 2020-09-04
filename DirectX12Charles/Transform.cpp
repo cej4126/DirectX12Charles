@@ -1,7 +1,7 @@
 #include "Transform.h"
 #include "Graphics.h"
 
-Transform::Transform(Graphics &gfx, const DrawX12 &parent)
+Transform::Transform(Graphics &gfx, const DrawFunction &parent)
    :
    gfx(gfx),
    commandList(gfx.GetCommandList()),

@@ -1,14 +1,14 @@
 #pragma once
 #include "Bindable.h"
 #include "Graphics.h"
-#include "DrawX12.h"
+#include "DrawFunction.h"
 
 class Transform : public Bindable
 {
 public:
 
 public:
-   Transform(Graphics &gfx, const DrawX12 &parent);
+   Transform(Graphics &gfx, const DrawFunction &parent);
    void Bind(Graphics &gfx, int index) noexcept override;
    void setIndices(UINT start, UINT count)
    {
@@ -23,7 +23,7 @@ public:
 private:
    // Vetrix Constant Buffer
    Microsoft::WRL::ComPtr<ID3D11Buffer> pTransformConstantBuffer;
-   const DrawX12 &parentTransform;
+   const DrawFunction &parentTransform;
    UINT8 *matrixBufferGPUAddress;
    UINT indicesStart = 0;
    UINT indicesCount = 0;

@@ -3,14 +3,14 @@
 #include "Graphics.h"
 #include "Bindable.h"
 
-class DrawX12
+class DrawFunction
 {
    template<class Z>
    friend class DrawBase;
 public:
-   DrawX12() = default;
-   DrawX12(const DrawX12 &) = delete;
-   virtual ~DrawX12() = default;
+   DrawFunction() = default;
+   DrawFunction(const DrawFunction &) = delete;
+   virtual ~DrawFunction() = default;
 
 public:
    void Draw(Graphics &gfx, int index) const noexcept;
@@ -26,7 +26,7 @@ private:
 };
 
 template<class Y>
-class DrawBase : public DrawX12
+class DrawBase : public DrawFunction
 {
 public:
    bool isStaticSet() { return !staticBindsX12.empty(); }

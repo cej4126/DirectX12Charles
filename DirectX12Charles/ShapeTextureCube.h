@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include "Graphics.h"
 #include "Object.h"
-#include "DrawX12.h"
+#include "DrawFunction.h"
 #include "Transform.h"
 
 class ShapeTextureCube : public DrawBase <ShapeTextureCube>
