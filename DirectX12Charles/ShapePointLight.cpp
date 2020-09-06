@@ -25,7 +25,7 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
 
       std::vector< Vertex > vertices(verticesCount);
 
-      FXMMATRIX matrix = XMMatrixScaling(0.5f, 0.5f, 0.5f);
+      FXMMATRIX matrix = XMMatrixScaling(size, size, size);
       for (UINT i = 0; i < verticesCount; i++)
       {
          int index = verticesStart + i;
@@ -36,7 +36,6 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
             &vertices[i].pos,
             XMVector3Transform(pos, matrix)
          );
-
       }
 
       std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
@@ -59,7 +58,7 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
       };
       struct PSColorConstant
       {
-         XMFLOAT3 color = { 1.0f,1.0f,1.0f };
+         XMFLOAT3 color = { 1.0f, 1.0f, 1.0f };
          float padding;
       } colorConst;
       object->CreateConstant(colorConst);
@@ -71,7 +70,7 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
 
    std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
    trans->setIndices(0, indicesCount);
-
+   lightView = trans->CreateLightPosition(position);
    AddBind(std::move(trans));
 }
 

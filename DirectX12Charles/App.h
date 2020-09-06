@@ -6,6 +6,7 @@
 #include "ShapeColorBlended.h"
 #include "ShapePicture.h"
 #include "ShapeTextureCube.h"
+#include "ShapeLighted.h"
 #include "ShapePointLight.h"
 #include "Camera.h"
 

@@ -105,6 +105,9 @@
     <ClInclude Include="DrawFunction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ShapeLighted.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -182,6 +185,9 @@
     <ClCompile Include="DrawFunction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ShapeLighted.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="ColorIndexPS.hlsl">
@@ -212,6 +218,12 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="PointLightVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="LightedVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="LightedPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

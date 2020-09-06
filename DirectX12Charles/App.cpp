@@ -21,7 +21,7 @@ App::App()
 
    dwriteitem = std::make_unique<dwritedraw>(wnd.Gfx());
 
-   light = std::make_unique<ShapePointLight>(wnd.Gfx(), 1.0f);
+   light = std::make_unique<ShapePointLight>(wnd.Gfx(), 0.5f);
 
    int MaxBoxX12Count = 20;
    for (auto i = 0; i < MaxBoxX12Count; i++)
@@ -29,13 +29,14 @@ App::App()
       Shape::shapeType type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
       float range = rangedist(rng);
 
-      if ((i % 4) == 0)
-      {
-         drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));
-         drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), range));
-      }
-      drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
-      drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
+      drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), range, light->getLightView()));
+      //if ((i % 4) == 0)
+      //{
+      //   drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));
+      //   drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), range));
+      //}
+      //drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
+      //drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
    }
    wnd.Gfx().CreateMatrixConstant(MaxBoxX12Count);
 
@@ -102,6 +103,8 @@ void App::DoFrame()
       ++index;
    }
 
+   dwriteitem->Draw();
+
    // Start the Dear ImGui frame
    ImGui_ImplDX11_NewFrame();
    ImGui_ImplWin32_NewFrame();
@@ -119,8 +122,6 @@ void App::DoFrame()
 
    ImGui::Render();
    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
-   dwriteitem->Draw();
 
    wnd.Gfx().DrawCommandList();
 

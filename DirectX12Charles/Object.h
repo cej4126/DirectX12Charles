@@ -12,7 +12,7 @@ public:
    void CreateTexture(const Surface &surface);
    void CreateRootSignature(bool constantFlag, bool textureFlag);
    void CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath);
-   void CreateConstant();
+   void SetLightView(ID3D12Resource *mylightView);
    void CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType);
 
    template<class V>
@@ -166,5 +166,8 @@ private:
    D3D12_INDEX_BUFFER_VIEW indexBufferView;
    UINT indicesCount;
    D3D12_PRIMITIVE_TOPOLOGY_TYPE topology = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
+   bool lightActive = false;
+   ID3D12Resource *lightView = nullptr;
 };
 

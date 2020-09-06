@@ -1,4 +1,6 @@
 #include "Object.h"
+#include "App.h"
+
 using namespace Microsoft::WRL;
 
 
@@ -28,6 +30,11 @@ void Object::Bind(Graphics &gfx, int drawStep) noexcept
       if (colorBufferActive)
       {
          commandList->SetGraphicsRootConstantBufferView(1, colorBufferUploadHeaps->GetGPUVirtualAddress());
+      }
+
+      if (lightActive)
+      {
+         commandList->SetGraphicsRootConstantBufferView(1, lightView->GetGPUVirtualAddress());
       }
 
       if (textureActive)
@@ -140,6 +147,12 @@ void Object::CreateShader(const std::wstring &vertexPath, const std::wstring &pi
 
    // create pixel shader
    ThrowIfFailed(D3DReadFileToBlob(pixelPath.c_str(), pixelShaderBlob.ReleaseAndGetAddressOf()));
+}
+
+void Object::SetLightView(ID3D12Resource *mylightView)
+{
+   lightActive = true;
+   lightView = mylightView;
 }
 
 void Object::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
