@@ -20,10 +20,22 @@ public:
       XMMATRIX model;
    };
 
-   //struct MatrixBufferType
-   //{
-   //   XMMATRIX transform;
-   //};
+   struct lightDataType
+   {
+      XMFLOAT3 position;
+      float pad1;
+      XMFLOAT3 materialColor;
+      float pad2;
+      XMFLOAT3 ambient;
+      float pad3;
+      XMFLOAT3 diffuseColor;
+      float pad4;
+      float diffuseIntensity;
+      float attConst;
+      float attLin;
+      float attQuad;
+   } lightData;
+
    TransformMatrix matrixBuffer;
    int ConstantBufferPerObjectAlignedSize = (sizeof(matrixBuffer) + 255) & ~255;
 

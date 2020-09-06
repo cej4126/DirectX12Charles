@@ -16,11 +16,6 @@ private:
    struct Vertex
    {
       XMFLOAT3 pos;
-      //struct
-      //{
-      //   float u;
-      //   float v;
-      //} tex;
       XMFLOAT3 n;
    };
    void Scale(std::vector< Vertex > &vertices, float x, float y, float z);
