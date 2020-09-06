@@ -28,7 +28,6 @@ void Transform::Bind(Graphics &gfx, int index) noexcept
 
    if (lightBufferActive)
    {
-      struct Graphics::lightDataType buffer = parentTransform.GetLightData();
-      memcpy(lightBufferGPUAddress, &buffer, sizeof(buffer));
+      memcpy(lightBufferGPUAddress, &gfx.lightData, sizeof(gfx.lightData));
    }
 }

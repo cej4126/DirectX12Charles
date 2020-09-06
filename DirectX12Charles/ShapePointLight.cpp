@@ -72,7 +72,7 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
 
    std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
    trans->setIndices(0, indicesCount);
-   lightView = trans->CreateLightPosition(lightData);
+   lightView = trans->CreateLightPosition(gfx.lightData);
    AddBind(std::move(trans));
 }
 
@@ -87,7 +87,7 @@ void ShapePointLight::CreateLightControl() noexcept
 
       ImGui::Text("Intensity/Color");
       //ImGui::SliderFloat("Intensity", &gfx.lightData.diffuseIntensity, 0.01f, 2.0f, "%.2f", 2);
-      ImGui::SliderFloat("Intensity", &gfx.lightData.diffuseIntensity, 0.01f, 2.0f, "%0.2f");
+      ImGui::SliderFloat("Intensity", &gfx.lightData.diffuseIntensity, 0.01f, 5.0f, "%0.2f");
       ImGui::ColorEdit3("Diffuse Color", &gfx.lightData.diffuseColor.x);
       ImGui::ColorEdit3("Ambient", &gfx.lightData.ambient.x);
       ImGui::ColorEdit3("Material", &gfx.lightData.materialColor.x);
@@ -96,9 +96,9 @@ void ShapePointLight::CreateLightControl() noexcept
       //ImGui::SliderFloat("Constant", &gfx.lightData.attConst, 0.05f, 10.0f, "%.2f", 4);
       //ImGui::SliderFloat("Linear", &gfx.lightData.attLin, 0.0001f, 4.0f, "%.4f", 8);
       //ImGui::SliderFloat("Quadratic", &gfx.lightData.attQuad, 0.0000001f, 10.0f, "%.7f", 10);
-      ImGui::SliderFloat("Constant", &gfx.lightData.attConst, 0.05f, 10.0f, "%.2f");
-      ImGui::SliderFloat("Linear", &gfx.lightData.attLin, 0.0001f, 4.0f, "%.4f");
-      ImGui::SliderFloat("Quadratic", &gfx.lightData.attQuad, 0.0000001f, 10.0f, "%.7f");
+      ImGui::SliderFloat("Constant", &gfx.lightData.attConst, 0.05f, 1.0f, "%.2f");
+      ImGui::SliderFloat("Linear", &gfx.lightData.attLin, 0.0001f, 0.1f, "%.4f");
+      ImGui::SliderFloat("Quadratic", &gfx.lightData.attQuad, 0.0000001f, 0.1f, "%.7f");
 
       if (ImGui::Button("Reset"))
       {
@@ -116,7 +116,7 @@ void ShapePointLight::ResetLightData() noexcept
       XMFLOAT3(0.7f, 0.7f, 0.7f), 0.0f,
       XMFLOAT3(0.05f, 0.05f, 0.05f), 0.0f,
       XMFLOAT3(1.0f, 0.0f, 0.0f), 0.0f,
-      1.0f,
+      1.5f,
       1.0f,
       0.045f,
       0.0075f
@@ -129,5 +129,5 @@ void ShapePointLight::Update(float dt) noexcept
 
 XMMATRIX ShapePointLight::GetTransformXM() const noexcept
 {
-   return XMMatrixTranslation(lightData.position.x, lightData.position.y, lightData.position.z);
+   return XMMatrixTranslation(gfx.lightData.position.x, gfx.lightData.position.y, gfx.lightData.position.z);
 }
