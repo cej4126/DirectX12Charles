@@ -310,6 +310,63 @@ void Graphics::SetMatrixConstant(UINT index, TransformMatrix matrix) noexcept
    memcpy(matrixBufferGPUAddress + index * ConstantBufferPerObjectAlignedSize, &matrix, sizeof(matrix));
 }
 
+void Graphics::CreateMaterialConstant(UINT count)
+{
+   // I think the default buffer is 4K
+   int ConstantBufferPerObjectAlignedSize = (sizeof(XMMATRIX) + 255) & ~255;
+   //   if (count * ConstantBufferPerObjectAlignedSize > 4096)
+   //   {
+   //      throw;
+   //   }
+      // Material Constant buffer
+   D3D12_HEAP_PROPERTIES constantHeapUpload = {};
+   constantHeapUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+   constantHeapUpload.CreationNodeMask = 1;
+   constantHeapUpload.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+   constantHeapUpload.Type = D3D12_HEAP_TYPE_UPLOAD;
+   constantHeapUpload.VisibleNodeMask = 1;
+
+   D3D12_RESOURCE_DESC constantHeapDesc = {};
+   constantHeapDesc.Alignment = 0;
+   constantHeapDesc.DepthOrArraySize = 1;
+   constantHeapDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+   constantHeapDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+   constantHeapDesc.Format = DXGI_FORMAT_UNKNOWN;
+   constantHeapDesc.Height = 1;
+   constantHeapDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+   constantHeapDesc.SampleDesc.Count = 1;
+   constantHeapDesc.SampleDesc.Quality = 0;
+   constantHeapDesc.Width = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+   constantHeapDesc.MipLevels = 1;
+
+   ThrowIfFailed(device->CreateCommittedResource(
+      &constantHeapUpload,
+      D3D12_HEAP_FLAG_NONE,
+      &constantHeapDesc,
+      D3D12_RESOURCE_STATE_GENERIC_READ,
+      nullptr,
+      IID_PPV_ARGS(&MaterialBufferUploadHeaps)));
+
+   D3D12_RANGE readRange;
+   readRange.Begin = 0;
+   readRange.End = 0;
+   ThrowIfFailed(MaterialBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&MaterialBufferGPUAddress)));
+}
+
+void Graphics::CopyMaterialConstant(UINT index, MaterialType& material) noexcept
+{
+   int ConstantBufferPerObjectAlignedSize = (sizeof(material) + 255) & ~255;
+   memcpy(MaterialBufferGPUAddress + index * ConstantBufferPerObjectAlignedSize, &material, sizeof(material));
+}
+
+void Graphics::SetMaterialConstant(UINT index) noexcept
+{
+   int ConstantBufferPerObjectAlignedSize = (sizeof(MaterialType) + 255) & ~255;
+
+   commandList->SetGraphicsRootConstantBufferView(2,
+      MatrixBufferUploadHeaps->GetGPUVirtualAddress() + index * ConstantBufferPerObjectAlignedSize);
+}
+
 void Graphics::RunCommandList()
 {
    // Now we execute the command list to upload the initial assets (triangle data)

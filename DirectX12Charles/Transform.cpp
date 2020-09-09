@@ -24,6 +24,12 @@ void Transform::Bind(Graphics &gfx, int index) noexcept
 
    gfx.SetMatrixConstant(index, contantMatrix);
 
+   int materialIndex = parentTransform.getMaterialIndex();
+   if (materialIndex != -1)
+   {
+      gfx.SetMaterialConstant(index);
+   }
+
    commandList->DrawIndexedInstanced(indicesCount, 1u, indicesStart, 0u, 0u);
 
    if (lightBufferActive)

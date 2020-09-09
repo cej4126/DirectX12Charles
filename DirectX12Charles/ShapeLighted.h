@@ -8,9 +8,11 @@
 class ShapeLighted : public DrawBase <ShapeLighted>
 {
 public:
-   ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightView);
+   ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightView, int MaterialIndex);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
+   Graphics::MaterialType getMaterial() { return material; }
+   int getMaterialIndex() const noexcept { return MaterialIndex; }
 
 private:
    struct Vertex
@@ -19,7 +21,7 @@ private:
       XMFLOAT3 n;
    };
    void Scale(std::vector< Vertex > &vertices, float x, float y, float z);
-   void SetNormals(std::vector <unsigned short>& indices, std::vector< Vertex >& vertices) noexcept;
+   void SetNormals(std::vector <unsigned short> &indices, std::vector< Vertex > &vertices) noexcept;
 
    Bindable *object = nullptr;
    float range = 0.0f;
@@ -37,4 +39,6 @@ private:
    float spaceRollRate = 0.0f;
    float spacePitchRate = 0.0f;
    float spaceYawRate = 0.0f;
+   int MaterialIndex = -1;
+   Graphics::MaterialType material;
 };

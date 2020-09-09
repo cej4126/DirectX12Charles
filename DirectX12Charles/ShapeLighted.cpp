@@ -1,9 +1,10 @@
 #include "ShapeLighted.h"
 using namespace std;
 
-ShapeLighted::ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightView)
+ShapeLighted::ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightView, int MaterialIndex)
    :
-   range(range)
+   range(range),
+   MaterialIndex(MaterialIndex)
 {
    random_device rd;
    mt19937 gen(rd());
@@ -24,6 +25,8 @@ ShapeLighted::ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightVi
    spaceRollRate = rand1_3pi(gen);
    spacePitchRate = rand1_3pi(gen);
    spaceYawRate = rand1_3pi(gen);
+
+   material.materialColor = XMFLOAT3(randcolor(gen), randcolor(gen), randcolor(gen));
 
 #ifdef FIX_ROTATION
    boxRoll = 0.0f * 3.1415f;
@@ -69,7 +72,6 @@ ShapeLighted::ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightVi
 
       std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
 
-      object->CreateRootSignature(true, false);
       object->LoadVerticesBuffer(vertices);
       object->LoadIndicesBuffer(indices);
       object->CreateShader(L"LightedVS.cso", L"LightedPS.cso");
@@ -81,10 +83,14 @@ ShapeLighted::ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightVi
           { "Normal", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
       };
 
-      object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-
       XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
       object->CreateConstant(position);
+
+      // Create Root Signature after constants
+      object->CreateRootSignature(true);
+
+      object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+
       object->SetLightView(mylightView);
 
       addStaticBind(std::move(object), (UINT)model.indices.size());

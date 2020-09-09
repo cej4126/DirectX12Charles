@@ -62,7 +62,6 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
 
       }
 
-      object->CreateRootSignature(false, true);
       object->LoadVerticesBuffer(model.vertices);
       object->LoadIndicesBuffer(model.indices);
       object->CreateShader(L"ColorBlendedVS.cso", L"ColorBlendedPS.cso");
@@ -72,6 +71,9 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
           { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
           { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
       };
+
+      // Create Root Signature after constants
+      object->CreateRootSignature(false);
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 

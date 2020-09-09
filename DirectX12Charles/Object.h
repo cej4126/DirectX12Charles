@@ -10,7 +10,7 @@ public:
    Object(Graphics &gfx);
 
    void CreateTexture(const Surface &surface);
-   void CreateRootSignature(bool constantFlag, bool textureFlag);
+   void CreateRootSignature(bool materialFlag);
    void CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath);
    void SetLightView(ID3D12Resource *mylightView);
    void CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType);

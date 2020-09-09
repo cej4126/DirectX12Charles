@@ -12,6 +12,7 @@ public:
    ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float range);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
+   int getMaterialIndex() const noexcept { return -1; }
 
 private:
    Bindable *object = nullptr;

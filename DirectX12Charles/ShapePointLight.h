@@ -15,6 +15,7 @@ public:
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
    ID3D12Resource *getLightView() { return lightView; }
+   int getMaterialIndex() const noexcept { return -1; }
 
 private:
    Graphics &gfx;

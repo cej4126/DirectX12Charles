@@ -16,6 +16,8 @@ public:
    void Draw(Graphics& gfx, int index) const noexcept;
    virtual void Update(float dt) noexcept = 0;
    virtual XMMATRIX GetTransformXM() const noexcept = 0;
+   virtual int getMaterialIndex() const noexcept = 0;
+
  
 protected:
    void AddBind(std::unique_ptr <Bindable> bind) noexcept;

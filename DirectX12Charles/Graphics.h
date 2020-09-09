@@ -24,8 +24,6 @@ public:
    {
       XMFLOAT3 position;
       float pad1;
-      XMFLOAT3 materialColor;
-      float pad2;
       XMFLOAT3 ambient;
       float pad3;
       XMFLOAT3 diffuseColor;
@@ -35,6 +33,11 @@ public:
       float attLin;
       float attQuad;
    } lightData;
+
+   struct MaterialType
+   {
+      XMFLOAT3 materialColor;
+   };
 
    TransformMatrix matrixBuffer;
    int ConstantBufferPerObjectAlignedSize = (sizeof(matrixBuffer) + 255) & ~255;
@@ -49,7 +52,12 @@ public:
 
 
    void CreateMatrixConstant(UINT count);
+   void CreateMaterialConstant(UINT count);
    void SetMatrixConstant(UINT index, TransformMatrix matrix) noexcept;
+
+   void CopyMaterialConstant(UINT index, MaterialType& matrix) noexcept;
+   void SetMaterialConstant(UINT index) noexcept;
+
 
    UINT64 UpdateSubresource(
       _In_ ID3D12Resource *pDestinationResource,
@@ -101,6 +109,9 @@ private:
 private:
    Microsoft::WRL::ComPtr <ID3D12Resource> MatrixBufferUploadHeaps;
    UINT8 *matrixBufferGPUAddress;
+
+   Microsoft::WRL::ComPtr <ID3D12Resource> MaterialBufferUploadHeaps;
+   UINT8 *MaterialBufferGPUAddress;
 
 protected:
    static const UINT bufferCount = 3;

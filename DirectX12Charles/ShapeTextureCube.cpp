@@ -127,7 +127,6 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
 
       object->CreateTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\cube.png"));
 
-      object->CreateRootSignature(false, true);
       object->LoadVerticesBuffer(vertices);
       object->LoadIndicesBuffer(indices);
       object->CreateShader(L"TextureVS.cso", L"TexturePS.cso");
@@ -137,6 +136,9 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
           { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
           { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
       };
+
+      // Create Root Signature after constants
+      object->CreateRootSignature(false);
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 

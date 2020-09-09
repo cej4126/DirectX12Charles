@@ -24,12 +24,15 @@ App::App()
    light = std::make_unique<ShapePointLight>(wnd.Gfx(), 0.5f);
 
    int MaxBoxX12Count = 20;
+   int MaterialCount = 0;
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
       Shape::shapeType type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
       float range = rangedist(rng);
 
-      drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), range, light->getLightView()));
+      drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), range, light->getLightView(), MaterialCount));
+      ++MaterialCount;
+
       //if ((i % 4) == 0)
       //{
       //   drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));
@@ -39,6 +42,18 @@ App::App()
       //drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
    }
    wnd.Gfx().CreateMatrixConstant(MaxBoxX12Count);
+   wnd.Gfx().CreateMaterialConstant(MaterialCount);
+
+   for (auto &b : drawItems)
+   {
+      int materialIndex = b->getMaterialIndex();
+      if (materialIndex != -1)
+      {
+         Graphics::MaterialType material;
+         material.materialColor = XMFLOAT3(1.0f, 0.0f, 1.0f);
+         wnd.Gfx().CopyMaterialConstant(materialIndex, material);
+      }
+   }
 
    wnd.Gfx().RunCommandList();
 

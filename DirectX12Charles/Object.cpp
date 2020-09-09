@@ -49,35 +49,34 @@ void Object::Bind(Graphics &gfx, int drawStep) noexcept
    }
 }
 
-void Object::CreateRootSignature(bool constantFlag, bool textureFlag)
+void Object::CreateRootSignature(bool materialFlag)
 {
-   int rootCount = 1;
+   int rootCount = 0;
 
    D3D12_ROOT_DESCRIPTOR rootCBVDescriptor;
    rootCBVDescriptor.RegisterSpace = 0;
    rootCBVDescriptor.ShaderRegister = 0;
 
-   D3D12_ROOT_PARAMETER  rootParameters[2];
+   D3D12_ROOT_PARAMETER  rootParameters[3];
    // constant buffer for matrix
-   rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-   rootParameters[0].Descriptor = rootCBVDescriptor;
-   rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+   rootParameters[rootCount].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+   rootParameters[rootCount].Descriptor = rootCBVDescriptor;
+   rootParameters[rootCount].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+   ++rootCount;
 
-   if (constantFlag)
+   if (colorBufferActive || lightActive)
    {
-      ++rootCount;
       // Constant buffer for the color
       rootCBVDescriptor.RegisterSpace = 0;
       rootCBVDescriptor.ShaderRegister = 1;
-      rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-      rootParameters[1].Descriptor = rootCBVDescriptor;
-      rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+      rootParameters[rootCount].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+      rootParameters[rootCount].Descriptor = rootCBVDescriptor;
+      rootParameters[rootCount].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+      ++rootCount;
    }
 
-   if (textureFlag)
+   if (textureActive)
    {
-      ++rootCount;
-
       D3D12_ROOT_DESCRIPTOR rootCBVDescriptor;
       rootCBVDescriptor.RegisterSpace = 0;
       rootCBVDescriptor.ShaderRegister = 0;
@@ -98,9 +97,21 @@ void Object::CreateRootSignature(bool constantFlag, bool textureFlag)
 
       // fill out the parameter for our descriptor table. Remember it's a good idea to sort parameters by frequency of change. Our constant
       // buffer will be changed multiple times per frame, while our descriptor table will not be changed at all (in this tutorial)
-      rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // this is a descriptor table
-      rootParameters[1].DescriptorTable = descriptorTable; // this is our descriptor table for this root parameter
-      rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
+      rootParameters[rootCount].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // this is a descriptor table
+      rootParameters[rootCount].DescriptorTable = descriptorTable; // this is our descriptor table for this root parameter
+      rootParameters[rootCount].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
+      ++rootCount;
+   }
+
+   if (materialFlag)
+   {
+      // Material buffer for the color
+      rootCBVDescriptor.RegisterSpace = 0;
+      rootCBVDescriptor.ShaderRegister = 2;
+      rootParameters[rootCount].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+      rootParameters[rootCount].Descriptor = rootCBVDescriptor;
+      rootParameters[rootCount].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+      ++rootCount;
    }
 
    // create a static sampler

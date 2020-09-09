@@ -49,7 +49,6 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
          indices[i] = model.indices[index] - verticesStart;
       }
 
-      object->CreateRootSignature(true, false);
       object->LoadVerticesBuffer(vertices);
       object->LoadIndicesBuffer(indices);
       object->CreateShader(L"PointLightVS.cso", L"PointLightPS.cso");
@@ -64,6 +63,9 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
          float padding;
       } colorConst;
       object->CreateConstant(colorConst);
+
+      // Create Root Signature after constants
+      object->CreateRootSignature(false);
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
@@ -90,7 +92,6 @@ void ShapePointLight::CreateLightControl() noexcept
       ImGui::SliderFloat("Intensity", &gfx.lightData.diffuseIntensity, 0.01f, 5.0f, "%0.2f");
       ImGui::ColorEdit3("Diffuse Color", &gfx.lightData.diffuseColor.x);
       ImGui::ColorEdit3("Ambient", &gfx.lightData.ambient.x);
-      ImGui::ColorEdit3("Material", &gfx.lightData.materialColor.x);
 
       ImGui::Text("Falloff");
       //ImGui::SliderFloat("Constant", &gfx.lightData.attConst, 0.05f, 10.0f, "%.2f", 4);
@@ -113,9 +114,8 @@ void ShapePointLight::ResetLightData() noexcept
    gfx.lightData =
    {
       XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f,
-      XMFLOAT3(0.7f, 0.7f, 0.7f), 0.0f,
       XMFLOAT3(0.05f, 0.05f, 0.05f), 0.0f,
-      XMFLOAT3(1.0f, 0.0f, 0.0f), 0.0f,
+      XMFLOAT3(1.0f, 1.0f, 1.0f), 0.0f,
       1.5f,
       1.0f,
       0.045f,

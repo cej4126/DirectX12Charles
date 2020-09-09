@@ -2,8 +2,6 @@ struct CBuf
 {
 	float3 lightPos;
 	float pad1;
-	float3 materialColor;
-	float pad2;
 	float3 ambient;
 	float pad3;
 	float3 diffuseColor;
@@ -15,6 +13,12 @@ struct CBuf
 };
 ConstantBuffer <CBuf> buf: register(b1);
 
+struct MaterialBuf
+{
+	float3 materialColor;
+	float pad1;
+};
+ConstantBuffer <MaterialBuf> material: register(b2);
 
 float4 main(float3 worldPos : Position, float3 n : Normal) : SV_Target
 {
@@ -27,5 +31,5 @@ float4 main(float3 worldPos : Position, float3 n : Normal) : SV_Target
 	// diffuse intensity
 	const float3 diffuse = buf.diffuseColor * buf.diffuseIntensity * att * max(0.0f, dot(dirToL,n));
 	// final color
-	return float4(saturate((diffuse + buf.ambient) * buf.materialColor), 1.0f);
+	return float4(saturate((diffuse + buf.ambient) * material.materialColor), 1.0f);
 }

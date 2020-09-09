@@ -50,7 +50,6 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
       };
       auto model = gfx.shape.GetShapeData<Vertex>();
 
-      object->CreateRootSignature(true, false);
       object->LoadVerticesBuffer(model.vertices);
       object->LoadIndicesBuffer(model.indices);
       object->CreateShader(L"ColorIndexVS.cso", L"ColorIndexPS.cso");
@@ -60,9 +59,6 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
       {
           { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
       };
-
-      object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-      // lookup table for cube face colors
 
       struct ConstantBufferColor
       {
@@ -97,6 +93,13 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
       }
 
       object->CreateConstant(colorBuffer);
+
+      // Create Root Signature after constants
+      object->CreateRootSignature(false);
+
+      object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      // lookup table for cube face colors
+
 
       addStaticBind(std::move(object), (UINT)model.indices.size());
    }
