@@ -40,6 +40,13 @@ class Shape
 public:
    typedef enum
    {
+      basic,
+      normal,
+      texture
+   } ShapeBaseType;
+
+   typedef enum
+   {
       Cube,
       Cone,
       Prism,
@@ -47,12 +54,28 @@ public:
       Sphere,
       Plane,
       TextureCube,
+      TextureCylinder,
+
       ShapeCount
    } shapeType;
+   //typedef enum
+   //{
+   //   Cube,
+   //   Cone,
+   //   Prism,
+   //   Cylinder,
+   //   Sphere,
+   //   Plane,
+   //   TextureCube,
+   //   TextureCylinder,
+   //   ShapeCount
+   //} shapeType;
 
    struct Vertex
    {
-      XMFLOAT3 pos;
+      XMFLOAT3 pos = { 0.0f, 0.0f, 0.0f };
+      XMFLOAT3 normal = { 0.0f, 0.0f, 0.0f };
+      XMFLOAT2 tex = { 0.0f, 0.0f };
       Vertex(
          float x,
          float y,
@@ -61,6 +84,34 @@ public:
          pos.x = x;
          pos.y = y;
          pos.z = z;
+      }
+      Vertex(
+         float x,
+         float y,
+         float z,
+         float nx,
+         float ny,
+         float nz)
+      {
+         pos.x = x;
+         pos.y = y;
+         pos.z = z;
+         normal.x = nx;
+         normal.y = ny;
+         normal.z = nz;
+      }
+      Vertex(
+         float x,
+         float y,
+         float z,
+         float tu,
+         float tv)
+      {
+         pos.x = x;
+         pos.y = y;
+         pos.z = z;
+         tex.x = tu;
+         tex.y = tv;
       }
       Vertex()
       {
@@ -93,7 +144,19 @@ public:
          verts[i].pos = vertices[i].pos;
       }
 
-      //      return{ std::move(verts), std::move(indices) };
+      return{ verts, indices };
+   }
+
+   template<class V>
+   ShapeData<V> GetShapeTextureData()
+   {
+      std::vector<V> verts(vertices.size());
+      for (size_t i = 0; i < vertices.size(); i++)
+      {
+         verts[i].pos = vertices[i].pos;
+         verts[i].tex = vertices[i].tex;
+      }
+
       return{ verts, indices };
    }
 
@@ -105,6 +168,7 @@ private:
    void CreateCylinder(int longDiv);
    void CreateSphere(int latDiv, int longDiv);
    void CreateTextureCube();
+   void CreateTextureCylinder(int longDiv);
 
    std::array<ShapeDataType, ShapeCount> shapedata;
    std::vector<Vertex> vertices;

@@ -44,6 +44,7 @@ ShapeLighted::ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightVi
    spaceYawRate = 0.0f;
 #endif
    Shape::shapeType type = Shape::TextureCube;
+//   Shape::shapeType type = Shape::Cylinder;
 
    UINT verticesStart = gfx.shape.getVerticesStart(type);
    UINT verticesCount = gfx.shape.getVerticesCount(type);
@@ -67,7 +68,7 @@ ShapeLighted::ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightVi
          int index = indicesStart + i;
          indices[i] = model.indices[index] - verticesStart;
       }
-      Scale(vertices, 0.5f, 0.5f, 1.0f);
+      Scale(vertices, 0.8f, 0.8f, 1.6f);
       SetNormals(indices, vertices);
 
       std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
@@ -151,4 +152,9 @@ XMMATRIX ShapeLighted::GetTransformXM() const noexcept
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *
       DirectX::XMMatrixRotationRollPitchYaw(spacePitch, spaceYaw, spaceRoll);
+}
+
+void ShapeLighted::getMaterialData(Graphics::MaterialType &myMaterial) const noexcept
+{
+   myMaterial.materialColor = material.materialColor;
 }

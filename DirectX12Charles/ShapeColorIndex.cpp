@@ -1,6 +1,8 @@
 #include "ShapeColorIndex.h"
 using namespace std;
 
+//#define FIX_ROTATION
+
 ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float range)
    :
    range(range)
@@ -26,11 +28,11 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
 
 #ifdef FIX_ROTATION
    boxRoll = 0.0f * 3.1415f;
-   boxPitch = 0.0 * 3.1415f;
-   boxYaw = 0.0f * 3.1415f;
+   boxPitch = 0.0f * 3.1415f;
+   boxYaw = 0.2f * 3.1415f;
    boxRollRate = 0.0f;
-   boxPitchRate = 0.5f;
-   boxYawRate = 0.1f;
+   boxPitchRate = 0.0f;
+   boxYawRate = 0.5f;
 
    spaceRoll = 0.0f;
    spacePitch = 0.0f;

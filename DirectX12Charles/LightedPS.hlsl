@@ -16,7 +16,9 @@ ConstantBuffer <CBuf> buf: register(b1);
 struct MaterialBuf
 {
 	float3 materialColor;
-	float pad1;
+	float specularIntensity;
+	float specularPower;
+	float pad[2];
 };
 ConstantBuffer <MaterialBuf> material: register(b2);
 
@@ -26,10 +28,18 @@ float4 main(float3 worldPos : Position, float3 n : Normal) : SV_Target
 	const float3 vToL = buf.lightPos - worldPos;
 	const float distToL = length(vToL);
 	const float3 dirToL = vToL / distToL;
-	// diffuse attenuation
+	// attenuation
 	const float att = 1.0f /(buf.attConst + buf.attLin * distToL + buf.attQuad * (distToL * distToL));
 	// diffuse intensity
-	const float3 diffuse = buf.diffuseColor * buf.diffuseIntensity * att * max(0.0f, dot(dirToL,n));
+	const float3 diffuse = buf.diffuseColor * buf.diffuseIntensity * att * max(0.0f, dot(dirToL, n));
+
+	// reflected light vector
+	const float3 w = n * dot(vToL, n);
+	const float3 r = w * 2.0f - vToL;
+	// calculate specular intensity based on angle between viewing vector and reflection vector, narrow with power function
+	const float3 specular = att * (buf.diffuseColor * buf.diffuseIntensity) *
+		material.specularIntensity * pow(max(0.0f, dot(normalize(-r), normalize(worldPos))), material.specularPower);
+
 	// final color
-	return float4(saturate((diffuse + buf.ambient) * material.materialColor), 1.0f);
+	return float4(saturate((diffuse + buf.ambient + specular) * material.materialColor), 1.0f);
 }

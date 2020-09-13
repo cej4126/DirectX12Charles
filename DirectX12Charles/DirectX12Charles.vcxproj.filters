@@ -196,12 +196,6 @@
     <FxCompile Include="ColorIndexVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="ColorIndexVSX11.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="ColorIndexPSX11.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
     <FxCompile Include="ColorBlendedVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>

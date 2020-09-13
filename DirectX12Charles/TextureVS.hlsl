@@ -14,14 +14,14 @@ struct Foo
 {
    // It is backward
    matrix modelViewProj;
-   matrix model;
+   matrix modelView;
 };
 ConstantBuffer<Foo> mydata : register(b0);
 
 VS_OUTPUT main(VS_INPUT input)
 {
    VS_OUTPUT output;
-   output.pos = mul(input.pos, mydata.model);
+   output.pos = mul(input.pos, mydata.modelView);
    output.texCoord = input.texCoord;
    return output;
 }

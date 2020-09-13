@@ -59,7 +59,6 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
          float b = randcolor(gen);
          float g = randcolor(gen);
          model.vertices[i].color = { r, b, g, 1.0f };
-
       }
 
       object->LoadVerticesBuffer(model.vertices);

@@ -16,6 +16,7 @@ public:
    XMMATRIX GetTransformXM() const noexcept override;
    ID3D12Resource *getLightView() { return lightView; }
    int getMaterialIndex() const noexcept { return -1; }
+   void getMaterialData(Graphics::MaterialType &myMaterial) const noexcept {};
 
 private:
    Graphics &gfx;

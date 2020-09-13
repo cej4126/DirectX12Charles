@@ -313,12 +313,8 @@ void Graphics::SetMatrixConstant(UINT index, TransformMatrix matrix) noexcept
 void Graphics::CreateMaterialConstant(UINT count)
 {
    // I think the default buffer is 4K
-   int ConstantBufferPerObjectAlignedSize = (sizeof(XMMATRIX) + 255) & ~255;
-   //   if (count * ConstantBufferPerObjectAlignedSize > 4096)
-   //   {
-   //      throw;
-   //   }
-      // Material Constant buffer
+   int ConstantBufferPerObjectAlignedSize = (sizeof(MaterialType) + 255) & ~255;
+
    D3D12_HEAP_PROPERTIES constantHeapUpload = {};
    constantHeapUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
    constantHeapUpload.CreationNodeMask = 1;
@@ -355,7 +351,7 @@ void Graphics::CreateMaterialConstant(UINT count)
 
 void Graphics::CopyMaterialConstant(UINT index, MaterialType& material) noexcept
 {
-   int ConstantBufferPerObjectAlignedSize = (sizeof(material) + 255) & ~255;
+   int ConstantBufferPerObjectAlignedSize = (sizeof(MaterialType) + 255) & ~255;
    memcpy(MaterialBufferGPUAddress + index * ConstantBufferPerObjectAlignedSize, &material, sizeof(material));
 }
 
@@ -364,7 +360,7 @@ void Graphics::SetMaterialConstant(UINT index) noexcept
    int ConstantBufferPerObjectAlignedSize = (sizeof(MaterialType) + 255) & ~255;
 
    commandList->SetGraphicsRootConstantBufferView(2,
-      MatrixBufferUploadHeaps->GetGPUVirtualAddress() + index * ConstantBufferPerObjectAlignedSize);
+      MaterialBufferUploadHeaps->GetGPUVirtualAddress() + index * ConstantBufferPerObjectAlignedSize);
 }
 
 void Graphics::RunCommandList()

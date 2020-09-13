@@ -8,6 +8,8 @@
 
 GDIPlusManager gdipm;
 
+//#define NO_LIGHT
+
 App::App()
    :
    wnd(1000, 800)
@@ -21,9 +23,11 @@ App::App()
 
    dwriteitem = std::make_unique<dwritedraw>(wnd.Gfx());
 
+#ifndef NO_LIGHT
    light = std::make_unique<ShapePointLight>(wnd.Gfx(), 0.5f);
+#endif
 
-   int MaxBoxX12Count = 20;
+   int MaxBoxX12Count = 1;
    int MaterialCount = 0;
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
@@ -33,13 +37,18 @@ App::App()
       drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), range, light->getLightView(), MaterialCount));
       ++MaterialCount;
 
-      //if ((i % 4) == 0)
-      //{
-      //   drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));
-      //   drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), range));
-      //}
-      //drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
-      //drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
+      if ((i % 4) == 0)
+      {
+         drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));
+         drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), range));
+      }
+      drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
+      drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
+
+      //drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), Shape::Cylinder, 0));
+      //drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), Shape::TextureCylinder, 0));
+      //drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), Shape::TextureCylinder, 0));
+
    }
    wnd.Gfx().CreateMatrixConstant(MaxBoxX12Count);
    wnd.Gfx().CreateMaterialConstant(MaterialCount);
@@ -50,7 +59,7 @@ App::App()
       if (materialIndex != -1)
       {
          Graphics::MaterialType material;
-         material.materialColor = XMFLOAT3(1.0f, 0.0f, 1.0f);
+         b->getMaterialData(material);
          wnd.Gfx().CopyMaterialConstant(materialIndex, material);
       }
    }
@@ -107,9 +116,12 @@ void App::DoFrame()
    wnd.Gfx().OnRender();
 
    int index = 0;
+
+#ifndef NO_LIGHT
    auto &lightObject = light;
    lightObject->Draw(wnd.Gfx(), 0);
    ++index;
+#endif
 
    for (auto &b : drawItems)
    {
@@ -133,7 +145,9 @@ void App::DoFrame()
    ImGui::End();
 
    cam.CreateControlWindow();
+#ifndef NO_LIGHT
    lightObject->CreateLightControl();
+#endif
 
    ImGui::Render();
    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());

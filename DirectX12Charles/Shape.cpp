@@ -31,6 +31,9 @@ Shape::Shape()
          case TextureCube:
             CreateTextureCube();
             break;
+         case TextureCylinder:
+            CreateTextureCylinder(24);
+            break;
       }
    }
 }
@@ -225,22 +228,23 @@ void Shape::CreatePlane(int divisions_x, int divisions_y)
 
 void Shape::CreateCylinder(int longDiv)
 {
+   float size = 3.0f;
    shapeType type = Cylinder;
    UINT startIndices = (UINT)indices.size();
    UINT startVertices = (UINT)vertices.size();
 
    assert(longDiv >= 3);
-   const auto base = XMVectorSet(1.0f, 0.0f, -1.0f, 0.0f);
-   const auto offset = XMVectorSet(0.0f, 0.0f, 2.0f, 0.0f);
+   const auto base = XMVectorSet(size, 0.0f, -size, 0.0f);
+   const auto offset = XMVectorSet(0.0f, 0.0f, 2.0f * size, 0.0f);
    const float longitudeAngle = 2.0f * (float)M_PI / longDiv;
 
    // near center
    vertices.emplace_back();
-   vertices.back().pos = { 0.0f,0.0f,-1.0f };
+   vertices.back().pos = { 0.0f, 0.0f, -size };
    const auto iCenterNear = (unsigned short)(vertices.size() - startVertices - 1);
    // far center
    vertices.emplace_back();
-   vertices.back().pos = { 0.0f,0.0f,1.0f };
+   vertices.back().pos = { 0.0f, 0.0f, size };
    const auto iCenterFar = (unsigned short)(vertices.size() - startVertices - 1);
 
    // base vertices
@@ -398,44 +402,53 @@ void Shape::CreateTextureCube()
    UINT startVertices = (UINT)vertices.size();
    constexpr float side = 1.0f;
 
+   const float u1 = 0.0f;
+   const float u2 = 1.0f / 3.0f;
+   const float u3 = 2.0f / 3.0f;
+   const float u4 = 1.0f;
+   const float v1 = 0.0f;
+   const float v2 = 1.0f / 4.0f;
+   const float v3 = 2.0f / 4.0f;
+   const float v4 = 3.0f / 4.0f;
+   const float v5 = 1.0f;
    // Y
    // |
    //-Z - X
    // Front                X      Y      Z
-   vertices.emplace_back(-side, side, -side); //  0
-   vertices.emplace_back(side, side, -side); //  1
-   vertices.emplace_back(side, -side, -side); //  2
-   vertices.emplace_back(-side, -side, -side); //  3
+   vertices.emplace_back(-side,  side, -side, u3, v2); //  0
+   vertices.emplace_back( side,  side, -side, u3, v3); //  1
+   vertices.emplace_back( side, -side, -side, u2, v3); //  2
+   vertices.emplace_back(-side, -side, -side, u2, v2); //  3
 
    // Top
-   vertices.emplace_back(-side, side, side); //  4
-   vertices.emplace_back(side, side, side); //  5
-   vertices.emplace_back(side, side, -side); //  6
-   vertices.emplace_back(-side, side, -side); //  7
+   vertices.emplace_back(-side,  side,  side, u4, v2); //  4
+   vertices.emplace_back( side,  side,  side, u4, v3); //  5
+   vertices.emplace_back( side,  side, -side, u3, v3); //  6
+   vertices.emplace_back(-side,  side, -side, u3, v2); //  7
 
    // Back
-   vertices.emplace_back(side, side, side); //  8
-   vertices.emplace_back(-side, side, side); //  9
-   vertices.emplace_back(-side, -side, side); // 10
-   vertices.emplace_back(side, -side, side); // 11
+   vertices.emplace_back( side,  side,  side, u3, v4); //  8
+   vertices.emplace_back(-side,  side,  side, u3, v5); //  9
+   vertices.emplace_back(-side, -side,  side, u2, v5); // 10
+   vertices.emplace_back( side, -side,  side, u2, v4); // 11
 
    // Bottom
-   vertices.emplace_back(-side, -side, -side); // 12
-   vertices.emplace_back(side, -side, -side); // 13
-   vertices.emplace_back(side, -side, side); // 14
-   vertices.emplace_back(-side, -side, side); // 15
+   vertices.emplace_back(-side, -side, -side, u2, v2); // 12
+   vertices.emplace_back( side, -side, -side, u2, v3); // 13
+   vertices.emplace_back( side, -side,  side, u1, v3); // 14
+   vertices.emplace_back(-side, -side,  side, u1, v2); // 15
 
    // Right
-   vertices.emplace_back(side, side, -side); // 16
-   vertices.emplace_back(side, side, side); // 17
-   vertices.emplace_back(side, -side, side); // 18
-   vertices.emplace_back(side, -side, -side); // 19
+   vertices.emplace_back( side,  side, -side, u3, v3); // 16
+   vertices.emplace_back( side,  side,  side, u3, v4); // 17
+   vertices.emplace_back( side, -side,  side, u2, v4); // 18
+   vertices.emplace_back( side, -side, -side, u2, v3); // 19
 
    // Left
-   vertices.emplace_back(-side, side, side); // 20
-   vertices.emplace_back(-side, side, -side); // 21
-   vertices.emplace_back(-side, -side, -side); // 22
-   vertices.emplace_back(-side, -side, side); // 23
+   vertices.emplace_back(-side,  side,  side, u3, v1); // 20
+   vertices.emplace_back(-side,  side, -side, u3, v2); // 21
+   vertices.emplace_back(-side, -side, -side, u2, v2); // 22
+   vertices.emplace_back(-side, -side,  side, u2, v1); // 23
 
    const unsigned short cubeindices[]
    {
@@ -455,4 +468,100 @@ void Shape::CreateTextureCube()
    shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
    shapedata[type].verticesStart = startVertices;
    shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
+}
+
+void Shape::CreateTextureCylinder(int longDiv)
+{
+   float size = 3.0f;
+   shapeType type = TextureCylinder;
+   UINT startIndices = (UINT)indices.size();
+   UINT startVertices = (UINT)vertices.size();
+
+   assert(longDiv >= 3);
+   const auto offset = XMVectorSet(0.0f, 0.0f, 2.0f * size, 0.0f);
+   const float longitudeAngle = 2.0f * (float)M_PI / longDiv;
+
+   int verticeCount = 0;
+   int indiceCount = 0;
+   // Create top and bottom face
+   for (int face = 0; face < 2; ++face)
+   {
+      unsigned short circleVerticeStart = verticeCount;
+      // center
+      float centerZ = size + (-2 * face) * size;
+      vertices.emplace_back();
+      vertices.back().pos = { 0.0f, 0.0f, centerZ };
+      ++verticeCount;
+
+      const auto arm = XMVectorSet(size, 0.0f, centerZ, 0.0f);
+
+      for (int iLong = 0; iLong < longDiv; iLong++)
+      {
+         // Set vertices
+         vertices.emplace_back();
+         auto v = XMVector3Transform(
+            arm,
+            XMMatrixRotationZ(longitudeAngle * iLong)
+         );
+         XMStoreFloat3(&vertices.back().pos, v);
+         ++verticeCount;
+      }
+      
+      for (int iLong = 0; iLong < longDiv; iLong++)
+      {
+         // Set Indices
+         if (face == 1)
+         {
+            indices.push_back(iLong + 1 + circleVerticeStart + startVertices);
+            indices.push_back(circleVerticeStart + startVertices);
+            indices.push_back((iLong + 1) % longDiv + circleVerticeStart + 1 + startVertices);
+         }
+         else
+         {
+            indices.push_back((iLong + 1) % longDiv + circleVerticeStart + 1 + startVertices);
+            indices.push_back(circleVerticeStart + startVertices);
+            indices.push_back(iLong + 1 + circleVerticeStart + startVertices);
+         }
+         indiceCount += 3;
+      }
+   }
+
+   // side
+   XMVECTOR arm[2] =
+   {
+      XMVectorSet(size, 0.0f, size, 0.0f),
+      XMVectorSet(size, 0.0f, -size, 0.0f)
+   };
+
+   for (int iLong = 0; iLong < longDiv; iLong++)
+   {
+      int startVerticeStart = verticeCount;
+      for (int i = 0; i < 4; i++)
+      {
+         int j = i / 2;
+         // Set vertices
+         vertices.emplace_back();
+         auto v1 = XMVector3Transform(
+            arm[i % 2],
+            XMMatrixRotationZ(longitudeAngle * (iLong + j))
+         );
+         XMStoreFloat3(&vertices.back().pos, v1);
+         ++verticeCount;
+      }
+ 
+      indices.push_back(startVerticeStart + 0);
+      indices.push_back(startVerticeStart + 1);
+      indices.push_back(startVerticeStart + 3);
+
+      indices.push_back(startVerticeStart + 0);
+      indices.push_back(startVerticeStart + 3);
+      indices.push_back(startVerticeStart + 2);
+
+      indiceCount += 6;
+   }
+
+   shapedata[type].indiceStart = startIndices;
+   shapedata[type].indiceCount = indiceCount;
+   shapedata[type].verticesStart = startVertices;
+   shapedata[type].verticesCount = verticeCount;
 }

@@ -12,13 +12,12 @@ Transform::Transform(Graphics &gfx, const DrawFunction &parent)
 
 void Transform::Bind(Graphics &gfx, int index) noexcept
 {
-   const auto model = parentTransform.GetTransformXM();
+   const auto modelView = parentTransform.GetTransformXM() * gfx.GetCamera();
    const Graphics::TransformMatrix contantMatrix =
    {
-      XMMatrixTranspose(model),
+      XMMatrixTranspose(modelView),
       XMMatrixTranspose(
-      model *
-      gfx.GetCamera() *
+      modelView *
       gfx.GetProjection())
    };
 
@@ -27,13 +26,17 @@ void Transform::Bind(Graphics &gfx, int index) noexcept
    int materialIndex = parentTransform.getMaterialIndex();
    if (materialIndex != -1)
    {
-      gfx.SetMaterialConstant(index);
+      gfx.SetMaterialConstant(materialIndex);
    }
 
    commandList->DrawIndexedInstanced(indicesCount, 1u, indicesStart, 0u, 0u);
 
    if (lightBufferActive)
    {
-      memcpy(lightBufferGPUAddress, &gfx.lightData, sizeof(gfx.lightData));
+      auto dataCopy = gfx.lightData;
+      const auto pos = XMLoadFloat3(&dataCopy.position);
+      XMMATRIX cam = gfx.GetCamera();
+      XMStoreFloat3(&dataCopy.position, XMVector3Transform(pos, cam));
+      memcpy(lightBufferGPUAddress, &dataCopy, sizeof(dataCopy));
    }
 }

@@ -13,6 +13,7 @@ public:
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
    int getMaterialIndex() const noexcept { return -1; }
+   void getMaterialData(Graphics::MaterialType &myMaterial) const noexcept {};
 
 private:
    Bindable *object = nullptr;

@@ -13,6 +13,7 @@ public:
    XMMATRIX GetTransformXM() const noexcept override;
    Graphics::MaterialType getMaterial() { return material; }
    int getMaterialIndex() const noexcept { return MaterialIndex; }
+   void getMaterialData(Graphics::MaterialType &myMaterial) const noexcept;
 
 private:
    struct Vertex

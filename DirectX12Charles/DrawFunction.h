@@ -17,6 +17,7 @@ public:
    virtual void Update(float dt) noexcept = 0;
    virtual XMMATRIX GetTransformXM() const noexcept = 0;
    virtual int getMaterialIndex() const noexcept = 0;
+   virtual void getMaterialData(Graphics::MaterialType &myMaterial) const noexcept = 0;
 
  
 protected:
