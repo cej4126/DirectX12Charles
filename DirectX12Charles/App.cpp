@@ -27,23 +27,27 @@ App::App()
    light = std::make_unique<ShapePointLight>(wnd.Gfx(), 0.5f);
 #endif
 
-   int MaxBoxX12Count = 1;
+   int MaxBoxX12Count = 4;
    int MaterialCount = 0;
+   Shape::shapeType type;
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
-      Shape::shapeType type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
+      type = static_cast<Shape::shapeType>(Shape::TextureCylinder + (i % 2));
+      //type = Shape::TextureCylinder;
+      //type = Shape::TextureCube;
       float range = rangedist(rng);
 
-      drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), range, light->getLightView(), MaterialCount));
+      drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), type, range, light->getLightView(), MaterialCount));
       ++MaterialCount;
 
-      if ((i % 4) == 0)
-      {
-         drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));
-         drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), range));
-      }
-      drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
-      drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
+      //type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
+      //if ((i % 4) == 0)
+      //{
+      //   drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));
+      //   drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), range));
+      //}
+      //drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
+      //drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
 
       //drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), Shape::Cylinder, 0));
       //drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), Shape::TextureCylinder, 0));

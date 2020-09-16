@@ -1,7 +1,9 @@
 #include "ShapeLighted.h"
 using namespace std;
 
-ShapeLighted::ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightView, int MaterialIndex)
+//#define FIX_ROTATION
+
+ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID3D12Resource *mylightView, int MaterialIndex)
    :
    range(range),
    MaterialIndex(MaterialIndex)
@@ -34,7 +36,7 @@ ShapeLighted::ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightVi
    boxYaw = 0.0f * 3.1415f;
    boxRollRate = 0.0f;
    boxPitchRate = 0.5f;
-   boxYawRate = 0.1f;
+   boxYawRate = 0.5f;
 
    spaceRoll = 0.0f;
    spacePitch = 0.0f;
@@ -43,8 +45,6 @@ ShapeLighted::ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightVi
    spacePitchRate = 0.0f;
    spaceYawRate = 0.0f;
 #endif
-   Shape::shapeType type = Shape::TextureCube;
-//   Shape::shapeType type = Shape::Cylinder;
 
    UINT verticesStart = gfx.shape.getVerticesStart(type);
    UINT verticesCount = gfx.shape.getVerticesCount(type);
@@ -53,28 +53,12 @@ ShapeLighted::ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightVi
 
    if (!isStaticSet())
    {
-      auto model = gfx.shape.GetShapeData<Vertex>();
-
-      std::vector< Vertex > vertices(verticesCount);
-      for (UINT i = 0; i < verticesCount; i++)
-      {
-         int index = verticesStart + i;
-         vertices[i] = model.vertices[index];
-      }
-
-      std::vector <unsigned short> indices(indicesCount);
-      for (UINT i = 0; i < indicesCount; i++)
-      {
-         int index = indicesStart + i;
-         indices[i] = model.indices[index] - verticesStart;
-      }
-      Scale(vertices, 0.8f, 0.8f, 1.6f);
-      SetNormals(indices, vertices);
-
+      auto model = gfx.shape.GetShapeNormalData<Vertex>();
+      
       std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
 
-      object->LoadVerticesBuffer(vertices);
-      object->LoadIndicesBuffer(indices);
+      object->LoadVerticesBuffer(model.vertices);
+      object->LoadIndicesBuffer(model.indices);
       object->CreateShader(L"LightedVS.cso", L"LightedPS.cso");
 
       // Define the vertex input layout.
@@ -98,43 +82,12 @@ ShapeLighted::ShapeLighted(Graphics &gfx, float range, ID3D12Resource *mylightVi
    }
 
    std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
-   trans->setIndices(0, indicesCount);
+
+   UINT start = gfx.shape.getIndiceStart(type);
+   UINT count = gfx.shape.getIndiceCount(type);
+   trans->setIndices(start, count);
 
    AddBind(std::move(trans));
-}
-
-void ShapeLighted::Scale(std::vector< Vertex > &vertices, float x, float y, float z)
-{
-   FXMMATRIX matrix = XMMatrixScaling(x, y, z);
-   for (UINT i = 0; i < vertices.size(); i++)
-   {
-      const XMVECTOR pos = DirectX::XMLoadFloat3(&vertices[i].pos);
-      XMStoreFloat3(
-         &vertices[i].pos,
-         XMVector3Transform(pos, matrix)
-      );
-   }
-}
-
-void ShapeLighted::SetNormals(std::vector <unsigned short> &indices, std::vector< Vertex > &vertices) noexcept
-{
-   using namespace DirectX;
-   assert(indices.size() % 3 == 0 && indices.size() > 0);
-   for (size_t i = 0; i < indices.size(); i += 3)
-   {
-      auto &v0 = vertices[indices[i]];
-      auto &v1 = vertices[indices[i + 1]];
-      auto &v2 = vertices[indices[i + 2]];
-      const auto p0 = XMLoadFloat3(&v0.pos);
-      const auto p1 = XMLoadFloat3(&v1.pos);
-      const auto p2 = XMLoadFloat3(&v2.pos);
-
-      const auto n = XMVector3Normalize(XMVector3Cross((p1 - p0), (p2 - p0)));
-
-      XMStoreFloat3(&v0.n, n);
-      XMStoreFloat3(&v1.n, n);
-      XMStoreFloat3(&v2.n, n);
-   }
 }
 
 void ShapeLighted::Update(float dt) noexcept
