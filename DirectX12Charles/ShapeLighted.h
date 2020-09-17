@@ -14,14 +14,18 @@ public:
    Graphics::MaterialType getMaterial() { return material; }
    int getMaterialIndex() const noexcept { return MaterialIndex; }
    void getMaterialData(Graphics::MaterialType &myMaterial) const noexcept;
+   void SpawnControlWindow() noexcept;
+   int getMaternalIndex() { return MaterialIndex; }
 
 private:
+   Graphics &gfx;
    struct Vertex
    {
       XMFLOAT3 pos;
       XMFLOAT3 normal;
    };
    void Scale(std::vector< Vertex > &vertices, float x, float y, float z);
+   void SyncMaterial() noexcept;
 
    Bindable *object = nullptr;
    float range = 0.0f;

@@ -59,6 +59,11 @@ App::App()
 
    for (auto &b : drawItems)
    {
+      if (auto po = dynamic_cast<ShapeLighted *>(b.get()))
+      {
+         lightedObjects.push_back(po);
+      }
+
       int materialIndex = b->getMaterialIndex();
       if (materialIndex != -1)
       {
@@ -112,6 +117,7 @@ float App::TimePeek()
 
 void App::DoFrame()
 {
+   static bool firstTime = true;
    auto dt = TimeMark() * speedFactor;
    wnd.Gfx().SetCamera(cam.GetMatrix());
 
@@ -152,6 +158,42 @@ void App::DoFrame()
 #ifndef NO_LIGHT
    lightObject->CreateLightControl();
 #endif
+
+   if (!lightedObjects.empty())
+   {
+      if (ImGui::Begin(("Object " + std::to_string(objectIndex)).c_str()))
+      {
+         bool changed = ImGui::InputInt("Id", &objectIndex) || firstTime;
+         if (changed)
+         {
+            firstTime = false;
+            if (objectIndex < 1)
+            {
+               objectIndex = 1;
+            }
+            else if (objectIndex > lightedObjects.size())
+            {
+               objectIndex = (int)lightedObjects.size();
+            }
+
+            for (std::vector<class ShapeLighted *>::iterator it = lightedObjects.begin(); it != lightedObjects.end(); ++it)
+            {
+               ShapeLighted *c = *it;
+               int i = c->getMaternalIndex() + 1;
+               if (objectIndex == i)
+               {
+                  currentObject = c;
+               }
+            }
+         }
+         if (currentObject != nullptr)
+         {
+            currentObject->SpawnControlWindow();
+         }
+      }
+      ImGui::End();
+   }
+
 
    ImGui::Render();
    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());

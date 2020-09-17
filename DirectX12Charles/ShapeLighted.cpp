@@ -1,10 +1,13 @@
 #include "ShapeLighted.h"
+#include "imgui.h"
+
 using namespace std;
 
 //#define FIX_ROTATION
 
 ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID3D12Resource *mylightView, int MaterialIndex)
    :
+   gfx(gfx),
    range(range),
    MaterialIndex(MaterialIndex)
 {
@@ -28,7 +31,18 @@ ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID
    spacePitchRate = rand1_3pi(gen);
    spaceYawRate = rand1_3pi(gen);
 
-   material.materialColor = XMFLOAT3(randcolor(gen), randcolor(gen), randcolor(gen));
+   if (MaterialIndex < 7)
+   {
+      int i = MaterialIndex + 1;
+      float b = (float)(i & 1);
+      float g = (float)((i >> 1) & 1);
+      float r = (float)((i >> 2) & 1);
+      material.materialColor = XMFLOAT3(r, g, b);
+   }
+   else
+   {
+      material.materialColor = XMFLOAT3(randcolor(gen), randcolor(gen), randcolor(gen));
+   }
 
 #ifdef FIX_ROTATION
    boxRoll = 0.0f * 3.1415f;
@@ -54,7 +68,7 @@ ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID
    if (!isStaticSet())
    {
       auto model = gfx.shape.GetShapeNormalData<Vertex>();
-      
+
       std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
 
       object->LoadVerticesBuffer(model.vertices);
@@ -110,4 +124,24 @@ XMMATRIX ShapeLighted::GetTransformXM() const noexcept
 void ShapeLighted::getMaterialData(Graphics::MaterialType &myMaterial) const noexcept
 {
    myMaterial.materialColor = material.materialColor;
+}
+
+void ShapeLighted::SpawnControlWindow() noexcept
+{
+   using namespace std::string_literals;
+
+   bool dirty = false;
+   dirty = dirty || ImGui::ColorEdit3("Material Color", &material.materialColor.x);
+   dirty = dirty || ImGui::SliderFloat("Specular Intensity", &material.specularInensity, 0.05f, 4.0f, "%.2f");
+   dirty = dirty || ImGui::SliderFloat("Specular Power", &material.specularPower, 1.0f, 200.0f, "%.2f");
+
+   if (dirty)
+   {
+      SyncMaterial();
+   }
+}
+
+void ShapeLighted::SyncMaterial() noexcept
+{
+   gfx.CopyMaterialConstant(MaterialIndex, material);
 }

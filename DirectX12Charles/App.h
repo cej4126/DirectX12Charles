@@ -28,9 +28,12 @@ private:
    std::unique_ptr< class dwritedraw> dwriteitem;
 
    std::vector<std::unique_ptr<class DrawFunction>> drawItems;
+   std::vector<class ShapeLighted * > lightedObjects;
    std::unique_ptr<class ShapePointLight > light;
 
    Camera cam;
    float speedFactor = 1.0f;
+   int objectIndex = 1;
+   ShapeLighted *currentObject = nullptr;
 };
 
