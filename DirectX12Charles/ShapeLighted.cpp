@@ -1,5 +1,5 @@
 #include "ShapeLighted.h"
-#include "imgui.h"
+#include "imgui/imgui.h"
 
 using namespace std;
 
@@ -106,12 +106,24 @@ ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID
 
 void ShapeLighted::Update(float dt) noexcept
 {
+   float pi_2 = (float)(2.0 * M_PI);
    boxRoll += boxRollRate * dt;
+   boxRoll = remainder(boxRoll, pi_2);
+
    boxPitch += boxPitchRate * dt;
+   boxPitch = remainder(boxPitch, pi_2);
+
    boxYaw += boxYawRate * dt;
+   boxYaw = remainder(boxYaw, pi_2);
+
    spaceRoll += spaceRollRate * dt;
+   spaceRoll = remainder(spaceRoll, pi_2);
+
    spacePitch += spacePitchRate * dt;
+   spacePitch = remainder(spacePitch, pi_2);
+
    spaceYaw += spaceYawRate * dt;
+   spaceYaw = remainder(spaceYaw, pi_2);
 }
 
 XMMATRIX ShapeLighted::GetTransformXM() const noexcept
@@ -130,12 +142,23 @@ void ShapeLighted::SpawnControlWindow() noexcept
 {
    using namespace std::string_literals;
 
-   bool dirty = false;
-   dirty = dirty || ImGui::ColorEdit3("Material Color", &material.materialColor.x);
-   dirty = dirty || ImGui::SliderFloat("Specular Intensity", &material.specularInensity, 0.05f, 4.0f, "%.2f");
-   dirty = dirty || ImGui::SliderFloat("Specular Power", &material.specularPower, 1.0f, 200.0f, "%.2f");
+   ImGui::Text("Material Properties");
+   bool mChanged = ImGui::ColorEdit3("Material Color", &material.materialColor.x);
+   bool iChanged = ImGui::SliderFloat("Specular Intensity", &material.specularInensity, 0.05f, 4.0f, "%.2f");
+   bool pChanged = ImGui::SliderFloat("Specular Power", &material.specularPower, 1.0f, 200.0f, "%.2f");
 
-   if (dirty)
+
+   ImGui::Text("Position");
+   ImGui::SliderFloat("R", &range, 0.0f, 40.0f, "%f");
+   ImGui::SliderAngle("Box Roll Rate", &boxRollRate, -180.0f, 180.0f);
+   ImGui::SliderAngle("Box Pitch Rate", &boxPitchRate, -180.0f, 180.0f);
+   ImGui::SliderAngle("Box Yaw Rate", &boxYawRate, -180.0f, 180.0f);
+   ImGui::Text("Orientation");
+   ImGui::SliderAngle("Space Roll Rate", &spaceRollRate, -180.0f, 180.0f);
+   ImGui::SliderAngle("Space Pitch Rate", &spacePitchRate, -180.0f, 180.0f);
+   ImGui::SliderAngle("Space Yaw Rate", &spaceYawRate, -180.0f, 180.0f);
+
+   if (mChanged || iChanged || pChanged)
    {
       SyncMaterial();
    }

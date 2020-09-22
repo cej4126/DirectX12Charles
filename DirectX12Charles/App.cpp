@@ -2,9 +2,15 @@
 #include "Shape.h"
 #include "Surface.h"
 #include "GDIPlusManager.h"
-#include "imgui.h"
-#include "imgui_impl_dx11.h"
-#include "imgui_impl_win32.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_dx11.h"
+#include "imgui/imgui_impl_win32.h"
+
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+//#include <assimp/scene.h>
+//#include <assimp/postprocess.h>
+
 
 GDIPlusManager gdipm;
 
@@ -26,18 +32,20 @@ App::App()
 #ifndef NO_LIGHT
    light = std::make_unique<ShapePointLight>(wnd.Gfx(), 0.5f);
 #endif
-
-   int MaxBoxX12Count = 4;
+   int MaxBoxX12Count = 10;
    int MaterialCount = 0;
    Shape::shapeType type;
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
-      type = static_cast<Shape::shapeType>(Shape::TextureCylinder + (i % 2));
+      type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 2));
       //type = Shape::TextureCylinder;
       //type = Shape::TextureCube;
       float range = rangedist(rng);
 
       drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), type, range, light->getLightView(), MaterialCount));
+      ++MaterialCount;
+
+      drawItems.push_back(std::make_unique<ShapeAssimp>(wnd.Gfx(), Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
       ++MaterialCount;
 
       //type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
@@ -117,7 +125,6 @@ float App::TimePeek()
 
 void App::DoFrame()
 {
-   static bool firstTime = true;
    auto dt = TimeMark() * speedFactor;
    wnd.Gfx().SetCamera(cam.GetMatrix());
 
@@ -142,7 +149,27 @@ void App::DoFrame()
 
    dwriteitem->Draw();
 
-   // Start the Dear ImGui frame
+   SpawnSimulation();
+
+   cam.CreateControlWindow();
+#ifndef NO_LIGHT
+   lightObject->CreateLightControl();
+#endif
+
+   SpawnObjectControl();
+
+   ImGui::Render();
+   ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+   wnd.Gfx().DrawCommandList();
+
+   wnd.Gfx().OnRenderEnd();
+
+}
+
+void App::SpawnSimulation()
+{
+   // Start the ImGui frame
    ImGui_ImplDX11_NewFrame();
    ImGui_ImplWin32_NewFrame();
    ImGui::NewFrame();
@@ -153,11 +180,11 @@ void App::DoFrame()
       1000.0f / ImGui::GetIO().Framerate,
       ImGui::GetIO().Framerate);
    ImGui::End();
+}
 
-   cam.CreateControlWindow();
-#ifndef NO_LIGHT
-   lightObject->CreateLightControl();
-#endif
+void App::SpawnObjectControl()
+{
+   static bool firstTime = true;
 
    if (!lightedObjects.empty())
    {
@@ -193,13 +220,4 @@ void App::DoFrame()
       }
       ImGui::End();
    }
-
-
-   ImGui::Render();
-   ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
-   wnd.Gfx().DrawCommandList();
-
-   wnd.Gfx().OnRenderEnd();
-
 }

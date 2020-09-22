@@ -10,30 +10,32 @@ Shape::Shape()
    {
       switch (i)
       {
-         case Cube:
-            CreateCube();
-            break;
-         case Cone:
-            CreateCone(24);
-            break;
-         case Prism:
-            CratePrism();
-            break;
-         case Cylinder:
-            CreateCylinder(24);
-            break;
+         //case Cube:
+         //   CreateCube();
+         //   break;
+         //case Cone:
+         //   CreateCone(24);
+         //   break;
+         //case Prism:
+         //   CratePrism();
+         //   break;
+         //case Cylinder:
+         //   CreateCylinder(24);
+         //   break;
          case Sphere:
             CreateSphere(12, 24);
             break;
-         case Plane:
-            CreatePlane(1, 1);
-            break;
+         //case Plane:
+         //   CreatePlane(1, 1);
+         //   break;
          case TextureCube:
             CreateTextureCube();
             break;
          case TextureCylinder:
             CreateTextureCylinder(8);
             break;
+         case TextureSuzanne:
+            CreateTextureSuzanne();
       }
    }
 }
@@ -437,40 +439,40 @@ void Shape::CreateTextureCube()
    // |
    //-Z - X
    // Front                X      Y      Z
-   vertices.emplace_back(-side,  side, -side, u3, v2); //  0
-   vertices.emplace_back( side,  side, -side, u3, v3); //  1
-   vertices.emplace_back( side, -side, -side, u2, v3); //  2
+   vertices.emplace_back(-side, side, -side, u3, v2); //  0
+   vertices.emplace_back(side, side, -side, u3, v3); //  1
+   vertices.emplace_back(side, -side, -side, u2, v3); //  2
    vertices.emplace_back(-side, -side, -side, u2, v2); //  3
 
    // Top
-   vertices.emplace_back(-side,  side,  side, u4, v2); //  4
-   vertices.emplace_back( side,  side,  side, u4, v3); //  5
-   vertices.emplace_back( side,  side, -side, u3, v3); //  6
-   vertices.emplace_back(-side,  side, -side, u3, v2); //  7
+   vertices.emplace_back(-side, side, side, u4, v2); //  4
+   vertices.emplace_back(side, side, side, u4, v3); //  5
+   vertices.emplace_back(side, side, -side, u3, v3); //  6
+   vertices.emplace_back(-side, side, -side, u3, v2); //  7
 
    // Back
-   vertices.emplace_back( side,  side,  side, u3, v4); //  8
-   vertices.emplace_back(-side,  side,  side, u3, v5); //  9
-   vertices.emplace_back(-side, -side,  side, u2, v5); // 10
-   vertices.emplace_back( side, -side,  side, u2, v4); // 11
+   vertices.emplace_back(side, side, side, u3, v4); //  8
+   vertices.emplace_back(-side, side, side, u3, v5); //  9
+   vertices.emplace_back(-side, -side, side, u2, v5); // 10
+   vertices.emplace_back(side, -side, side, u2, v4); // 11
 
    // Bottom
    vertices.emplace_back(-side, -side, -side, u2, v2); // 12
-   vertices.emplace_back( side, -side, -side, u2, v3); // 13
-   vertices.emplace_back( side, -side,  side, u1, v3); // 14
-   vertices.emplace_back(-side, -side,  side, u1, v2); // 15
+   vertices.emplace_back(side, -side, -side, u2, v3); // 13
+   vertices.emplace_back(side, -side, side, u1, v3); // 14
+   vertices.emplace_back(-side, -side, side, u1, v2); // 15
 
    // Right
-   vertices.emplace_back( side,  side, -side, u3, v3); // 16
-   vertices.emplace_back( side,  side,  side, u3, v4); // 17
-   vertices.emplace_back( side, -side,  side, u2, v4); // 18
-   vertices.emplace_back( side, -side, -side, u2, v3); // 19
+   vertices.emplace_back(side, side, -side, u3, v3); // 16
+   vertices.emplace_back(side, side, side, u3, v4); // 17
+   vertices.emplace_back(side, -side, side, u2, v4); // 18
+   vertices.emplace_back(side, -side, -side, u2, v3); // 19
 
    // Left
-   vertices.emplace_back(-side,  side,  side, u3, v1); // 20
-   vertices.emplace_back(-side,  side, -side, u3, v2); // 21
+   vertices.emplace_back(-side, side, side, u3, v1); // 20
+   vertices.emplace_back(-side, side, -side, u3, v2); // 21
    vertices.emplace_back(-side, -side, -side, u2, v2); // 22
-   vertices.emplace_back(-side, -side,  side, u2, v1); // 23
+   vertices.emplace_back(-side, -side, side, u2, v1); // 23
 
    const unsigned short cubeindices[]
    {
@@ -483,7 +485,8 @@ void Shape::CreateTextureCube()
    };
    for (int i = 0; i < _countof(cubeindices); i++)
    {
-      indices.push_back(cubeindices[i] + startVertices);
+//      indices.push_back(cubeindices[i] + startVertices);
+      indices.emplace_back(cubeindices[i] + startVertices);
    }
 
    shapedata[type].indiceStart = startIndices;
@@ -528,7 +531,7 @@ void Shape::CreateTextureCylinder(int longDiv)
          XMStoreFloat3(&vertices.back().pos, v);
          ++verticeCount;
       }
-      
+
       for (int iLong = 0; iLong < longDiv; iLong++)
       {
          // Set Indices
@@ -557,7 +560,7 @@ void Shape::CreateTextureCylinder(int longDiv)
 
    for (int iLong = 0; iLong < longDiv; iLong++)
    {
-      int startVerticeStart = verticeCount;
+      int startVerticeStart = verticeCount + startVertices;
       for (int i = 0; i < 4; i++)
       {
          int j = i / 2;
@@ -570,7 +573,7 @@ void Shape::CreateTextureCylinder(int longDiv)
          XMStoreFloat3(&vertices.back().pos, v1);
          ++verticeCount;
       }
- 
+
       indices.push_back(startVerticeStart + 0);
       indices.push_back(startVerticeStart + 1);
       indices.push_back(startVerticeStart + 3);
@@ -586,4 +589,45 @@ void Shape::CreateTextureCylinder(int longDiv)
    shapedata[type].indiceCount = indiceCount;
    shapedata[type].verticesStart = startVertices;
    shapedata[type].verticesCount = verticeCount;
+}
+
+void Shape::CreateTextureSuzanne()
+{
+   shapeType type = TextureSuzanne;
+   UINT startIndices = (UINT)indices.size();
+   UINT startVertices = (UINT)vertices.size();
+   int verticeCount = 0;
+   int indiceCount = 0;
+
+   //auto modelSuzanne = imp.ReadFile("models\\suzanne.obj",
+   auto modelSuzanne = imp.ReadFile("suzanne.obj",
+      aiProcess_Triangulate |
+      aiProcess_JoinIdenticalVertices);
+
+   C_STRUCT aiMesh *pMesh = modelSuzanne->mMeshes[0];
+   //vertices.reserve(pMesh->mNumVertices);
+   float scale = 1.0f;
+   for (unsigned int i = 0; i < pMesh->mNumVertices; i++)
+   {
+      vertices.push_back({ pMesh->mVertices[i].x * scale, pMesh->mVertices[i].y * scale, pMesh->mVertices[i].z * scale,
+         pMesh->mNormals[i].x, pMesh->mNormals[i].y, pMesh->mNormals[i].z });
+      ++verticeCount;
+   }
+
+   //indices.reserve(pMesh->mNumFaces * 3);
+   for (unsigned int i = 0; i < pMesh->mNumFaces; i++)
+   {
+      const auto &face = pMesh->mFaces[i];
+      assert(face.mNumIndices == 3);
+      indices.push_back(face.mIndices[0] + startVertices);
+      indices.push_back(face.mIndices[1] + startVertices);
+      indices.push_back(face.mIndices[2] + startVertices);
+      indiceCount += 3;
+   }
+
+   shapedata[type].indiceStart = startIndices;
+   shapedata[type].indiceCount = indiceCount;
+   shapedata[type].verticesStart = startVertices;
+   shapedata[type].verticesCount = verticeCount;
+
 }

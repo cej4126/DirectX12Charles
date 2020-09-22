@@ -28,6 +28,8 @@ private:
    void SyncMaterial() noexcept;
 
    Bindable *object = nullptr;
+
+protected:
    float range = 0.0f;
 
    float boxRoll = 0.0f;
@@ -43,6 +45,8 @@ private:
    float spaceRollRate = 0.0f;
    float spacePitchRate = 0.0f;
    float spaceYawRate = 0.0f;
+
+private:
    int MaterialIndex = -1;
    Graphics::MaterialType material;
 };

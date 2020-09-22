@@ -1,7 +1,10 @@
 #pragma once
-#include "stdafx.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "stdafx.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 using namespace DirectX;
 
@@ -38,6 +41,9 @@ public:
 class Shape
 {
 public:
+   Assimp::Importer imp;
+   const aiScene *modelSuzanne;
+
    typedef enum
    {
       basic,
@@ -47,8 +53,9 @@ public:
 
    typedef enum
    {
-      TextureCylinder,
       TextureCube,
+      TextureCylinder,
+      TextureSuzanne,
       Cube,
       Cone,
       Prism,
@@ -186,6 +193,7 @@ private:
    void CreateSphere(int latDiv, int longDiv);
    void CreateTextureCube();
    void CreateTextureCylinder(int longDiv);
+   void CreateTextureSuzanne();
 
    std::array<ShapeDataType, ShapeCount> shapedata;
    std::vector<Vertex> vertices;

@@ -8,6 +8,7 @@
 #include "ShapeTextureCube.h"
 #include "ShapeLighted.h"
 #include "ShapePointLight.h"
+#include "ShapeAssimp.h"
 #include "Camera.h"
 
 class App
@@ -22,6 +23,10 @@ private:
 
    void DoFrame();
    Window wnd;
+
+private:
+   void SpawnSimulation();
+   void SpawnObjectControl();
 
 private:
    std::chrono::steady_clock::time_point lastTime;
