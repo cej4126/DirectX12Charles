@@ -31,8 +31,8 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
    boxPitch = 0.0f * 3.1415f;
    boxYaw = 0.2f * 3.1415f;
    boxRollRate = 0.0f;
-   boxPitchRate = 0.0f;
-   boxYawRate = 0.5f;
+   boxPitchRate = 20.0f / 180.0f * 3.1415f;
+   boxYawRate = -60.0f / 180.0f * 3.1415f;
 
    spaceRoll = 0.0f;
    spacePitch = 0.0f;
@@ -77,12 +77,12 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
       ConstantBufferColor cb =
       {
          {
-            {1.0f, 0.0f, 1.0f, 1.0f},
-            {1.0f, 0.0f, 0.0f, 1.0f},
-            {0.0f, 1.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f, 1.0f},
-            {1.0f, 1.0f, 0.0f, 1.0f},
+            {0.0f, 1.0f, 0.0f, 1.0f},
             {0.0f, 1.0f, 1.0f, 1.0f},
+            {1.0f, 0.0f, 0.0f, 1.0f},
+            {1.0f, 0.0f, 1.0f, 1.0f},
+            {1.0f, 1.0f, 0.0f, 1.0f},
          }
       };
       //colorBuffer = cb;
@@ -97,7 +97,7 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
       object->CreateConstant(colorBuffer);
 
       // Create Root Signature after constants
-      object->CreateRootSignature(false);
+      object->CreateRootSignature(false, false);
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
       // lookup table for cube face colors

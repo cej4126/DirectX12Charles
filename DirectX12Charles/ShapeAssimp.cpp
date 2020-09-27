@@ -89,7 +89,7 @@ ShapeAssimp::ShapeAssimp(Graphics &gfx, Shape::shapeType type, float range, ID3D
       object->CreateConstant(position);
 
       // Create Root Signature after constants
-      object->CreateRootSignature(true);
+      object->CreateRootSignature(true, false);
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 

@@ -1,7 +1,8 @@
 #include "ShapePicture.h"
 using namespace std;
 
-ShapePicture::ShapePicture(Graphics &gfx, float range)
+//#define FIX_ROTATION
+ShapePicture::ShapePicture(Graphics &gfx, Shape::shapeType type, float range, const std::string &filename)
    :
    range(range)
 {
@@ -40,7 +41,6 @@ ShapePicture::ShapePicture(Graphics &gfx, float range)
    spacePitchRate = 0.0f;
    spaceYawRate = 0.0f;
 #endif
-   Shape::shapeType type = Shape::Plane;
 
    UINT verticesStart = gfx.shape.getVerticesStart(type);
    UINT verticesCount = gfx.shape.getVerticesCount(type);
@@ -49,41 +49,17 @@ ShapePicture::ShapePicture(Graphics &gfx, float range)
 
    if (!isStaticSet())
    {
-      std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
-
       struct Vertex
       {
          XMFLOAT3 pos;
-         struct
-         {
-            float u;
-            float v;
-         } tex;
+         XMFLOAT2 tex;
       };
+      auto model = gfx.shape.GetShapeTextureData<Vertex>();
 
-      auto model = gfx.shape.GetShapeData<Vertex>();
+      std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
 
-      std::vector< Vertex > vertices(verticesCount);
-      for (UINT i = 0; i < verticesCount; i++)
-      {
-         int index = verticesStart + i;
-         vertices[i] = model.vertices[index];
-      }
-      vertices[0].tex = { 0.0f,0.0f };
-      vertices[1].tex = { 1.0f,0.0f };
-      vertices[2].tex = { 0.0f,1.0f };
-      vertices[3].tex = { 1.0f,1.0f };
-      std::vector <unsigned short> indices(indicesCount);
-      for (UINT i = 0; i < indicesCount; i++)
-      {
-         int index = indicesStart + i;
-         indices[i] = model.indices[index] - verticesStart;
-      }
-
-      object->CreateTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
-
-      object->LoadVerticesBuffer(vertices);
-      object->LoadIndicesBuffer(indices);
+      object->LoadVerticesBuffer(model.vertices);
+      object->LoadIndicesBuffer(model.indices);
       object->CreateShader(L"TextureVS.cso", L"TexturePS.cso");
       // Define the vertex input layout.
       const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
@@ -93,7 +69,7 @@ ShapePicture::ShapePicture(Graphics &gfx, float range)
       };
 
       // Create Root Signature after constants
-      object->CreateRootSignature(false);
+      object->CreateRootSignature(false, true);
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
@@ -101,7 +77,12 @@ ShapePicture::ShapePicture(Graphics &gfx, float range)
    }
 
    std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
-   trans->setIndices(0, indicesCount);
+
+   trans->CreateTexture(Surface::FromFile(filename));
+
+   UINT start = gfx.shape.getIndiceStart(type);
+   UINT count = gfx.shape.getIndiceCount(type);
+   trans->setIndices(start, count);
 
    AddBind(std::move(trans));
 }

@@ -49,7 +49,7 @@ void Object::Bind(Graphics &gfx, int drawStep) noexcept
    }
 }
 
-void Object::CreateRootSignature(bool materialFlag)
+void Object::CreateRootSignature(bool materialFlag, bool textureFlag)
 {
    int rootCount = 0;
 
@@ -75,7 +75,7 @@ void Object::CreateRootSignature(bool materialFlag)
       ++rootCount;
    }
 
-   if (textureActive)
+   if (textureFlag)
    {
       D3D12_ROOT_DESCRIPTOR rootCBVDescriptor;
       rootCBVDescriptor.RegisterSpace = 0;
@@ -332,7 +332,6 @@ void Object::CreateTexture(const Surface &surface)
    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
    srvDesc.Texture2D.MipLevels = 1;
    device->CreateShaderResourceView(textureBuffer.Get(), &srvDesc, mainDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-
 }
 
 void Object::CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType)

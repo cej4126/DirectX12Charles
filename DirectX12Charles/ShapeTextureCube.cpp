@@ -40,7 +40,7 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
    spacePitchRate = 0.0f;
    spaceYawRate = 0.0f;
 #endif
-   Shape::shapeType type = Shape::TextureCube;
+   Shape::shapeType type = Shape::PictureCube;
 
    UINT verticesStart = gfx.shape.getVerticesStart(type);
    UINT verticesCount = gfx.shape.getVerticesCount(type);
@@ -57,26 +57,15 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
 
       auto model = gfx.shape.GetShapeTextureData<Vertex>();
 
-      std::vector< Vertex > vertices(verticesCount);
-      for (UINT i = 0; i < verticesCount; i++)
-      {
-         int index = verticesStart + i;
-         vertices[i] = model.vertices[index];
-      }
 
       std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
 
       std::vector <unsigned short> indices(indicesCount);
-      for (UINT i = 0; i < indicesCount; i++)
-      {
-         int index = indicesStart + i;
-         indices[i] = model.indices[index] - verticesStart;
-      }
 
       object->CreateTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\cube.png"));
 
-      object->LoadVerticesBuffer(vertices);
-      object->LoadIndicesBuffer(indices);
+      object->LoadVerticesBuffer(model.vertices);
+      object->LoadIndicesBuffer(model.indices);
       object->CreateShader(L"TextureVS.cso", L"TexturePS.cso");
       // Define the vertex input layout.
       const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
@@ -86,7 +75,7 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
       };
 
       // Create Root Signature after constants
-      object->CreateRootSignature(false);
+      object->CreateRootSignature(false, true);
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
@@ -94,7 +83,9 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
    }
 
    std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
-   trans->setIndices(0, indicesCount);
+   UINT start = gfx.shape.getIndiceStart(type);
+   UINT count = gfx.shape.getIndiceCount(type);
+   trans->setIndices(start, count);
 
    AddBind(std::move(trans));
 }

@@ -49,8 +49,8 @@ ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID
    boxPitch = 0.0 * 3.1415f;
    boxYaw = 0.0f * 3.1415f;
    boxRollRate = 0.0f;
-   boxPitchRate = 0.5f;
-   boxYawRate = 0.5f;
+   boxPitchRate = 20.0f / 180.0f * 3.1415f;
+   boxYawRate = 0.0f / 180.0f * 3.1415f;
 
    spaceRoll = 0.0f;
    spacePitch = 0.0f;
@@ -86,7 +86,7 @@ ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID
       object->CreateConstant(position);
 
       // Create Root Signature after constants
-      object->CreateRootSignature(true);
+      object->CreateRootSignature(true, false);
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 

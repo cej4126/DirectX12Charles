@@ -53,8 +53,11 @@ public:
 
    typedef enum
    {
+      PictureCube,
       TextureCube,
       TextureCylinder,
+      TextureCone,
+      TexturePrism,
       TextureSuzanne,
       Cube,
       Cone,
@@ -120,6 +123,15 @@ public:
          tex.x = tu;
          tex.y = tv;
       }
+      Vertex(
+         XMVECTOR tpos,
+         float tu,
+         float tv)
+      {
+         XMStoreFloat3(&pos, tpos);
+         tex.x = tu;
+         tex.y = tv;
+      }
       Vertex()
       {
          pos.x = 0.0f;
@@ -137,7 +149,10 @@ public:
    } ShapeDataType;
 
    Shape();
-   UINT getIndiceStart(shapeType type) { return shapedata[type].indiceStart; }
+   UINT getIndiceStart(shapeType type)
+   {
+      return shapedata[type].indiceStart;
+   }
    UINT getIndiceCount(shapeType type) { return shapedata[type].indiceCount; }
    UINT getVerticesStart(shapeType type) { return shapedata[type].verticesStart; }
    UINT getVerticesCount(shapeType type) { return shapedata[type].verticesCount; }
@@ -192,8 +207,11 @@ private:
    void CreateCylinder(int longDiv);
    void CreateSphere(int latDiv, int longDiv);
    void CreateTextureCube();
+   void CreatePictureCube();
    void CreateTextureCylinder(int longDiv);
    void CreateTextureSuzanne();
+   void CreateTextureCone(int longDiv);
+   void CreateTexturePrism();
 
    std::array<ShapeDataType, ShapeCount> shapedata;
    std::vector<Vertex> vertices;

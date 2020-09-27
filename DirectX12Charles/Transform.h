@@ -2,6 +2,7 @@
 #include "Bindable.h"
 #include "Graphics.h"
 #include "DrawFunction.h"
+#include "Surface.h"
 
 class Transform : public Bindable
 {
@@ -10,6 +11,7 @@ public:
 public:
    Transform(Graphics &gfx, const DrawFunction &parent);
    void Bind(Graphics &gfx, int index) noexcept override;
+   void CreateTexture(const Surface &surface);
    void setIndices(UINT start, UINT count)
    {
       indicesStart = start;
@@ -74,6 +76,11 @@ private:
    UINT8 *matrixBufferGPUAddress;
    UINT indicesStart = 0;
    UINT indicesCount = 0;
+
+   bool textureActive = false;
+   Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer;
+   Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >mainDescriptorHeap;
+   Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap;
 
    bool lightBufferActive = false;
    Microsoft::WRL::ComPtr <ID3D12Resource> lightBufferUploadHeaps;

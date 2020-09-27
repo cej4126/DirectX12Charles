@@ -32,35 +32,27 @@ App::App()
 #ifndef NO_LIGHT
    light = std::make_unique<ShapePointLight>(wnd.Gfx(), 0.5f);
 #endif
-   int MaxBoxX12Count = 10;
+   int MaxBoxX12Count = 4;
    int MaterialCount = 0;
    Shape::shapeType type;
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
-      type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 2));
-      //type = Shape::TextureCylinder;
-      //type = Shape::TextureCube;
       float range = rangedist(rng);
 
-      drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), type, range, light->getLightView(), MaterialCount));
-      ++MaterialCount;
+      //type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
+      //drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), type, range, light->getLightView(), MaterialCount));
+      //++MaterialCount;
 
-      drawItems.push_back(std::make_unique<ShapeAssimp>(wnd.Gfx(), Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
-      ++MaterialCount;
+      //drawItems.push_back(std::make_unique<ShapeAssimp>(wnd.Gfx(), Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
+      //++MaterialCount;
 
-      //type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
-      //if ((i % 4) == 0)
-      //{
-      //   drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));
-      //   drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), range));
-      //}
-      //drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
-      //drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
+      drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));
+      drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
+      drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
 
-      //drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), Shape::Cylinder, 0));
-      //drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), Shape::TextureCylinder, 0));
-      //drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), Shape::TextureCylinder, 0));
-
+      type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
+      drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
+      drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
    }
    wnd.Gfx().CreateMatrixConstant(MaxBoxX12Count);
    wnd.Gfx().CreateMaterialConstant(MaterialCount);

@@ -72,7 +72,7 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
       };
 
       // Create Root Signature after constants
-      object->CreateRootSignature(false);
+      object->CreateRootSignature(false, false);
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 

@@ -65,7 +65,7 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
       object->CreateConstant(colorConst);
 
       // Create Root Signature after constants
-      object->CreateRootSignature(false);
+      object->CreateRootSignature(false, false);
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 

@@ -8,7 +8,7 @@
 class ShapePicture : public DrawBase <ShapePicture>
 {
 public:
-   ShapePicture(Graphics &gfx, float range);
+   ShapePicture(Graphics &gfx, Shape::shapeType type, float range, const std::string &filename);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
    int getMaterialIndex() const noexcept { return -1; }
