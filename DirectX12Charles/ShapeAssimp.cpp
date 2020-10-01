@@ -3,6 +3,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "Vertex.h"
 
 using namespace std;
 
@@ -70,20 +71,49 @@ ShapeAssimp::ShapeAssimp(Graphics &gfx, Shape::shapeType type, float range, ID3D
 
    if (!isStaticSet())
    {
+      using hw3dexp::VertexLayout;
+      hw3dexp::VertexBuffer vbuf(std::move(
+         VertexLayout{}
+         .Append(VertexLayout::Position3D)
+         .Append(VertexLayout::Normal)
+      ));
+
       auto model = gfx.shape.GetShapeNormalData<Vertex>();
+      //std::vector< Vertex > vertices(verticesCount);
+      //for (UINT i = 0; i < verticesCount; i++)
+      //{
+      //   vertices[i] = model.vertices[verticesStart + i];
+      //}
+
+      std::vector <unsigned short> indices(indicesCount);
+      for (UINT i = 0; i < indicesCount; i++)
+      {
+         int index = indicesStart + i;
+         indices[i] = model.indices[index] - verticesStart;
+      }
+
+      float scale = 1.0f;
+      for (unsigned int i = 0; i < verticesCount; i++)
+      {
+         vbuf.EmplaceBack(
+           model.vertices[verticesStart + i].pos,
+           model.vertices[verticesStart + i].normal);
+      }
 
       std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
 
-      object->LoadVerticesBuffer(model.vertices);
-      object->LoadIndicesBuffer(model.indices);
+      //object->LoadVerticesBuffer(vertices);
+      object->LoadVerticesBuffer(vbuf);
+      
+      object->LoadIndicesBuffer(indices);
       object->CreateShader(L"LightedVS.cso", L"LightedPS.cso");
 
-      // Define the vertex input layout.
-      const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
-      {
-          { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-          { "Normal", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-      };
+      //// Define the vertex input layout.
+      //const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
+      //{
+      //    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+      //    { "Normal", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+      //};
 
       XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
       object->CreateConstant(position);
@@ -91,7 +121,8 @@ ShapeAssimp::ShapeAssimp(Graphics &gfx, Shape::shapeType type, float range, ID3D
       // Create Root Signature after constants
       object->CreateRootSignature(true, false);
 
-      object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      //object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
       object->SetLightView(mylightView);
 
@@ -100,9 +131,11 @@ ShapeAssimp::ShapeAssimp(Graphics &gfx, Shape::shapeType type, float range, ID3D
 
    std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
 
-   UINT start = gfx.shape.getIndiceStart(type);
-   UINT count = gfx.shape.getIndiceCount(type);
-   trans->setIndices(start, count);
+   trans->setIndices(0, indicesCount);
+
+   //UINT start = gfx.shape.getIndiceStart(type);
+   //UINT count = gfx.shape.getIndiceCount(type);
+   //trans->setIndices(start, count);
 
    AddBind(std::move(trans));
 }

@@ -19,7 +19,7 @@ void Camera::CreateControlWindow() noexcept
    if (ImGui::Begin("Camera Control"))
    {
       ImGui::Text("Object");
-      ImGui::SliderFloat("Range Object", &range, 0.0f, 80.0f, "%.1f");
+      ImGui::SliderFloat("Range Object", &range, 5.0f, 80.0f, "%.1f");
       ImGui::SliderAngle("Yaw Object", &yawPosition, -180.0f, 180.0f);
       ImGui::SliderAngle("Pitch Object", &pitchPosition, -89.0f, 89.0f);
       ImGui::Text("Orientation");

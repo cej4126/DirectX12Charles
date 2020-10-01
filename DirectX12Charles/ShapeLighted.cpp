@@ -149,7 +149,7 @@ void ShapeLighted::SpawnControlWindow() noexcept
 
 
    ImGui::Text("Position");
-   ImGui::SliderFloat("R", &range, 0.0f, 40.0f, "%f");
+   ImGui::SliderFloat("R", &range, 5.0f, 40.0f, "%f");
    ImGui::SliderAngle("Box Roll Rate", &boxRollRate, -180.0f, 180.0f);
    ImGui::SliderAngle("Box Pitch Rate", &boxPitchRate, -180.0f, 180.0f);
    ImGui::SliderAngle("Box Yaw Rate", &boxYawRate, -180.0f, 180.0f);

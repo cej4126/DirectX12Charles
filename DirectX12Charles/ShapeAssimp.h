@@ -24,7 +24,7 @@ private:
       XMFLOAT3 pos;
       XMFLOAT3 normal;
    };
-   void Scale(std::vector< Vertex > &vertices, float x, float y, float z);
+   //void Scale(std::vector< Vertex > &vertices, float x, float y, float z);
    void SyncMaterial() noexcept;
 
    Bindable *object = nullptr;

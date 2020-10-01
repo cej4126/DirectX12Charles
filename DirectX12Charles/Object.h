@@ -3,6 +3,7 @@
 #include "Bindable.h"
 #include "Graphics.h"
 #include "Surface.h"
+#include "Vertex.h"
 
 class Object : public Bindable
 {
@@ -86,8 +87,9 @@ public:
       vertexBufferView.BufferLocation = vertexDefaultBuffer->GetGPUVirtualAddress();
       vertexBufferView.StrideInBytes = sizeof(V);
       vertexBufferView.SizeInBytes = vertexBufferSize;
-
    }
+
+   void LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices);
 
    void LoadIndicesBuffer(const std::vector<unsigned short> &indices);
 
