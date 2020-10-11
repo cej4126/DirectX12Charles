@@ -12,14 +12,13 @@ public:
    DrawFunction(const DrawFunction &) = delete;
    virtual ~DrawFunction() = default;
 
-public:
-   void Draw(Graphics& gfx, int index) const noexcept;
-   virtual void Update(float dt) noexcept = 0;
+   void Draw(Graphics &gfx, int index) const noexcept;
+   virtual void Update(float dt) noexcept {};
    virtual XMMATRIX GetTransformXM() const noexcept = 0;
-   virtual int getMaterialIndex() const noexcept = 0;
-   virtual void getMaterialData(Graphics::MaterialType &myMaterial) const noexcept = 0;
+   virtual int getMaterialIndex() const noexcept { return 0; };
+   virtual void getMaterialData(Graphics::MaterialType &myMaterial) const noexcept {};
 
- 
+
 protected:
    void AddBind(std::unique_ptr <Bindable> bind) noexcept;
 

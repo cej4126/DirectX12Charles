@@ -10,6 +10,7 @@
 #include "ShapePointLight.h"
 #include "ShapeAssimp.h"
 #include "Camera.h"
+#include "Model.h"
 
 class App
 {
@@ -40,5 +41,7 @@ private:
    float speedFactor = 1.0f;
    int objectIndex = 1;
    ShapeLighted *currentObject = nullptr;
+
+   std::unique_ptr<class Model > nano;
 };
 
