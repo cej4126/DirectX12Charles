@@ -65,7 +65,9 @@ public:
    Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightView, int MaterialIndex);
    std::unique_ptr<Mesh> ParseMesh(const aiMesh &mesh);
    std::unique_ptr<Node> ParseNode(const aiNode &node);
+   void FirstCommand();
    void Draw(Graphics &gfx) const;
+   UINT getMaterialIndex() { return MaterialIndex; }
 
 private:
    Graphics &gfx;
@@ -81,5 +83,4 @@ private:
    Graphics::MaterialType material;
 
    std::vector<std::unique_ptr<Bindable>> bindablePtrs;
-
 };

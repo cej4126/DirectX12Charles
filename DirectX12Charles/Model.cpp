@@ -35,6 +35,7 @@ Model::Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightVie
    {
       meshPtrs.push_back(ParseMesh(*pScene->mMeshes[i]));
    }
+   material.materialColor = XMFLOAT3(1.0f, 0.4f, 0.2f);
 
    pRoot = ParseNode(*pScene->mRootNode);
 }
@@ -58,6 +59,14 @@ std::unique_ptr<Node> Model::ParseNode(const aiNode &node)
       pNode->AddChild(ParseNode(*node.mChildren[i]));
    }
    return pNode;
+}
+
+void Model::FirstCommand()
+{
+   if (MaterialIndex != -1)
+   {
+      gfx.CopyMaterialConstant(MaterialIndex, material);
+   }
 }
 
 std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh)
