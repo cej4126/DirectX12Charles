@@ -14,8 +14,17 @@
 class Mesh : public DrawBase <Mesh>
 {
 public:
-   Mesh(Graphics &gfx, std::vector<std::unique_ptr<Bindable>> bindPtrs, int indicesCount);
-   void Draw(Graphics &gfx, FXMMATRIX acculatedTransform) const noexcept;
+   Mesh(Graphics &gfx, std::vector<std::unique_ptr<Bindable>> bindPtrs, int indicesCount, int MaterialIndex);
+   void Draw(Graphics &gfx, FXMMATRIX acculatedTransform, int index) const noexcept;
+   UINT getMaterialIndex()
+   {
+      return MaterialIndex;
+   }
+   int getMaterialIndex() const noexcept
+   {
+      return MaterialIndex;
+   }
+
    XMMATRIX GetTransformXM() const noexcept override
    {
       return XMLoadFloat4x4(&transform);
@@ -23,6 +32,7 @@ public:
 
 private:
    mutable XMFLOAT4X4 transform;
+   int MaterialIndex;
 };
 
 class Node
@@ -35,16 +45,16 @@ public:
    {
       DirectX::XMStoreFloat4x4(&this->transform, transform);
    }
-   void Draw(Graphics &gfx, FXMMATRIX accumulatedTrans)
+   void Draw(Graphics &gfx, FXMMATRIX accumulatedTrans, int index)
    {
       const auto built = DirectX::XMLoadFloat4x4(&transform) * accumulatedTrans;
       for (const auto pm : meshPtrs)
       {
-         pm->Draw(gfx, built);
+         pm->Draw(gfx, built, index);
       }
       for (const auto &pc : childPtrs)
       {
-         pc->Draw(gfx, built);
+         pc->Draw(gfx, built, index);
       }
    }
 
@@ -66,8 +76,7 @@ public:
    std::unique_ptr<Mesh> ParseMesh(const aiMesh &mesh);
    std::unique_ptr<Node> ParseNode(const aiNode &node);
    void FirstCommand();
-   void Draw(Graphics &gfx) const;
-   UINT getMaterialIndex() { return MaterialIndex; }
+   void Draw(Graphics &gfx, int index) const;
 
 private:
    Graphics &gfx;

@@ -54,8 +54,8 @@ App::App()
       //drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
    }
 
-   //nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nanosuit.obj", light->getLightView(), MaterialCount);
-   //++MaterialCount;
+   nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nanosuit.obj", light->getLightView(), MaterialCount);
+   ++MaterialCount;
 
 
    wnd.Gfx().CreateMatrixConstant(MaxBoxX12Count);
@@ -76,7 +76,7 @@ App::App()
          wnd.Gfx().CopyMaterialConstant(materialIndex, material);
       }
    }
-   //nano->FirstCommand();
+   nano->FirstCommand();
 
    ////lightedObjects.push_back(po);
    //int materialIndex = nano->getMaterialIndex();
@@ -147,7 +147,8 @@ void App::DoFrame()
    ++index;
 #endif
 
-   //nano->Draw(wnd.Gfx());
+   nano->Draw(wnd.Gfx(), index);
+   ++index;
 
    for (auto &b : drawItems)
    {
@@ -215,7 +216,7 @@ void App::SpawnObjectControl()
             for (std::vector<class ShapeLighted *>::iterator it = lightedObjects.begin(); it != lightedObjects.end(); ++it)
             {
                ShapeLighted *c = *it;
-               int i = c->getMaternalIndex() + 1;
+               int i = c->getMaterialIndex() + 1;
                if (objectIndex == i)
                {
                   currentObject = c;

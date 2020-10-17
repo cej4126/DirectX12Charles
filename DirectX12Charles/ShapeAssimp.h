@@ -12,10 +12,9 @@ public:
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
    Graphics::MaterialType getMaterial() { return material; }
-   int getMaterialIndex() const noexcept { return MaterialIndex; }
    void getMaterialData(Graphics::MaterialType &myMaterial) const noexcept;
    void SpawnControlWindow() noexcept;
-   int getMaternalIndex() { return MaterialIndex; }
+   int getMaterialIndex() const noexcept { return MaterialIndex; }
 
 private:
    Graphics &gfx;

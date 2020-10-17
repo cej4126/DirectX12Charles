@@ -1,6 +1,8 @@
 #include "Model.h"
 
-Mesh::Mesh(Graphics &gfx, std::vector<std::unique_ptr<Bindable>> bindPtrs, int indicesCount)
+Mesh::Mesh(Graphics &gfx, std::vector<std::unique_ptr<Bindable>> bindPtrs, int indicesCount, int MaterialIndex)
+   :
+   MaterialIndex(MaterialIndex)
 {
    for (auto &pb : bindPtrs)
    {
@@ -12,10 +14,10 @@ Mesh::Mesh(Graphics &gfx, std::vector<std::unique_ptr<Bindable>> bindPtrs, int i
    AddBind(std::move(trans));
 }
 
-void Mesh::Draw(Graphics &gfx, FXMMATRIX acculatedTransform) const noexcept
+void Mesh::Draw(Graphics &gfx, FXMMATRIX acculatedTransform, int index) const noexcept
 {
    XMStoreFloat4x4(&transform, acculatedTransform);
-   DrawFunction::Draw(gfx, 0);
+   DrawFunction::Draw(gfx, index);
 }
 
 
@@ -87,7 +89,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh)
    }
 
    std::vector<unsigned short> indices;
-   indices.reserve(mesh.mNumFaces * 3);
+   indices.reserve((size_t)(mesh.mNumFaces * 3));
    for (unsigned int i = 0; i < mesh.mNumFaces; i++)
    {
       const auto &face = mesh.mFaces[i];
@@ -115,11 +117,11 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh)
    object->SetLightView(lightView);
 
    bindablePtrs.push_back(std::move(object));
-   return std::make_unique<Mesh>(gfx, std::move(bindablePtrs), (UINT)indices.size());
+   return std::make_unique<Mesh>(gfx, std::move(bindablePtrs), (UINT)indices.size(), MaterialIndex);
 }
 
-void Model::Draw(Graphics &gfx) const
+void Model::Draw(Graphics &gfx, int index) const
 {
-   pRoot->Draw(gfx, DirectX::XMMatrixIdentity());
+   pRoot->Draw(gfx, DirectX::XMMatrixIdentity(), index);
 }
 
