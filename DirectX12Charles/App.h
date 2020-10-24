@@ -10,7 +10,7 @@
 #include "ShapePointLight.h"
 #include "ShapeAssimp.h"
 #include "Camera.h"
-#include "Model.h"
+#include "Mesh.h"
 
 class App
 {
@@ -36,6 +36,9 @@ private:
    std::vector<std::unique_ptr<class DrawFunction>> drawItems;
    std::vector<class ShapeLighted * > lightedObjects;
    std::unique_ptr<class ShapePointLight > light;
+
+
+   void ShowModelWindow();
 
    Camera cam;
    float speedFactor = 1.0f;

@@ -13,6 +13,7 @@
 #include <wrl.h>
 #include <chrono>
 #include <random>
+#include <optional>
 
 #include <string>
 #include <assert.h>

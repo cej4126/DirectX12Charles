@@ -1,6 +1,6 @@
 #include "DrawFunction.h"
 
-void DrawFunction::Draw(Graphics &gfx, int index) const noexcept
+void DrawFunction::Draw(Graphics &gfx, int &index) const noexcept
 {
    for (auto &b : GetStaticBinds())
    {
@@ -16,7 +16,7 @@ void DrawFunction::Draw(Graphics &gfx, int index) const noexcept
    {
       b->Bind(gfx, index);
    }
-
+   ++index;
 }
 
 void DrawFunction::AddBind(std::unique_ptr<Bindable> bind) noexcept

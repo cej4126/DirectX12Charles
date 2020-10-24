@@ -31,6 +31,7 @@ App::App()
 #endif
    int MaxBoxX12Count = 6;
    int MaterialCount = 0;
+   int objectCount = 0;
    Shape::shapeType type;
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
@@ -38,27 +39,36 @@ App::App()
 
       type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
       drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), type, range, light->getLightView(), MaterialCount));
+      ++objectCount;
       ++MaterialCount;
 
       //drawItems.push_back(std::make_unique<ShapeAssimp>(wnd.Gfx(), Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
+      ++objectCount;
       //++MaterialCount;
 
 
       //drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));
+      ++objectCount;
       //drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
+      ++objectCount;
       //drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
+      ++objectCount;
       //drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
+      ++objectCount;
 
       //type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
       //drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
+      ++objectCount;
       //drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
+      ++objectCount;
    }
 
-   nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nanosuit.obj", light->getLightView(), MaterialCount);
+   nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nanosuit.obj",
+      light->getLightView(), MaterialCount, objectCount);
    ++MaterialCount;
 
 
-   wnd.Gfx().CreateMatrixConstant(MaxBoxX12Count);
+   wnd.Gfx().CreateMatrixConstant(objectCount);
    wnd.Gfx().CreateMaterialConstant(MaterialCount);
 
    for (auto &b : drawItems)
@@ -77,16 +87,6 @@ App::App()
       }
    }
    nano->FirstCommand();
-
-   ////lightedObjects.push_back(po);
-   //int materialIndex = nano->getMaterialIndex();
-   //if (materialIndex != -1)
-   //{
-   //   Graphics::MaterialType material;
-   //   b->getMaterialData(material);
-   //   wnd.Gfx().CopyMaterialConstant(materialIndex, material);
-   //}
-
 
    wnd.Gfx().RunCommandList();
 
@@ -143,18 +143,15 @@ void App::DoFrame()
 
 #ifndef NO_LIGHT
    auto &lightObject = light;
-   lightObject->Draw(wnd.Gfx(), 0);
-   ++index;
+   lightObject->Draw(wnd.Gfx(), index);
 #endif
 
    nano->Draw(wnd.Gfx(), index);
-   ++index;
 
    for (auto &b : drawItems)
    {
       b->Update(dt);
       b->Draw(wnd.Gfx(), index);
-      ++index;
    }
 
    dwriteitem->Draw();
@@ -167,6 +164,7 @@ void App::DoFrame()
 #endif
 
    SpawnObjectControl();
+   nano->ShowWindow();
 
    ImGui::Render();
    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
