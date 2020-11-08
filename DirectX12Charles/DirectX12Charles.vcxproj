@@ -368,6 +368,15 @@
     <None Include="assimp\include\assimp\quaternion.inl" />
     <None Include="assimp\include\assimp\vector2.inl" />
     <None Include="assimp\include\assimp\vector3.inl" />
+    <None Include="models\boxy.gltf">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="models\boxy.gltf.glb">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="models\nano.gltf">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Object Include="models\nanosuit.obj">

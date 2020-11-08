@@ -1,31 +1,38 @@
+#include <algorithm>
 #include "Camera.h"
 #include "imgui/imgui.h"
 
+Camera::Camera() noexcept
+{
+   Reset();
+}
+
 XMMATRIX Camera::GetMatrix() const noexcept
 {
-   const auto pos = XMVector3Transform(
-      XMVectorSet(0.0f, 0.0f, -range, 0.0f),
-      XMMatrixRotationRollPitchYaw(-pitchPosition, yawPosition, 0.0f));
-
-   return XMMatrixLookAtLH(
-      pos,
-      XMVectorZero(),
-      XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)) *
-      XMMatrixRotationRollPitchYaw(-pitchRotation, yawRotation, -rollRotation);
+   const XMVECTOR forwardBaseVector = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+   // apply the camera rotations to a base vector
+   const auto lookVector = XMVector3Transform(forwardBaseVector,
+      XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f)
+   );
+   // generate camera transform (applied to all objects to arrange them relative
+   // to camera position/orientation in world) from cam position and direction
+   // camera "top" always faces towards +Y (cannot do a barrel roll)
+   const auto camPosition = XMLoadFloat3(&pos);
+   const auto camTarget = camPosition + lookVector;
+   return XMMatrixLookAtLH(camPosition, camTarget, XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 }
 
 void Camera::CreateControlWindow() noexcept
 {
    if (ImGui::Begin("Camera Control"))
    {
-      ImGui::Text("Object");
-      ImGui::SliderFloat("Range Object", &range, 5.0f, 80.0f, "%.1f");
-      ImGui::SliderAngle("Yaw Object", &yawPosition, -180.0f, 180.0f);
-      ImGui::SliderAngle("Pitch Object", &pitchPosition, -89.0f, 89.0f);
+      ImGui::Text("Position");
+      ImGui::SliderFloat("X", &pos.x, -80.0f, 80.0f, "%.1f");
+      ImGui::SliderFloat("Y", &pos.y, -80.0f, 80.0f, "%.1f");
+      ImGui::SliderFloat("Z", &pos.z, -80.0f, 80.0f, "%.1f");
       ImGui::Text("Orientation");
-      ImGui::SliderAngle("Roll Rotation", &rollRotation, -180.0f, 180.0f);
-      ImGui::SliderAngle("Pitch Rotation", &pitchRotation, -180.0f, 180.0f);
-      ImGui::SliderAngle("Yaw Rotation", &yawRotation, -180.0f, 180.0f);
+      ImGui::SliderAngle("Pitch", &pitch, -90.0f, 90.0f);
+      ImGui::SliderAngle("Yaw", &yaw, -180.0f, 180.0f);
       if (ImGui::Button("Reset"))
       {
          Reset();
@@ -36,10 +43,36 @@ void Camera::CreateControlWindow() noexcept
 
 void Camera::Reset() noexcept
 {
-   range = 20.0f;
-   pitchPosition = 0.0f;
-   yawPosition = 0.0f;
-   rollRotation = 0.0f;
-   pitchRotation = 0.0f;
-   yawRotation = 0.0f;
+   pos = { 0.0f, 7.5f, -18.0f };
+   pitch = 0.0f;
+   yaw = 0.0f;
+}
+
+
+float Camera::wrap_angle(float theta)
+{
+   const float modded = fmod(theta, 2.0f * PI);
+   return (modded > PI) ?
+      (modded - 2.0f * PI) :
+      modded;
+}
+
+void Camera::Rotate(float dx, float dy) noexcept
+{
+   yaw = wrap_angle(yaw + dx * rotationSpeed);
+   pitch = std::clamp(pitch + dy * rotationSpeed, -PI / 2.0f, PI / 2.0f);
+}
+
+void Camera::Translate(DirectX::XMFLOAT3 translation) noexcept
+{
+   XMStoreFloat3(&translation, XMVector3Transform(
+      XMLoadFloat3(&translation),
+      XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f) *
+      XMMatrixScaling(travelSpeed, travelSpeed, travelSpeed)
+   ));
+   pos = {
+      pos.x + translation.x,
+      pos.y + translation.y,
+      pos.z + translation.z
+   };
 }

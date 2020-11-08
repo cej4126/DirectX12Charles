@@ -22,20 +22,20 @@ void Mesh::Draw(Graphics &gfx, FXMMATRIX acculatedTransform, int index) const no
    DrawFunction::Draw(gfx, index);
 }
 
-Node::Node(const std::string &name, std::vector<Mesh * > meshPtrs, const DirectX::XMMATRIX &transform) noexcept
+Node::Node(const std::string &name, std::vector<Mesh * > meshPtrs, const DirectX::XMMATRIX &transformIn) noexcept
    :
    meshPtrs(std::move(meshPtrs)),
    name(name)
 {
-   DirectX::XMStoreFloat4x4(&baseTransform, transform);
-   DirectX::XMStoreFloat4x4(&appliedTransform, DirectX::XMMatrixIdentity());
+   XMStoreFloat4x4(&transform, transformIn);
+   XMStoreFloat4x4(&appliedTransform, XMMatrixIdentity());
 }
 
-void Node::Draw(Graphics &gfx, FXMMATRIX accumulatedTransform, int& index)
+void Node::Draw(Graphics &gfx, FXMMATRIX accumulatedTransform, int &index)
 {
    const auto built =
-      DirectX::XMLoadFloat4x4(&baseTransform) *
-      DirectX::XMLoadFloat4x4(&appliedTransform) *
+      XMLoadFloat4x4(&appliedTransform) *
+      XMLoadFloat4x4(&transform) *
       accumulatedTransform;
 
    for (const auto pm : meshPtrs)
@@ -56,6 +56,7 @@ void Node::AddChild(std::unique_ptr<Node> pChild) noexcept
 
 void Node::ShowTree(int &nodeIndexTracked, std::optional<int> &selectedIndex, Node *&pSelectedNode) const noexcept
 {
+   //std::optional<int> mySelectedIndex = *selectedIndex;
    // nodeIndex serves as the uid for gui tree nodes, incremented throughout recursion
    const int currentNodeIndex = nodeIndexTracked;
    nodeIndexTracked++;
@@ -65,16 +66,19 @@ void Node::ShowTree(int &nodeIndexTracked, std::optional<int> &selectedIndex, No
       | ((currentNodeIndex == selectedIndex.value_or(-1)) ? ImGuiTreeNodeFlags_Selected : 0)
       | ((childPtrs.size() == 0) ? ImGuiTreeNodeFlags_Leaf : 0);
 
-   // if tree node expanded, recursively render all children
-   if (ImGui::TreeNodeEx((void *)(intptr_t)currentNodeIndex, node_flags, name.c_str()))
-   {
-      // detecting / setting selected node
-      if (ImGui::IsItemClicked())
-      {
-         selectedIndex = currentNodeIndex;
-         pSelectedNode = const_cast<Node *>(this);
-      }
+   // Render this node
+   const auto expanded = ImGui::TreeNodeEx((void *)(intptr_t)currentNodeIndex, node_flags, name.c_str());
 
+   // Processing for selecting node
+   if (ImGui::IsItemClicked())
+   {
+      selectedIndex = currentNodeIndex;
+      pSelectedNode = const_cast<Node *>(this);
+   }
+
+   // Recursive rendering of open node's children
+   if (expanded)
+   {
       for (const auto &pChild : childPtrs)
       {
          pChild->ShowTree(nodeIndexTracked, selectedIndex, pSelectedNode);
@@ -83,9 +87,9 @@ void Node::ShowTree(int &nodeIndexTracked, std::optional<int> &selectedIndex, No
    }
 }
 
-void Node::SetAppliedTransform(DirectX::FXMMATRIX transform) noexcept
+void Node::SetAppliedTransform(FXMMATRIX transform) noexcept
 {
-   DirectX::XMStoreFloat4x4(&appliedTransform, transform);
+   XMStoreFloat4x4(&appliedTransform, transform);
 }
 
 
@@ -93,7 +97,7 @@ class ModelWindow
 {
 public:
 
-   void Show(const char *windowName, const Node& root) noexcept
+   void Show(const char *windowName, const Node &root) noexcept
    {
       windowName = windowName ? windowName : "Model";
 
@@ -108,7 +112,7 @@ public:
          ImGui::NextColumn();
          if (pSelectedNode != nullptr)
          {
-            auto& tranform = transforms[*selectedIndex];
+            auto &tranform = transforms[*selectedIndex];
             ImGui::Text("Orientation");
             ImGui::SliderAngle("Roll", &tranform.roll, -180.0f, 180.0f);
             ImGui::SliderAngle("Pitch", &tranform.pitch, -180.0f, 180.0f);
@@ -136,6 +140,7 @@ public:
    }
 
 private:
+   static constexpr float PI = 3.14159265f;
    std::optional<int> selectedIndex;
    Node *pSelectedNode;
    struct TransformParameters
@@ -159,9 +164,14 @@ Model::Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightVie
 {
    Assimp::Importer imp;
 
+   //const auto pScene = imp.ReadFile(fileName.c_str(),
+   //   aiProcess_Triangulate |
+   //   aiProcess_JoinIdenticalVertices);
    const auto pScene = imp.ReadFile(fileName.c_str(),
       aiProcess_Triangulate |
-      aiProcess_JoinIdenticalVertices);
+      aiProcess_JoinIdenticalVertices |
+      aiProcess_ConvertToLeftHanded |
+      aiProcess_GenNormals);
 
    for (size_t i = 0; i < pScene->mNumMeshes; i++)
    {
@@ -254,13 +264,13 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh)
    return std::make_unique<Mesh>(gfx, std::move(bindablePtrs), (UINT)indices.size(), MaterialIndex);
 }
 
-void Model::Draw(Graphics &gfx, int& index) const
+void Model::Draw(Graphics &gfx, int &index) const
 {
    if (auto node = pWindow->GetSelectedNode())
    {
       node->SetAppliedTransform(pWindow->GetTransform());
    }
-   pRoot->Draw(gfx, DirectX::XMMatrixIdentity(), index);
+   pRoot->Draw(gfx, XMMatrixIdentity(), index);
    ++index;
 }
 

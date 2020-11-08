@@ -70,14 +70,8 @@ public:
    ID3D12Device *GetDevice() noexcept { return device.Get(); }
    ID3D12GraphicsCommandList *GetCommandList() noexcept { return commandList.Get(); }
 
-   void SetProjectionX11(FXMMATRIX proj) noexcept { projectionX11 = proj; }
-   XMMATRIX GetProjectionX11() const noexcept { return projectionX11; }
-
    void SetProjection(FXMMATRIX proj) noexcept { projection = proj; }
    XMMATRIX GetProjection() const noexcept { return projection; }
-
-   void SetCameraX11(FXMMATRIX cam) noexcept { cameraX11 = cam; };
-   XMMATRIX GetCameraX11() const noexcept { return cameraX11; };
 
    void SetCamera(FXMMATRIX cam) noexcept { camera = cam; };
    XMMATRIX GetCamera() const noexcept { return camera; };
@@ -124,11 +118,8 @@ protected:
    float aspectRatio;
    HWND hWnd;
 
-   XMMATRIX projectionX11;
    XMMATRIX projection;
-   XMMATRIX cameraX11;
    XMMATRIX camera;
-
 
    Microsoft::WRL::ComPtr <IDXGIFactory4> m_DxgiFactory4;
    Microsoft::WRL::ComPtr <IDXGIAdapter3> adapter;

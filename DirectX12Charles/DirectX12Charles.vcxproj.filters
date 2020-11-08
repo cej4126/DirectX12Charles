@@ -518,6 +518,15 @@
     <None Include="assimp\include\assimp\vector3.inl">
       <Filter>assimp</Filter>
     </None>
+    <None Include="models\boxy.gltf">
+      <Filter>models</Filter>
+    </None>
+    <None Include="models\boxy.gltf.glb">
+      <Filter>models</Filter>
+    </None>
+    <None Include="models\nano.gltf">
+      <Filter>models</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Object Include="models\nanosuit.obj">

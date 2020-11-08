@@ -28,6 +28,7 @@ private:
 private:
    void SpawnSimulation();
    void SpawnObjectControl();
+   //void ShowRawInputWindow();
 
 private:
    std::chrono::steady_clock::time_point lastTime;
@@ -37,14 +38,11 @@ private:
    std::vector<class ShapeLighted * > lightedObjects;
    std::unique_ptr<class ShapePointLight > light;
 
-
-   void ShowModelWindow();
-
    Camera cam;
    float speedFactor = 1.0f;
    int objectIndex = 1;
    ShapeLighted *currentObject = nullptr;
-
    std::unique_ptr<class Model > nano;
+   //int x = 0, y = 0;
 };
 

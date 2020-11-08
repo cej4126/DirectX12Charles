@@ -113,10 +113,10 @@ void ShapePointLight::ResetLightData() noexcept
 {
    gfx.lightData =
    {
-      XMFLOAT3(0.0f, 0.0f, 0.0f), 0.0f,
+      XMFLOAT3(1.5f, 14.0f, -4.5f), 0.0f,
       XMFLOAT3(0.05f, 0.05f, 0.05f), 0.0f,
       XMFLOAT3(1.0f, 1.0f, 1.0f), 0.0f,
-      1.5f,
+      1.0f,
       1.0f,
       0.045f,
       0.0075f

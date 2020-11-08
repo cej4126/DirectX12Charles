@@ -1,5 +1,16 @@
 #include "Input.h"
 
+std::optional<Input::RawDelta> Input::ReadRawDelta() noexcept
+{
+   if (rawDeltaBuffer.empty())
+   {
+      return std::nullopt;
+   }
+   const RawDelta d = rawDeltaBuffer.front();
+   rawDeltaBuffer.pop();
+   return d;
+}
+
 std::optional<Input::MouseEvent> Input::Read() noexcept
 {
    if (mouseBuffer.size() > 0u)
@@ -40,7 +51,13 @@ void Input::OnChar(char character) noexcept
 
 std::optional<Input::KeyEvent> Input::ReadKey() noexcept
 {
-   return std::optional<KeyEvent>();
+   if (keyBuffer.size() > 0u)
+   {
+      Input::KeyEvent e = keyBuffer.front();
+      keyBuffer.pop();
+      return e;
+   }
+   return {};
 }
 
 std::optional<char> Input::ReadChar() noexcept
@@ -74,6 +91,12 @@ void Input::OnMouseEnter() noexcept
 {
    isInWindow = true;
    mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::Enter, *this));
+   TrimBuffer();
+}
+
+void Input::OnRawDelta(int dx, int dy) noexcept
+{
+   rawDeltaBuffer.push({ dx,dy });
    TrimBuffer();
 }
 
@@ -126,6 +149,14 @@ void Input::TrimBuffer() noexcept
    while (mouseBuffer.size() > bufferSize)
    {
       mouseBuffer.pop();
+   }
+}
+
+void Input::TrimRawInputBuffer() noexcept
+{
+   while (rawDeltaBuffer.size() > bufferSize)
+   {
+      rawDeltaBuffer.pop();
    }
 }
 

@@ -9,6 +9,12 @@ class Input
    friend class Window;
 
 public:
+   struct RawDelta
+   {
+      int x;
+      int y;
+   };
+
    class MouseEvent
    {
    public:
@@ -81,6 +87,7 @@ public:
 
    // Mouse Functions
    std::pair <int, int> GetPos() const noexcept { return { x, y }; }
+   std::optional<RawDelta> ReadRawDelta() noexcept;
    int GetPosX() { return x; }
    int GetPosY() { return y; }
    bool IsInWindow() { return isInWindow; }
@@ -88,6 +95,9 @@ public:
    bool RightIsPressed() const noexcept { return rightIsPressed; }
    std::optional<Input::MouseEvent> Read() noexcept;
    bool IsEmpty() const noexcept { return mouseBuffer.empty(); }
+   void EnableRaw() noexcept { rawEnabled = true; }
+   void DisableRaw() noexcept { rawEnabled = false; }
+   bool RawEnabled() const noexcept { return rawEnabled; }
 
    // Key functions
    bool KeyIsPressed(unsigned char keycode) const noexcept { return keyStates[keycode]; }
@@ -114,6 +124,7 @@ private:
    void OnMouseMove(int x, int y) noexcept;
    void OnMouseLeave() noexcept;
    void OnMouseEnter() noexcept;
+   void OnRawDelta(int dx, int dy) noexcept;
    void OnLeftPressed(int x, int y) noexcept;
    void OnLeftReleased(int x, int y) noexcept;
    void OnRightPressed(int x, int y) noexcept;
@@ -121,6 +132,7 @@ private:
    void OnWheelUp(int x, int y) noexcept;
    void OnWheelDown(int x, int y) noexcept;
    void TrimBuffer() noexcept;
+   void TrimRawInputBuffer() noexcept;
    void OnWheelDelta(int x, int y, int delta) noexcept;
 
 
@@ -136,7 +148,9 @@ private:
 
    static constexpr unsigned int nKeys = 256u;
    bool autorepeatEnabled = false;
+   bool rawEnabled = false;
    std::bitset<nKeys> keyStates;
    std::queue<KeyEvent> keyBuffer;
    std::queue<char> charBuffer;
+   std::queue<RawDelta> rawDeltaBuffer;
 };

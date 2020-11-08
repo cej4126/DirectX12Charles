@@ -15,7 +15,7 @@ GDIPlusManager gdipm;
 
 App::App()
    :
-   wnd(1000, 800)
+   wnd(1280, 720)
 {
    std::mt19937 gen(2018);
 
@@ -63,7 +63,11 @@ App::App()
       ++objectCount;
    }
 
-   nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nanosuit.obj",
+   //nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nanosuit.obj",
+   //   light->getLightView(), MaterialCount, objectCount);
+   //nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\boxy.gltf.glb",
+   //   light->getLightView(), MaterialCount, objectCount);
+   nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nano.gltf",
       light->getLightView(), MaterialCount, objectCount);
    ++MaterialCount;
 
@@ -89,11 +93,7 @@ App::App()
    nano->FirstCommand();
 
    wnd.Gfx().RunCommandList();
-
-   wnd.Gfx().SetProjectionX11(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
-   wnd.Gfx().SetCameraX11(XMMatrixTranslation(8.0f, -4.0f, 20.0f));
-
-   wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
+   wnd.Gfx().SetProjection(XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 40.0f));
 }
 
 int App::Go()
@@ -116,6 +116,21 @@ int App::Go()
 App::~App()
 {
 }
+
+//void App::ShowRawInputWindow()
+//{
+//   while (const auto d = wnd.input.ReadRawDelta())
+//   {
+//      x += d->x;
+//      y += d->y;
+//   }
+//   if (ImGui::Begin("Raw Input"))
+//   {
+//      ImGui::Text("Tally: (%d,%d)", x, y);
+//      ImGui::Text("Cursor: %s", wnd.CursorEnabled() ? "Enable" : "Disable");
+//   }
+//   ImGui::End();
+//}
 
 float App::TimeMark()
 {
@@ -156,6 +171,67 @@ void App::DoFrame()
 
    dwriteitem->Draw();
 
+   while (auto e = wnd.input.ReadKey())
+   {
+      if (e->isPress())
+      {
+         switch (e->GetCode())
+         {
+            //case VK_INSERT:
+            case VK_ESCAPE:
+               if (wnd.CursorEnabled())
+               {
+                  wnd.DisableCursor();
+                  wnd.input.EnableRaw();
+               }
+               else
+               {
+                  wnd.EnableCursor();
+                  wnd.input.DisableRaw();
+               }
+               break;
+         }
+      }
+   }
+
+   if (!wnd.CursorEnabled())
+   {
+      if (wnd.input.KeyIsPressed('W'))
+      {
+         cam.Translate({ 0.0f, 0.0f, dt });
+      }
+      else if (wnd.input.KeyIsPressed('A'))
+      {
+         cam.Translate({ -dt, 0.0f, 0.0f });
+      }
+      else if (wnd.input.KeyIsPressed('S'))
+      {
+         cam.Translate({ 0.0f, 0.0f, -dt });
+      }
+      else if (wnd.input.KeyIsPressed('D'))
+      {
+         cam.Translate({ dt, 0.0f, 0.0f });
+      }
+      else if (wnd.input.KeyIsPressed('R'))
+      {
+         cam.Translate({ 0.0f, dt, 0.0f });
+      }
+      else if (wnd.input.KeyIsPressed('F'))
+      {
+         cam.Translate({ 0.0f, -dt, 0.0f });
+      }
+
+      while (const auto delta = wnd.input.ReadRawDelta())
+      {
+         if (!wnd.CursorEnabled())
+         {
+            cam.Rotate((float)delta->x, (float)delta->y);
+         }
+      }
+
+
+   }
+
    SpawnSimulation();
 
    cam.CreateControlWindow();
@@ -165,6 +241,7 @@ void App::DoFrame()
 
    SpawnObjectControl();
    nano->ShowWindow();
+   //ShowRawInputWindow();
 
    ImGui::Render();
    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
