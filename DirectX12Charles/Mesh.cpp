@@ -22,8 +22,9 @@ void Mesh::Draw(Graphics &gfx, FXMMATRIX acculatedTransform, int index) const no
    DrawFunction::Draw(gfx, index);
 }
 
-Node::Node(const std::string &name, std::vector<Mesh * > meshPtrs, const DirectX::XMMATRIX &transformIn) noexcept
+Node::Node(int id, const std::string &name, std::vector<Mesh * > meshPtrs, const XMMATRIX &transformIn) noexcept
    :
+   id(id),
    meshPtrs(std::move(meshPtrs)),
    name(name)
 {
@@ -54,25 +55,21 @@ void Node::AddChild(std::unique_ptr<Node> pChild) noexcept
    childPtrs.push_back(std::move(pChild));
 }
 
-void Node::ShowTree(int &nodeIndexTracked, std::optional<int> &selectedIndex, Node *&pSelectedNode) const noexcept
+void Node::ShowTree(Node *&pSelectedNode) const noexcept
 {
-   //std::optional<int> mySelectedIndex = *selectedIndex;
-   // nodeIndex serves as the uid for gui tree nodes, incremented throughout recursion
-   const int currentNodeIndex = nodeIndexTracked;
-   nodeIndexTracked++;
-
+   // If there is not selection node, selectedId to an invalid id
+   const int selectedId = (pSelectedNode == nullptr) ? -1 : pSelectedNode->GetId();
    // build up flags for current node
    const auto node_flags = ImGuiTreeNodeFlags_OpenOnArrow
-      | ((currentNodeIndex == selectedIndex.value_or(-1)) ? ImGuiTreeNodeFlags_Selected : 0)
+      | ((GetId() == selectedId) ? ImGuiTreeNodeFlags_Selected : 0)
       | ((childPtrs.size() == 0) ? ImGuiTreeNodeFlags_Leaf : 0);
 
    // Render this node
-   const auto expanded = ImGui::TreeNodeEx((void *)(intptr_t)currentNodeIndex, node_flags, name.c_str());
+   const auto expanded = ImGui::TreeNodeEx((void *)(intptr_t)GetId(), node_flags, name.c_str());
 
    // Processing for selecting node
    if (ImGui::IsItemClicked())
    {
-      selectedIndex = currentNodeIndex;
       pSelectedNode = const_cast<Node *>(this);
    }
 
@@ -81,7 +78,7 @@ void Node::ShowTree(int &nodeIndexTracked, std::optional<int> &selectedIndex, No
    {
       for (const auto &pChild : childPtrs)
       {
-         pChild->ShowTree(nodeIndexTracked, selectedIndex, pSelectedNode);
+         pChild->ShowTree(pSelectedNode);
       }
       ImGui::TreePop();
    }
@@ -92,6 +89,10 @@ void Node::SetAppliedTransform(FXMMATRIX transform) noexcept
    XMStoreFloat4x4(&appliedTransform, transform);
 }
 
+int Node::GetId() const noexcept
+{
+   return id;
+}
 
 class ModelWindow
 {
@@ -107,12 +108,12 @@ public:
       if (ImGui::Begin(windowName))
       {
          ImGui::Columns(2, nullptr, true);
-         root.ShowTree(nodeIndexTracker, selectedIndex, pSelectedNode);
+         root.ShowTree(pSelectedNode);
 
          ImGui::NextColumn();
          if (pSelectedNode != nullptr)
          {
-            auto &tranform = transforms[*selectedIndex];
+            auto &tranform = transforms[pSelectedNode->GetId()];
             ImGui::Text("Orientation");
             ImGui::SliderAngle("Roll", &tranform.roll, -180.0f, 180.0f);
             ImGui::SliderAngle("Pitch", &tranform.pitch, -180.0f, 180.0f);
@@ -127,11 +128,12 @@ public:
       ImGui::End();
    }
 
-   DirectX::XMMATRIX GetTransform() const noexcept
+   XMMATRIX GetTransform() const noexcept
    {
-      const auto &transform = transforms.at(*selectedIndex);
-      return DirectX::XMMatrixRotationRollPitchYaw(transform.pitch, transform.yaw, transform.roll) *
-         DirectX::XMMatrixTranslation(transform.x, transform.y, transform.z);
+      assert(pSelectedNode != nullptr);
+      const auto &transform = transforms.at(pSelectedNode->GetId());
+      return XMMatrixRotationRollPitchYaw(transform.pitch, transform.yaw, transform.roll) *
+         XMMatrixTranslation(transform.x, transform.y, transform.z);
    }
 
    Node *GetSelectedNode() const noexcept
@@ -141,7 +143,6 @@ public:
 
 private:
    static constexpr float PI = 3.14159265f;
-   std::optional<int> selectedIndex;
    Node *pSelectedNode;
    struct TransformParameters
    {
@@ -175,20 +176,21 @@ Model::Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightVie
 
    for (size_t i = 0; i < pScene->mNumMeshes; i++)
    {
-      meshPtrs.push_back(ParseMesh(*pScene->mMeshes[i]));
+      meshPtrs.push_back(ParseMesh(*pScene->mMeshes[i], pScene->mMaterials));
       ++index;
    }
    material.materialColor = XMFLOAT3(1.0f, 0.4f, 0.2f);
 
-   pRoot = ParseNode(*pScene->mRootNode);
+   int nextId = 0;
+   pRoot = ParseNode(nextId, *pScene->mRootNode);
 }
 
 Model::~Model() noexcept
 {}
 
-std::unique_ptr<Node> Model::ParseNode(const aiNode &node) noexcept
+std::unique_ptr<Node> Model::ParseNode(int & nextId, const aiNode &node) noexcept
 {
-   const auto transform = XMMatrixTranspose(DirectX::XMLoadFloat4x4(
+   const auto transform = XMMatrixTranspose(XMLoadFloat4x4(
       reinterpret_cast<const XMFLOAT4X4 *>(&node.mTransformation)));
 
    std::vector<Mesh *> curMeshPtrs;
@@ -199,10 +201,10 @@ std::unique_ptr<Node> Model::ParseNode(const aiNode &node) noexcept
       curMeshPtrs.push_back(meshPtrs.at(meshIndex).get());
    }
 
-   auto pNode = std::make_unique<Node>(node.mName.C_Str(), std::move(curMeshPtrs), transform);
+   auto pNode = std::make_unique<Node>(nextId++, node.mName.C_Str(), std::move(curMeshPtrs), transform);
    for (size_t i = 0; i < node.mNumChildren; i++)
    {
-      pNode->AddChild(ParseNode(*node.mChildren[i]));
+      pNode->AddChild(ParseNode(nextId, *node.mChildren[i]));
    }
    return pNode;
 }
@@ -215,7 +217,7 @@ void Model::FirstCommand()
    }
 }
 
-std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh)
+std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *const *pMaterials)
 {
    using hw3dexp::VertexLayout;
    hw3dexp::VertexBuffer vbuf(std::move(
@@ -230,6 +232,13 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh)
          *reinterpret_cast<XMFLOAT3 *>(&mesh.mVertices[i]),
          *reinterpret_cast<XMFLOAT3 *>(&mesh.mNormals[i])
       );
+   }
+
+   auto &material = *pMaterials[mesh.mMaterialIndex];
+   for (int i = 0; i < material.mNumProperties; i++)
+   {
+      auto &prop = *material.mProperties[i];
+      int qqq = 90;
    }
 
    std::vector<unsigned short> indices;

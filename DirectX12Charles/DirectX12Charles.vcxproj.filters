@@ -524,7 +524,7 @@
     <None Include="models\boxy.gltf.glb">
       <Filter>models</Filter>
     </None>
-    <None Include="models\nano.gltf">
+    <None Include="models\nano_hierarchy.gltf">
       <Filter>models</Filter>
     </None>
   </ItemGroup>

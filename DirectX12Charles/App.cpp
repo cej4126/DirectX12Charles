@@ -67,7 +67,9 @@ App::App()
    //   light->getLightView(), MaterialCount, objectCount);
    //nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\boxy.gltf.glb",
    //   light->getLightView(), MaterialCount, objectCount);
-   nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nano.gltf",
+   //nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nano_hierarchy.gltf",
+   //   light->getLightView(), MaterialCount, objectCount);
+   nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj",
       light->getLightView(), MaterialCount, objectCount);
    ++MaterialCount;
 

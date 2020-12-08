@@ -30,18 +30,19 @@ private:
 class Node
 {
    friend class Model;
-   friend class ModelWindow;
 
 public:
-   Node(const std::string& name, std::vector<Mesh * > meshPtrs, const DirectX::XMMATRIX &transform) noexcept;
+   Node(int id, const std::string& name, std::vector<Mesh * > meshPtrs, const DirectX::XMMATRIX &transform) noexcept;
    void Draw(Graphics &gfx, FXMMATRIX accumulatedTrans, int& index);
    void SetAppliedTransform(FXMMATRIX transform) noexcept;
+   int GetId() const noexcept;
+   void ShowTree(Node *&pSelectedNode) const noexcept;
 
 private:
-   void ShowTree(int &nodeIndexTracked, std::optional<int> &selectedIndex, Node *&pSelectedNode) const noexcept;
    void AddChild(std::unique_ptr<Node> pChild) noexcept;
 
    std::string name;
+   int id;
    std::vector<std::unique_ptr<Node>> childPtrs;
    std::vector<Mesh *> meshPtrs;
    DirectX::XMFLOAT4X4 transform;
@@ -59,8 +60,8 @@ public:
    void ShowWindow(const char *windowName = nullptr) noexcept;
 
 private:
-   std::unique_ptr<Mesh> ParseMesh(const aiMesh &mesh);
-   std::unique_ptr<Node> ParseNode(const aiNode &node) noexcept;
+   std::unique_ptr<Mesh> ParseMesh(const aiMesh& mesh, const aiMaterial *const *pMaterials);
+   std::unique_ptr<Node> ParseNode(int & nextId, const aiNode &node) noexcept;
 
    Graphics &gfx;
    ID3D12Device *device;
