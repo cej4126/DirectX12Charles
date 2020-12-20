@@ -44,9 +44,14 @@ void Node::Draw(Graphics &gfx, FXMMATRIX accumulatedTransform, int &index)
       pm->Draw(gfx, built, index);
       ++index;
    }
+   int i = 0;
    for (const auto &pc : childPtrs)
    {
-      pc->Draw(gfx, built, index);
+      if (i == 6)
+      {
+         pc->Draw(gfx, built, index);
+      }
+      ++i;
    }
 }
 
@@ -105,27 +110,27 @@ public:
       // need an ints to track node indices and selected node
       int nodeIndexTracker = 0;
 
-      if (ImGui::Begin(windowName))
-      {
-         ImGui::Columns(2, nullptr, true);
-         root.ShowTree(pSelectedNode);
+      //if (ImGui::Begin(windowName))
+      //{
+      //   ImGui::Columns(2, nullptr, true);
+      //   root.ShowTree(pSelectedNode);
 
-         ImGui::NextColumn();
-         if (pSelectedNode != nullptr)
-         {
-            auto &tranform = transforms[pSelectedNode->GetId()];
-            ImGui::Text("Orientation");
-            ImGui::SliderAngle("Roll", &tranform.roll, -180.0f, 180.0f);
-            ImGui::SliderAngle("Pitch", &tranform.pitch, -180.0f, 180.0f);
-            ImGui::SliderAngle("Yaw", &tranform.yaw, -180.0f, 180.0f);
+      //   ImGui::NextColumn();
+      //   if (pSelectedNode != nullptr)
+      //   {
+      //      auto &tranform = transforms[pSelectedNode->GetId()];
+      //      ImGui::Text("Orientation");
+      //      ImGui::SliderAngle("Roll", &tranform.roll, -180.0f, 180.0f);
+      //      ImGui::SliderAngle("Pitch", &tranform.pitch, -180.0f, 180.0f);
+      //      ImGui::SliderAngle("Yaw", &tranform.yaw, -180.0f, 180.0f);
 
-            ImGui::Text("Position");
-            ImGui::SliderFloat("X", &tranform.x, -20.0f, 20.0f);
-            ImGui::SliderFloat("Y", &tranform.y, -20.0f, 20.0f);
-            ImGui::SliderFloat("Z", &tranform.z, -20.0f, 20.0f);
-         }
-      }
-      ImGui::End();
+      //      ImGui::Text("Position");
+      //      ImGui::SliderFloat("X", &tranform.x, -20.0f, 20.0f);
+      //      ImGui::SliderFloat("Y", &tranform.y, -20.0f, 20.0f);
+      //      ImGui::SliderFloat("Z", &tranform.z, -20.0f, 20.0f);
+      //   }
+      //}
+      //ImGui::End();
    }
 
    XMMATRIX GetTransform() const noexcept

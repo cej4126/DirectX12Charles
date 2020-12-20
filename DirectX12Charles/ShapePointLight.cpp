@@ -80,33 +80,33 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
 
 void ShapePointLight::CreateLightControl() noexcept
 {
-   if (ImGui::Begin("Light"))
-   {
-      ImGui::Text("Position");
-      ImGui::SliderFloat("X", &gfx.lightData.position.x, -30.0f, 30.0f, "%0.1f");
-      ImGui::SliderFloat("Y", &gfx.lightData.position.y, -30.0f, 30.0f, "%0.1f");
-      ImGui::SliderFloat("Z", &gfx.lightData.position.z, -30.0f, 30.0f, "%0.1f");
+   //if (ImGui::Begin("Light"))
+   //{
+   //   ImGui::Text("Position");
+   //   ImGui::SliderFloat("X", &gfx.lightData.position.x, -30.0f, 30.0f, "%0.1f");
+   //   ImGui::SliderFloat("Y", &gfx.lightData.position.y, -30.0f, 30.0f, "%0.1f");
+   //   ImGui::SliderFloat("Z", &gfx.lightData.position.z, -30.0f, 30.0f, "%0.1f");
 
-      ImGui::Text("Intensity/Color");
-      //ImGui::SliderFloat("Intensity", &gfx.lightData.diffuseIntensity, 0.01f, 2.0f, "%.2f", 2);
-      ImGui::SliderFloat("Intensity", &gfx.lightData.diffuseIntensity, 0.01f, 5.0f, "%0.2f");
-      ImGui::ColorEdit3("Diffuse Color", &gfx.lightData.diffuseColor.x);
-      ImGui::ColorEdit3("Ambient", &gfx.lightData.ambient.x);
+   //   ImGui::Text("Intensity/Color");
+   //   //ImGui::SliderFloat("Intensity", &gfx.lightData.diffuseIntensity, 0.01f, 2.0f, "%.2f", 2);
+   //   ImGui::SliderFloat("Intensity", &gfx.lightData.diffuseIntensity, 0.01f, 5.0f, "%0.2f");
+   //   ImGui::ColorEdit3("Diffuse Color", &gfx.lightData.diffuseColor.x);
+   //   ImGui::ColorEdit3("Ambient", &gfx.lightData.ambient.x);
 
-      ImGui::Text("Falloff");
-      //ImGui::SliderFloat("Constant", &gfx.lightData.attConst, 0.05f, 10.0f, "%.2f", 4);
-      //ImGui::SliderFloat("Linear", &gfx.lightData.attLin, 0.0001f, 4.0f, "%.4f", 8);
-      //ImGui::SliderFloat("Quadratic", &gfx.lightData.attQuad, 0.0000001f, 10.0f, "%.7f", 10);
-      ImGui::SliderFloat("Constant", &gfx.lightData.attConst, 0.05f, 1.0f, "%.2f");
-      ImGui::SliderFloat("Linear", &gfx.lightData.attLin, 0.0001f, 0.1f, "%.4f");
-      ImGui::SliderFloat("Quadratic", &gfx.lightData.attQuad, 0.0000001f, 0.1f, "%.7f");
+   //   ImGui::Text("Falloff");
+   //   //ImGui::SliderFloat("Constant", &gfx.lightData.attConst, 0.05f, 10.0f, "%.2f", 4);
+   //   //ImGui::SliderFloat("Linear", &gfx.lightData.attLin, 0.0001f, 4.0f, "%.4f", 8);
+   //   //ImGui::SliderFloat("Quadratic", &gfx.lightData.attQuad, 0.0000001f, 10.0f, "%.7f", 10);
+   //   ImGui::SliderFloat("Constant", &gfx.lightData.attConst, 0.05f, 1.0f, "%.2f");
+   //   ImGui::SliderFloat("Linear", &gfx.lightData.attLin, 0.0001f, 0.1f, "%.4f");
+   //   ImGui::SliderFloat("Quadratic", &gfx.lightData.attQuad, 0.0000001f, 0.1f, "%.7f");
 
-      if (ImGui::Button("Reset"))
-      {
-         ResetLightData();
-      }
-   }
-   ImGui::End();
+   //   if (ImGui::Button("Reset"))
+   //   {
+   //      ResetLightData();
+   //   }
+   //}
+   //ImGui::End();
 }
 
 void ShapePointLight::ResetLightData() noexcept
