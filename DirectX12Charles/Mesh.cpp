@@ -2,7 +2,7 @@
 #include "imgui/imgui.h"
 #include <unordered_map>
 
-Mesh::Mesh(Graphics &gfx, std::vector<std::unique_ptr<Bindable>> bindPtrs, int indicesCount, int MaterialIndex)
+Mesh::Mesh(Graphics &gfx, std::vector<std::unique_ptr<Bindable>> bindPtrs, int indicesCount, int& MaterialIndex)
    :
    MaterialIndex(MaterialIndex)
 {
@@ -156,30 +156,31 @@ private:
    std::unordered_map<int, TransformParameters> transforms;
 };
 
-Model::Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightView, int MaterialIndex, int &index)
+Model::Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightView, int& MaterialIndex, int& index)
    :
    gfx(gfx),
-   MaterialIndex(MaterialIndex),
    lightView(lightView),
    pWindow(std::make_unique<ModelWindow>())
 {
    Assimp::Importer imp;
 
-   //const auto pScene = imp.ReadFile(fileName.c_str(),
-   //   aiProcess_Triangulate |
-   //   aiProcess_JoinIdenticalVertices);
    const auto pScene = imp.ReadFile(fileName.c_str(),
       aiProcess_Triangulate |
       aiProcess_JoinIdenticalVertices |
       aiProcess_ConvertToLeftHanded |
       aiProcess_GenNormals);
 
+   m_materialIndex = MaterialIndex;
+
    for (size_t i = 0; i < pScene->mNumMeshes; i++)
    {
       meshPtrs.push_back(ParseMesh(*pScene->mMeshes[i], pScene->mMaterials));
       ++index;
+      MaterialIndex = m_materialIndex;
    }
-   material.materialColor = XMFLOAT3(1.0f, 0.4f, 0.2f);
+
+   // Not used----------------------
+   m_material.materialColor = XMFLOAT3(1.0f, 0.4f, 0.2f);
 
    int nextId = 0;
    pRoot = ParseNode(nextId, *pScene->mRootNode);
@@ -211,9 +212,9 @@ std::unique_ptr<Node> Model::ParseNode(int & nextId, const aiNode &node) noexcep
 
 void Model::FirstCommand()
 {
-   if (MaterialIndex != -1)
+   if (m_materialIndex != -1)
    {
-      gfx.CopyMaterialConstant(MaterialIndex, material);
+      gfx.CopyMaterialConstant(m_materialIndex, m_material);
    }
 }
 
@@ -224,21 +225,16 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *con
       VertexLayout{}
       .Append(VertexLayout::Position3D)
       .Append(VertexLayout::Normal)
+      .Append(VertexLayout::Texture2D)
    ));
 
    for (unsigned int i = 0; i < mesh.mNumVertices; i++)
    {
       vbuf.EmplaceBack(
          *reinterpret_cast<XMFLOAT3 *>(&mesh.mVertices[i]),
-         *reinterpret_cast<XMFLOAT3 *>(&mesh.mNormals[i])
+         *reinterpret_cast<XMFLOAT3 *>(&mesh.mNormals[i]),
+         *reinterpret_cast<XMFLOAT2 *>(&mesh.mTextureCoords[0][i])
       );
-   }
-
-   auto &material = *pMaterials[mesh.mMaterialIndex];
-   for (int i = 0; i < material.mNumProperties; i++)
-   {
-      auto &prop = *material.mProperties[i];
-      int qqq = 90;
    }
 
    std::vector<unsigned short> indices;
@@ -254,23 +250,34 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *con
 
    std::unique_ptr<ModelObject> object = std::make_unique<ModelObject>(gfx);
 
+   if (mesh.mMaterialIndex >= 0)
+   {
+      using namespace std::string_literals;
+      auto &material = *pMaterials[mesh.mMaterialIndex];
+      aiString texFileName;
+      material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName);
+      object->CreateTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Models\\nano_textured\\"s + texFileName.C_Str()));
+      //++m_materialIndex;
+      //bindablePtrs.push_back(std::make_unique<Bind::Sampler>(gfx));
+   }
+
    object->LoadVerticesBuffer(vbuf);
 
    object->LoadIndicesBuffer(indices);
-   object->CreateShader(L"LightedVS.cso", L"LightedPS.cso");
+   object->CreateShader(L"ModelVS.cso", L"ModelPS.cso");
 
    XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
    object->CreateConstant(position);
 
    // Create Root Signature after constants
-   object->CreateRootSignature(true, false);
+   object->CreateRootSignature();
 
    object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
    object->SetLightView(lightView);
 
    bindablePtrs.push_back(std::move(object));
-   return std::make_unique<Mesh>(gfx, std::move(bindablePtrs), (UINT)indices.size(), MaterialIndex);
+   return std::make_unique<Mesh>(gfx, std::move(bindablePtrs), (UINT)indices.size(), m_materialIndex);
 }
 
 void Model::Draw(Graphics &gfx, int &index) const

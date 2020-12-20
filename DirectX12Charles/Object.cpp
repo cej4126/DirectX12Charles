@@ -57,7 +57,7 @@ void Object::CreateRootSignature(bool materialFlag, bool textureFlag)
    rootCBVDescriptor.RegisterSpace = 0;
    rootCBVDescriptor.ShaderRegister = 0;
 
-   D3D12_ROOT_PARAMETER  rootParameters[3];
+   D3D12_ROOT_PARAMETER  rootParameters[4];
    // constant buffer for matrix
    rootParameters[rootCount].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
    rootParameters[rootCount].Descriptor = rootCBVDescriptor;

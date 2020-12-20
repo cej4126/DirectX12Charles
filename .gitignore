@@ -66,7 +66,7 @@ StyleCopReport.xml
 *.ilk
 *.meta
 *.obj
-!DirectX12Charles/models/*.obj
+!DirectX12Charles/models/**/*.obj
 !DirectX12Charles/models/nano_textured/*.obj
 !DirectX12Charles/assimp/bin/x64-Debug/bin/*
 *.iobj

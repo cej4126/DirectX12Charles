@@ -73,7 +73,6 @@ App::App()
       light->getLightView(), MaterialCount, objectCount);
    ++MaterialCount;
 
-
    wnd.Gfx().CreateMatrixConstant(objectCount);
    wnd.Gfx().CreateMaterialConstant(MaterialCount);
 

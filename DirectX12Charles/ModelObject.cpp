@@ -23,28 +23,17 @@ void ModelObject::Bind(Graphics &gfx, int drawStep) noexcept
    commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
    commandList->IASetIndexBuffer(&indexBufferView);
 
-   if (colorBufferActive)
-   {
-      commandList->SetGraphicsRootConstantBufferView(1, colorBufferUploadHeaps->GetGPUVirtualAddress());
-   }
+   commandList->SetGraphicsRootConstantBufferView(LIGHT_CB, lightView->GetGPUVirtualAddress());
 
-   if (lightActive)
-   {
-      commandList->SetGraphicsRootConstantBufferView(1, lightView->GetGPUVirtualAddress());
-   }
+   // set the descriptor heap
+   ID3D12DescriptorHeap *descriptorHeaps[] = { mainDescriptorHeap.Get() };
+   commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
-   if (textureActive)
-   {
-      // set the descriptor heap
-      ID3D12DescriptorHeap *descriptorHeaps[] = { mainDescriptorHeap.Get() };
-      commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-
-      // set the descriptor table to the descriptor heap (parameter 1, as constant buffer root descriptor is parameter index 0)
-      commandList->SetGraphicsRootDescriptorTable(1, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-   }
+   // set the descriptor table to the descriptor heap (parameter 1, as constant buffer root descriptor is parameter index 0)
+   commandList->SetGraphicsRootDescriptorTable(TEXTURE_CB, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 }
 
-void ModelObject::CreateRootSignature(bool materialFlag, bool textureFlag)
+void ModelObject::CreateRootSignature()
 {
    int rootCount = 0;
 
@@ -52,62 +41,64 @@ void ModelObject::CreateRootSignature(bool materialFlag, bool textureFlag)
    rootCBVDescriptor.RegisterSpace = 0;
    rootCBVDescriptor.ShaderRegister = 0;
 
-   D3D12_ROOT_PARAMETER  rootParameters[3];
+   D3D12_ROOT_PARAMETER  rootParameters[COUNT_CB];
    // constant buffer for matrix
-   rootParameters[rootCount].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-   rootParameters[rootCount].Descriptor = rootCBVDescriptor;
-   rootParameters[rootCount].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-   ++rootCount;
+   rootParameters[VIEW_CB].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+   rootParameters[VIEW_CB].Descriptor = rootCBVDescriptor;
+   rootParameters[VIEW_CB].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 
-   if (colorBufferActive || lightActive)
-   {
-      // Constant buffer for the color
-      rootCBVDescriptor.RegisterSpace = 0;
-      rootCBVDescriptor.ShaderRegister = 1;
-      rootParameters[rootCount].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-      rootParameters[rootCount].Descriptor = rootCBVDescriptor;
-      rootParameters[rootCount].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-      ++rootCount;
-   }
+   // Constant buffer for the color
+   rootCBVDescriptor.RegisterSpace = 0;
+   rootCBVDescriptor.ShaderRegister = 1;
+   rootParameters[LIGHT_CB].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+   rootParameters[LIGHT_CB].Descriptor = rootCBVDescriptor;
+   rootParameters[LIGHT_CB].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
-   if (textureFlag)
-   {
-      D3D12_ROOT_DESCRIPTOR rootCBVDescriptor;
-      rootCBVDescriptor.RegisterSpace = 0;
-      rootCBVDescriptor.ShaderRegister = 0;
+   // Material buffer for the color
+   rootCBVDescriptor.RegisterSpace = 0;
+   rootCBVDescriptor.ShaderRegister = 2;
+   rootParameters[MATERIAL_CB].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+   rootParameters[MATERIAL_CB].Descriptor = rootCBVDescriptor;
+   rootParameters[MATERIAL_CB].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
-      // create a descriptor range (descriptor table) and fill it out
-      // this is a range of descriptors inside a descriptor heap
-      D3D12_DESCRIPTOR_RANGE  descriptorTableRanges[1]; // only one range right now
-      descriptorTableRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // this is a range of shader resource views (descriptors)
-      descriptorTableRanges[0].NumDescriptors = 1; // we only have one texture right now, so the range is only 1
-      descriptorTableRanges[0].BaseShaderRegister = 0; // start index of the shader registers in the range
-      descriptorTableRanges[0].RegisterSpace = 0; // space 0. can usually be zero
-      descriptorTableRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // this appends the range to the end of the root signature descriptor tables
+   rootCBVDescriptor.RegisterSpace = 0;
+   rootCBVDescriptor.ShaderRegister = 0;
 
-      // create a descriptor table
-      D3D12_ROOT_DESCRIPTOR_TABLE descriptorTable;
-      descriptorTable.NumDescriptorRanges = _countof(descriptorTableRanges); // we only have one range
-      descriptorTable.pDescriptorRanges = &descriptorTableRanges[0]; // the pointer to the beginning of our ranges array
+   // create a descriptor range (descriptor table) and fill it out
+   // this is a range of descriptors inside a descriptor heap
+   D3D12_DESCRIPTOR_RANGE  descriptorTableRanges[1]; // only one range right now
+   descriptorTableRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // this is a range of shader resource views (descriptors)
+   descriptorTableRanges[0].NumDescriptors = 1; // we only have one texture right now, so the range is only 1
+   descriptorTableRanges[0].BaseShaderRegister = 0; // start index of the shader registers in the range
+   descriptorTableRanges[0].RegisterSpace = 0; // space 0. can usually be zero
+   descriptorTableRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // this appends the range to the end of the root signature descriptor tables
 
-      // fill out the parameter for our descriptor table. Remember it's a good idea to sort parameters by frequency of change. Our constant
-      // buffer will be changed multiple times per frame, while our descriptor table will not be changed at all (in this tutorial)
-      rootParameters[rootCount].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // this is a descriptor table
-      rootParameters[rootCount].DescriptorTable = descriptorTable; // this is our descriptor table for this root parameter
-      rootParameters[rootCount].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
-      ++rootCount;
-   }
+   // create a descriptor table
+   D3D12_ROOT_DESCRIPTOR_TABLE descriptorTable;
+   descriptorTable.NumDescriptorRanges = _countof(descriptorTableRanges); // we only have one range
+   descriptorTable.pDescriptorRanges = &descriptorTableRanges[0]; // the pointer to the beginning of our ranges array
 
-   if (materialFlag)
-   {
-      // Material buffer for the color
-      rootCBVDescriptor.RegisterSpace = 0;
-      rootCBVDescriptor.ShaderRegister = 2;
-      rootParameters[rootCount].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-      rootParameters[rootCount].Descriptor = rootCBVDescriptor;
-      rootParameters[rootCount].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-      ++rootCount;
-   }
+   // fill out the parameter for our descriptor table. Remember it's a good idea to sort parameters by frequency of change. Our constant
+   // buffer will be changed multiple times per frame, while our descriptor table will not be changed at all (in this tutorial)
+   rootParameters[TEXTURE_CB].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // this is a descriptor table
+   rootParameters[TEXTURE_CB].DescriptorTable = descriptorTable; // this is our descriptor table for this root parameter
+   rootParameters[TEXTURE_CB].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
+
+   //// create a static sampler
+   //D3D12_STATIC_SAMPLER_DESC sampler = {};
+   //sampler.Filter = D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+   //sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+   //sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+   //sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+   //sampler.MipLODBias = 0;
+   //sampler.MaxAnisotropy = 0;
+   //sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+   //sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+   //sampler.MinLOD = 0.0f;
+   //sampler.MaxLOD = D3D12_FLOAT32_MAX;
+   //sampler.ShaderRegister = 0;
+   //sampler.RegisterSpace = 0;
+   //sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
    // create a static sampler
    D3D12_STATIC_SAMPLER_DESC sampler = {};
@@ -131,7 +122,7 @@ void ModelObject::CreateRootSignature(bool materialFlag, bool textureFlag)
       D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
       D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
       D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
-   rsDesc.NumParameters = rootCount;
+   rsDesc.NumParameters = COUNT_CB;
    rsDesc.pParameters = rootParameters;
    rsDesc.NumStaticSamplers = 1;
    rsDesc.pStaticSamplers = &sampler;
@@ -157,7 +148,6 @@ void ModelObject::CreateShader(const std::wstring &vertexPath, const std::wstrin
 
 void ModelObject::SetLightView(ID3D12Resource *mylightView)
 {
-   lightActive = true;
    lightView = mylightView;
 }
 

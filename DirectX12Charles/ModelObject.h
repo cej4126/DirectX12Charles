@@ -11,7 +11,7 @@ public:
    ModelObject(Graphics &gfx);
 
    void CreateTexture(const Surface &surface);
-   void CreateRootSignature(bool materialFlag, bool textureFlag);
+   void CreateRootSignature();
    void CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath);
    void SetLightView(ID3D12Resource *mylightView);
    void CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType);
@@ -140,6 +140,15 @@ public:
    void Bind(Graphics &gfx, int drawStep) noexcept override;
 
 private:
+   enum
+   {
+      VIEW_CB = 0,
+      LIGHT_CB = 1,
+      MATERIAL_CB = 2,
+      TEXTURE_CB = 3,
+      COUNT_CB = 4
+   };
+
    Graphics &gfx;
    ID3D12Device *device;
    ID3D12GraphicsCommandList *commandList;
@@ -168,7 +177,6 @@ private:
    UINT indicesCount;
    D3D12_PRIMITIVE_TOPOLOGY_TYPE topology = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
-   bool lightActive = false;
    ID3D12Resource *lightView = nullptr;
 };
 

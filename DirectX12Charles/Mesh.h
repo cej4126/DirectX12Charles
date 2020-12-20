@@ -14,7 +14,7 @@
 class Mesh : public DrawBase <Mesh>
 {
 public:
-   Mesh(Graphics &gfx, std::vector<std::unique_ptr<Bindable>> bindPtrs, int indicesCount, int MaterialIndex);
+   Mesh(Graphics &gfx, std::vector<std::unique_ptr<Bindable>> bindPtrs, int indicesCount, int& MaterialIndex);
    void Draw(Graphics &gfx, FXMMATRIX acculatedTransform, int index) const noexcept;
    int getMaterialIndex() const noexcept
    {
@@ -52,7 +52,7 @@ private:
 class Model
 {
 public:
-   Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightView, int MaterialIndex, int &index);
+   Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightView, int& MaterialIndex, int &index);
    ~Model() noexcept;
 
    void FirstCommand();
@@ -72,8 +72,8 @@ private:
    std::unique_ptr<Node> pRoot;
    std::vector<std::unique_ptr<Mesh>> meshPtrs;
 
-   int MaterialIndex = -1;
-   Graphics::MaterialType material;
+   int m_materialIndex = -1;
+   Graphics::MaterialType m_material;
 
    std::vector<std::unique_ptr<Bindable>> bindablePtrs;
 

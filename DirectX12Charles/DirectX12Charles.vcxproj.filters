@@ -475,6 +475,12 @@
     <FxCompile Include="LightedPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="ModelPS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="ModelVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Images\test.png">
