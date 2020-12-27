@@ -2,7 +2,7 @@
 #include "imgui/imgui.h"
 #include <unordered_map>
 
-Mesh::Mesh(Graphics &gfx, std::vector<std::unique_ptr<Bindable>> bindPtrs, int indicesCount, int& MaterialIndex)
+Mesh::Mesh(Graphics &gfx, std::vector<std::unique_ptr<Bindable>> bindPtrs, int indicesCount, int &MaterialIndex)
    :
    MaterialIndex(MaterialIndex)
 {
@@ -44,14 +44,10 @@ void Node::Draw(Graphics &gfx, FXMMATRIX accumulatedTransform, int &index)
       pm->Draw(gfx, built, index);
       ++index;
    }
-   int i = 0;
+
    for (const auto &pc : childPtrs)
    {
-      if (i == 6)
-      {
-         pc->Draw(gfx, built, index);
-      }
-      ++i;
+      pc->Draw(gfx, built, index);
    }
 }
 
@@ -110,27 +106,27 @@ public:
       // need an ints to track node indices and selected node
       int nodeIndexTracker = 0;
 
-      //if (ImGui::Begin(windowName))
-      //{
-      //   ImGui::Columns(2, nullptr, true);
-      //   root.ShowTree(pSelectedNode);
+      if (ImGui::Begin(windowName))
+      {
+         ImGui::Columns(2, nullptr, true);
+         root.ShowTree(pSelectedNode);
 
-      //   ImGui::NextColumn();
-      //   if (pSelectedNode != nullptr)
-      //   {
-      //      auto &tranform = transforms[pSelectedNode->GetId()];
-      //      ImGui::Text("Orientation");
-      //      ImGui::SliderAngle("Roll", &tranform.roll, -180.0f, 180.0f);
-      //      ImGui::SliderAngle("Pitch", &tranform.pitch, -180.0f, 180.0f);
-      //      ImGui::SliderAngle("Yaw", &tranform.yaw, -180.0f, 180.0f);
+         ImGui::NextColumn();
+         if (pSelectedNode != nullptr)
+         {
+            auto &tranform = transforms[pSelectedNode->GetId()];
+            ImGui::Text("Orientation");
+            ImGui::SliderAngle("Roll", &tranform.roll, -180.0f, 180.0f);
+            ImGui::SliderAngle("Pitch", &tranform.pitch, -180.0f, 180.0f);
+            ImGui::SliderAngle("Yaw", &tranform.yaw, -180.0f, 180.0f);
 
-      //      ImGui::Text("Position");
-      //      ImGui::SliderFloat("X", &tranform.x, -20.0f, 20.0f);
-      //      ImGui::SliderFloat("Y", &tranform.y, -20.0f, 20.0f);
-      //      ImGui::SliderFloat("Z", &tranform.z, -20.0f, 20.0f);
-      //   }
-      //}
-      //ImGui::End();
+            ImGui::Text("Position");
+            ImGui::SliderFloat("X", &tranform.x, -20.0f, 20.0f);
+            ImGui::SliderFloat("Y", &tranform.y, -20.0f, 20.0f);
+            ImGui::SliderFloat("Z", &tranform.z, -20.0f, 20.0f);
+         }
+      }
+      ImGui::End();
    }
 
    XMMATRIX GetTransform() const noexcept
@@ -161,7 +157,7 @@ private:
    std::unordered_map<int, TransformParameters> transforms;
 };
 
-Model::Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightView, int& MaterialIndex, int& index)
+Model::Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightView, int &MaterialIndex, int &index)
    :
    gfx(gfx),
    lightView(lightView),
@@ -194,7 +190,7 @@ Model::Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightVie
 Model::~Model() noexcept
 {}
 
-std::unique_ptr<Node> Model::ParseNode(int & nextId, const aiNode &node) noexcept
+std::unique_ptr<Node> Model::ParseNode(int &nextId, const aiNode &node) noexcept
 {
    const auto transform = XMMatrixTranspose(XMLoadFloat4x4(
       reinterpret_cast<const XMFLOAT4X4 *>(&node.mTransformation)));
@@ -259,11 +255,13 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *con
    {
       using namespace std::string_literals;
       auto &material = *pMaterials[mesh.mMaterialIndex];
+      const auto path = "..\\..\\DirectX12Charles\\Models\\nano_textured\\"s;
       aiString texFileName;
       material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName);
-      object->CreateTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Models\\nano_textured\\"s + texFileName.C_Str()));
-      //++m_materialIndex;
-      //bindablePtrs.push_back(std::make_unique<Bind::Sampler>(gfx));
+      object->CreateTexture(Surface::FromFile(path + texFileName.C_Str()), 0);
+
+      //material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName);
+      //object->CreateTexture(Surface::FromFile(path + texFileName.C_Str()), 1);
    }
 
    object->LoadVerticesBuffer(vbuf);

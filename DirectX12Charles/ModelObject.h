@@ -10,7 +10,7 @@ class ModelObject : public Bindable
 public:
    ModelObject(Graphics &gfx);
 
-   void CreateTexture(const Surface &surface);
+   void CreateTexture(const Surface &surface, int slot);
    void CreateRootSignature();
    void CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath);
    void SetLightView(ID3D12Resource *mylightView);
@@ -143,10 +143,10 @@ private:
    enum
    {
       VIEW_CB = 0,
-      LIGHT_CB = 1,
-      MATERIAL_CB = 2,
-      TEXTURE_CB = 3,
-      COUNT_CB = 4
+      LIGHT_CB,
+      MATERIAL_CB,
+      TEXTURE_CB,
+      COUNT_CB
    };
 
    Graphics &gfx;
@@ -158,6 +158,7 @@ private:
    UINT8 *colorBufferGPUAddress;
 
    bool textureActive = false;
+   bool specularActive = false;
    Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer;
    Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >mainDescriptorHeap;
    Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap;

@@ -24,21 +24,21 @@ XMMATRIX Camera::GetMatrix() const noexcept
 
 void Camera::CreateControlWindow() noexcept
 {
-   //if (ImGui::Begin("Camera Control"))
-   //{
-   //   ImGui::Text("Position");
-   //   ImGui::SliderFloat("X", &pos.x, -80.0f, 80.0f, "%.1f");
-   //   ImGui::SliderFloat("Y", &pos.y, -80.0f, 80.0f, "%.1f");
-   //   ImGui::SliderFloat("Z", &pos.z, -80.0f, 80.0f, "%.1f");
-   //   ImGui::Text("Orientation");
-   //   ImGui::SliderAngle("Pitch", &pitch, -89.950f, 89.95f);
-   //   ImGui::SliderAngle("Yaw", &yaw, -180.0f, 180.0f);
-   //   if (ImGui::Button("Reset"))
-   //   {
-   //      Reset();
-   //   }
-   //}
-   //ImGui::End();
+   if (ImGui::Begin("Camera Control"))
+   {
+      ImGui::Text("Position");
+      ImGui::SliderFloat("X", &pos.x, -80.0f, 80.0f, "%.1f");
+      ImGui::SliderFloat("Y", &pos.y, -80.0f, 80.0f, "%.1f");
+      ImGui::SliderFloat("Z", &pos.z, -80.0f, 80.0f, "%.1f");
+      ImGui::Text("Orientation");
+      ImGui::SliderAngle("Pitch", &pitch, -89.950f, 89.95f);
+      ImGui::SliderAngle("Yaw", &yaw, -180.0f, 180.0f);
+      if (ImGui::Button("Reset"))
+      {
+         Reset();
+      }
+   }
+   ImGui::End();
 }
 
 void Camera::Reset() noexcept

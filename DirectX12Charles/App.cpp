@@ -37,10 +37,10 @@ App::App()
    {
       float range = rangedist(rng);
 
-      //type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
-      //drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), type, range, light->getLightView(), MaterialCount));
-      //++objectCount;
-      //++MaterialCount;
+      type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
+      drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), type, range, light->getLightView(), MaterialCount));
+      ++objectCount;
+      ++MaterialCount;
 
       //drawItems.push_back(std::make_unique<ShapeAssimp>(wnd.Gfx(), Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
       //++objectCount;
@@ -69,6 +69,8 @@ App::App()
    //   light->getLightView(), MaterialCount, objectCount);
    //nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nano_hierarchy.gltf",
    //   light->getLightView(), MaterialCount, objectCount);
+
+
    nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj",
       light->getLightView(), MaterialCount, objectCount);
    ++MaterialCount;
@@ -259,13 +261,13 @@ void App::SpawnSimulation()
    ImGui_ImplDX11_NewFrame();
    ImGui_ImplWin32_NewFrame();
    ImGui::NewFrame();
-   //ImGui::Begin("Simulation Speed");
+   ImGui::Begin("Simulation Speed");
 
-   //ImGui::SliderFloat("Speed Factor", &speedFactor, 0.0f, 4.0f);
-   //ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-   //   1000.0f / ImGui::GetIO().Framerate,
-   //   ImGui::GetIO().Framerate);
-   //ImGui::End();
+   ImGui::SliderFloat("Speed Factor", &speedFactor, 0.0f, 4.0f);
+   ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+      1000.0f / ImGui::GetIO().Framerate,
+      ImGui::GetIO().Framerate);
+   ImGui::End();
 }
 
 void App::SpawnObjectControl()
@@ -274,36 +276,36 @@ void App::SpawnObjectControl()
 
    if (!lightedObjects.empty())
    {
-      //if (ImGui::Begin(("Object " + std::to_string(objectIndex)).c_str()))
-      //{
-      //   bool changed = ImGui::InputInt("Id", &objectIndex) || firstTime;
-      //   if (changed)
-      //   {
-      //      firstTime = false;
-      //      if (objectIndex < 1)
-      //      {
-      //         objectIndex = 1;
-      //      }
-      //      else if (objectIndex > lightedObjects.size())
-      //      {
-      //         objectIndex = (int)lightedObjects.size();
-      //      }
+      if (ImGui::Begin(("Object " + std::to_string(objectIndex)).c_str()))
+      {
+         bool changed = ImGui::InputInt("Id", &objectIndex) || firstTime;
+         if (changed)
+         {
+            firstTime = false;
+            if (objectIndex < 1)
+            {
+               objectIndex = 1;
+            }
+            else if (objectIndex > lightedObjects.size())
+            {
+               objectIndex = (int)lightedObjects.size();
+            }
 
-      //      for (std::vector<class ShapeLighted *>::iterator it = lightedObjects.begin(); it != lightedObjects.end(); ++it)
-      //      {
-      //         ShapeLighted *c = *it;
-      //         int i = c->getMaterialIndex() + 1;
-      //         if (objectIndex == i)
-      //         {
-      //            currentObject = c;
-      //         }
-      //      }
-      //   }
-      //   if (currentObject != nullptr)
-      //   {
-      //      currentObject->SpawnControlWindow();
-      //   }
-      //}
-      //ImGui::End();
+            for (std::vector<class ShapeLighted *>::iterator it = lightedObjects.begin(); it != lightedObjects.end(); ++it)
+            {
+               ShapeLighted *c = *it;
+               int i = c->getMaterialIndex() + 1;
+               if (objectIndex == i)
+               {
+                  currentObject = c;
+               }
+            }
+         }
+         if (currentObject != nullptr)
+         {
+            currentObject->SpawnControlWindow();
+         }
+      }
+      ImGui::End();
    }
 }
