@@ -251,6 +251,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *con
 
    std::unique_ptr<ModelObject> object = std::make_unique<ModelObject>(gfx);
 
+   bool specular = false;
    if (mesh.mMaterialIndex >= 0)
    {
       using namespace std::string_literals;
@@ -260,14 +261,24 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *con
       material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName);
       object->CreateTexture(Surface::FromFile(path + texFileName.C_Str()), 0);
 
-      //material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName);
-      //object->CreateTexture(Surface::FromFile(path + texFileName.C_Str()), 1);
+      if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
+      {
+         object->CreateTexture(Surface::FromFile(path + texFileName.C_Str()), 1);
+         specular = true;
+      }
    }
 
    object->LoadVerticesBuffer(vbuf);
 
    object->LoadIndicesBuffer(indices);
-   object->CreateShader(L"ModelVS.cso", L"ModelPS.cso");
+   if (specular)
+   {
+      object->CreateShader(L"ModelVS.cso", L"ModelSpecularPS.cso");
+   }
+   else
+   {
+      object->CreateShader(L"ModelVS.cso", L"ModelPS.cso");
+   }
 
    XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
    object->CreateConstant(position);

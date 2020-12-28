@@ -37,8 +37,10 @@ public:
    struct MaterialType
    {
       XMFLOAT3 materialColor;
-      float specularInensity = 0.6f;
-      float specularPower = 30.0f;
+//      float specularInensity = 0.6f;
+//      float specularPower = 30.0f;
+      float specularInensity = 0.8f;
+      float specularPower = 40.0f;
       float pad[2];
    };
 

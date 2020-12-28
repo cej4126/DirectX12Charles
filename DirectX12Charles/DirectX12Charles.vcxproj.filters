@@ -481,6 +481,9 @@
     <FxCompile Include="ModelVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="ModelSpecularPS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Images\test.png">

@@ -31,6 +31,11 @@ void ModelObject::Bind(Graphics &gfx, int drawStep) noexcept
 
    // set the descriptor table to the descriptor heap (parameter 1, as constant buffer root descriptor is parameter index 0)
    commandList->SetGraphicsRootDescriptorTable(TEXTURE_CB, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+
+   if (specularActive)
+   {
+      commandList->SetGraphicsRootDescriptorTable(SPECULAR_CB, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+   }
 }
 
 void ModelObject::CreateRootSignature()
@@ -59,18 +64,11 @@ void ModelObject::CreateRootSignature()
    rootParameters[MATERIAL_CB].Descriptor = rootCBVDescriptor;
    rootParameters[MATERIAL_CB].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
-   rootCBVDescriptor.RegisterSpace = 0;
-   rootCBVDescriptor.ShaderRegister = 0;
-
    // create a descriptor range (descriptor table) and fill it out
    // this is a range of descriptors inside a descriptor heap
    D3D12_DESCRIPTOR_RANGE  descriptorTableRanges[1]; // only one range right now
    descriptorTableRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // this is a range of shader resource views (descriptors)
    descriptorTableRanges[0].NumDescriptors = 1; // we only have one texture right now, so the range is only 1
-   if (specularActive)
-   {
-      descriptorTableRanges[0].NumDescriptors = 2;
-   }
    descriptorTableRanges[0].BaseShaderRegister = 0; // start index of the shader registers in the range
    descriptorTableRanges[0].RegisterSpace = 0; // space 0. can usually be zero
    descriptorTableRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // this appends the range to the end of the root signature descriptor tables
@@ -86,6 +84,31 @@ void ModelObject::CreateRootSignature()
    rootParameters[TEXTURE_CB].DescriptorTable = descriptorTable; // this is our descriptor table for this root parameter
    rootParameters[TEXTURE_CB].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
 
+   int rootCount = TEXTURE_CB + 1;
+   if (specularActive)
+   {
+      // create a descriptor range (descriptor table) and fill it out
+      // this is a range of descriptors inside a descriptor heap
+      D3D12_DESCRIPTOR_RANGE  descriptorSpecularTableRanges[1]; // only one range right now
+      descriptorSpecularTableRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // this is a range of shader resource views (descriptors)
+      descriptorSpecularTableRanges[0].NumDescriptors = 1; // we only have one texture right now, so the range is only 1
+      descriptorSpecularTableRanges[0].BaseShaderRegister = 1; // start index of the shader registers in the range
+      descriptorSpecularTableRanges[0].RegisterSpace = 0; // space 0. can usually be zero
+      descriptorSpecularTableRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // this appends the range to the end of the root signature descriptor tables
+
+      // create a descriptor table
+      D3D12_ROOT_DESCRIPTOR_TABLE descriptorSpecularTable;
+      descriptorSpecularTable.NumDescriptorRanges = _countof(descriptorSpecularTableRanges); // we only have one range
+      descriptorSpecularTable.pDescriptorRanges = &descriptorSpecularTableRanges[0]; // the pointer to the beginning of our ranges array
+
+      // fill out the parameter for our descriptor table. Remember it's a good idea to sort parameters by frequency of change. Our constant
+      // buffer will be changed multiple times per frame, while our descriptor table will not be changed at all (in this tutorial)
+      rootParameters[SPECULAR_CB].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // this is a descriptor table
+      rootParameters[SPECULAR_CB].DescriptorTable = descriptorSpecularTable; // this is our descriptor table for this root parameter
+      rootParameters[SPECULAR_CB].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
+
+      rootCount = SPECULAR_CB + 1;
+   }
 
    //// create a static sampler
    D3D12_STATIC_SAMPLER_DESC sampler = {};
@@ -109,7 +132,7 @@ void ModelObject::CreateRootSignature()
       D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
       D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
       D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
-   rsDesc.NumParameters = COUNT_CB;
+   rsDesc.NumParameters = rootCount;
    rsDesc.pParameters = rootParameters;
    rsDesc.NumStaticSamplers = 1;
    rsDesc.pStaticSamplers = &sampler;
@@ -286,6 +309,10 @@ void ModelObject::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
 void ModelObject::CreateTexture(const Surface &surface, int slot)
 {
    textureActive = true;
+   if (slot == 1)
+   {
+      specularActive = true;
+   }
    //const UINT indicesBufferSize = (UINT)(sizeof(unsigned short) * indices.size());
 
    D3D12_HEAP_PROPERTIES heapProps;
@@ -299,18 +326,15 @@ void ModelObject::CreateTexture(const Surface &surface, int slot)
    D3D12_RESOURCE_DESC resourceDesc;
    ZeroMemory(&resourceDesc, sizeof(resourceDesc));
    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-   //resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
    resourceDesc.Alignment = 0;
    resourceDesc.Width = surface.GetWidth();
    resourceDesc.Height = surface.GetHeight();
    resourceDesc.DepthOrArraySize = 1;
    resourceDesc.MipLevels = 1;
-   //resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
    resourceDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
    resourceDesc.SampleDesc.Count = 1;
    resourceDesc.SampleDesc.Quality = 0;
    resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-   //resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
    resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
    ThrowIfFailed(device->CreateCommittedResource(
@@ -319,8 +343,8 @@ void ModelObject::CreateTexture(const Surface &surface, int slot)
       &resourceDesc,
       D3D12_RESOURCE_STATE_COPY_DEST,
       nullptr,
-      IID_PPV_ARGS(&textureBuffer)));
-   textureBuffer->SetName(L"Texture Default Buffer");
+      IID_PPV_ARGS(&textureBuffer[slot])));
+   textureBuffer[slot]->SetName(L"Texture Default Buffer");
 
    // Upload heap
    heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
@@ -349,7 +373,7 @@ void ModelObject::CreateTexture(const Surface &surface, int slot)
    TextureData.SlicePitch = surface.GetWidth() * sizeof(Surface::Color) * surface.GetHeight();
 
    gfx.UpdateSubresource(
-      textureBuffer.Get(),
+      textureBuffer[slot].Get(),
       textureBufferUploadHeap.Get(),
       &TextureData); // pSrcData
 
@@ -359,7 +383,7 @@ void ModelObject::CreateTexture(const Surface &surface, int slot)
    resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
    resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
    resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-   resourceBarrier.Transition.pResource = textureBuffer.Get();
+   resourceBarrier.Transition.pResource = textureBuffer[slot].Get();
    commandList->ResourceBarrier(1, &resourceBarrier);
 
    // create the descriptor heap that will store our srv
@@ -375,7 +399,7 @@ void ModelObject::CreateTexture(const Surface &surface, int slot)
    srvDesc.Format = resourceDesc.Format;
    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
    srvDesc.Texture2D.MipLevels = 1;
-   device->CreateShaderResourceView(textureBuffer.Get(), &srvDesc, mainDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+   device->CreateShaderResourceView(textureBuffer[slot].Get(), &srvDesc, mainDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
 void ModelObject::CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType)

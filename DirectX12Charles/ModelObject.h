@@ -146,6 +146,7 @@ private:
       LIGHT_CB,
       MATERIAL_CB,
       TEXTURE_CB,
+      SPECULAR_CB,
       COUNT_CB
    };
 
@@ -159,7 +160,7 @@ private:
 
    bool textureActive = false;
    bool specularActive = false;
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer;
+   Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer[2];
    Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >mainDescriptorHeap;
    Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap;
 
