@@ -5,7 +5,7 @@
 #include "DrawFunction.h"
 #include "Transform.h"
 
-class ShapeTextureCube : public DrawBase <ShapeTextureCube>
+class ShapeTextureCube : public DrawFunction
 {
 public:
    ShapeTextureCube(Graphics &gfx, float range);

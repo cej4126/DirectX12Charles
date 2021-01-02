@@ -5,7 +5,7 @@
 #include "DrawFunction.h"
 #include "Transform.h"
 
-class ShapeColorBlended : public DrawBase <ShapeColorBlended>
+class ShapeColorBlended : public DrawFunction
 {
 public:
    ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float range);

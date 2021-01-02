@@ -42,9 +42,7 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
    spaceYawRate = 0.0f;
 #endif
 
-   if (!isStaticSet())
-   {
-      std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
+      std::shared_ptr<Object> object = std::make_shared< Object>(gfx);
 
       struct Vertex
       {
@@ -103,10 +101,9 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
       // lookup table for cube face colors
 
 
-      addStaticBind(std::move(object), (UINT)model.indices.size());
-   }
+      AddBind(std::move(object));
 
-   std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
+   std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);
    trans->setIndices(start, count);

@@ -47,42 +47,37 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
    UINT indicesStart = gfx.shape.getIndiceStart(type);
    UINT indicesCount = gfx.shape.getIndiceCount(type);
 
-   if (!isStaticSet())
+   struct Vertex
    {
-      struct Vertex
-      {
-         XMFLOAT3 pos;
-         XMFLOAT2 tex;
-      };
+      XMFLOAT3 pos;
+      XMFLOAT2 tex;
+   };
 
-      auto model = gfx.shape.GetShapeTextureData<Vertex>();
+   auto model = gfx.shape.GetShapeTextureData<Vertex>();
 
+   std::shared_ptr<Object> object = std::make_shared< Object>(gfx);
 
-      std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
+   std::vector <unsigned short> indices(indicesCount);
+   object->CreateTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\cube.png"));
 
-      std::vector <unsigned short> indices(indicesCount);
+   object->LoadVerticesBuffer(model.vertices);
+   object->LoadIndicesBuffer(model.indices);
+   object->CreateShader(L"TextureVS.cso", L"TexturePS.cso");
+   // Define the vertex input layout.
+   const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
+   {
+       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+       { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+   };
 
-      object->CreateTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\cube.png"));
+   // Create Root Signature after constants
+   object->CreateRootSignature(false, true);
 
-      object->LoadVerticesBuffer(model.vertices);
-      object->LoadIndicesBuffer(model.indices);
-      object->CreateShader(L"TextureVS.cso", L"TexturePS.cso");
-      // Define the vertex input layout.
-      const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
-      {
-          { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-          { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-      };
+   object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
-      // Create Root Signature after constants
-      object->CreateRootSignature(false, true);
+   AddBind(std::move(object));
 
-      object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-
-      addStaticBind(std::move(object), (UINT)model.indices.size());
-   }
-
-   std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
+   std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);
    trans->setIndices(start, count);

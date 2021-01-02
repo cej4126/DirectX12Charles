@@ -5,7 +5,7 @@
 #include "DrawFunction.h"
 #include "Transform.h"
 
-class ShapeAssimp : public DrawBase <ShapeAssimp>
+class ShapeAssimp : public DrawFunction
 {
 public:
    ShapeAssimp(Graphics &gfx, Shape::shapeType type, float range, ID3D12Resource *mylightView, int MaterialIndex);

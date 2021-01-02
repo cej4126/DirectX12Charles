@@ -162,7 +162,7 @@ private:
    bool specularActive = false;
    Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer[2];
    Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >mainDescriptorHeap;
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap;
+   Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap[2];
 
    Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
    D3D12_INPUT_LAYOUT_DESC inputLayoutDesc;

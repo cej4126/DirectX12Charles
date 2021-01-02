@@ -32,12 +32,12 @@ App::App()
    int MaxBoxX12Count = 6;
    int MaterialCount = 0;
    int objectCount = 0;
-   Shape::shapeType type;
+
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
       float range = rangedist(rng);
 
-      type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
+      Shape::shapeType type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
       drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), type, range, light->getLightView(), MaterialCount));
       ++objectCount;
       ++MaterialCount;
@@ -56,11 +56,6 @@ App::App()
       //drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
       //++objectCount;
 
-      //type = static_cast<Shape::shapeType>(i % static_cast<int>(Shape::Sphere + 1));
-      //drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
-      //++objectCount;
-      //drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
-      //++objectCount;
    }
 
    //nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nanosuit.obj",

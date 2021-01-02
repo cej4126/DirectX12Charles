@@ -6,7 +6,7 @@
 #include "Transform.h"
 #include "Shape.h"
 
-class ShapeColorIndex : public DrawBase <ShapeColorIndex>
+class ShapeColorIndex : public DrawFunction
 {
 public:
    ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float range);

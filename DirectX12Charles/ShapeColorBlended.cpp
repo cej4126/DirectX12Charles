@@ -41,45 +41,42 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
    spaceYawRate = 0.0f;
 #endif
 
-   if (!isStaticSet())
+   std::shared_ptr<Object> object = std::make_shared< Object>(gfx);
+
+   struct Vertex
    {
-      std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
+      XMFLOAT3 pos;
+      XMFLOAT4 color;
+   };
 
-      struct Vertex
-      {
-         XMFLOAT3 pos;
-         XMFLOAT4 color;
-      };
+   auto model = gfx.shape.GetShapeData<Vertex>();
 
-      auto model = gfx.shape.GetShapeData<Vertex>();
-
-      for (int i = 0; i < model.vertices.size(); i++)
-      {
-         float r = randcolor(gen);
-         float b = randcolor(gen);
-         float g = randcolor(gen);
-         model.vertices[i].color = { r, b, g, 1.0f };
-      }
-
-      object->LoadVerticesBuffer(model.vertices);
-      object->LoadIndicesBuffer(model.indices);
-      object->CreateShader(L"ColorBlendedVS.cso", L"ColorBlendedPS.cso");
-      // Define the vertex input layout.
-      const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
-      {
-          { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-          { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-      };
-
-      // Create Root Signature after constants
-      object->CreateRootSignature(false, false);
-
-      object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-
-      addStaticBind(std::move(object), (UINT)model.indices.size());
+   for (int i = 0; i < model.vertices.size(); i++)
+   {
+      float r = randcolor(gen);
+      float b = randcolor(gen);
+      float g = randcolor(gen);
+      model.vertices[i].color = { r, b, g, 1.0f };
    }
 
-   std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
+   object->LoadVerticesBuffer(model.vertices);
+   object->LoadIndicesBuffer(model.indices);
+   object->CreateShader(L"ColorBlendedVS.cso", L"ColorBlendedPS.cso");
+   // Define the vertex input layout.
+   const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
+   {
+       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+       { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+   };
+
+   // Create Root Signature after constants
+   object->CreateRootSignature(false, false);
+
+   object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+
+   AddBind(std::move(object));
+
+   std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);
    trans->setIndices(start, count);

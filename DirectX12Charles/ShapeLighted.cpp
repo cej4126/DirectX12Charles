@@ -65,11 +65,9 @@ ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID
    UINT indicesStart = gfx.shape.getIndiceStart(type);
    UINT indicesCount = gfx.shape.getIndiceCount(type);
 
-   if (!isStaticSet())
-   {
       auto model = gfx.shape.GetShapeNormalData<Vertex>();
 
-      std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
+      std::shared_ptr<Object> object = std::make_shared< Object>(gfx);
 
       object->LoadVerticesBuffer(model.vertices);
       object->LoadIndicesBuffer(model.indices);
@@ -92,10 +90,9 @@ ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID
 
       object->SetLightView(mylightView);
 
-      addStaticBind(std::move(object), (UINT)model.indices.size());
-   }
+      AddBind(std::move(object));
 
-   std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
+   std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
 
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);

@@ -5,7 +5,7 @@
 #include "DrawFunction.h"
 #include "Transform.h"
 
-class ShapeLighted : public DrawBase <ShapeLighted>
+class ShapeLighted : public DrawFunction
 {
 public:
    ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID3D12Resource *mylightView, int MaterialIndex);

@@ -47,8 +47,6 @@ ShapePicture::ShapePicture(Graphics &gfx, Shape::shapeType type, float range, co
    UINT indicesStart = gfx.shape.getIndiceStart(type);
    UINT indicesCount = gfx.shape.getIndiceCount(type);
 
-   if (!isStaticSet())
-   {
       struct Vertex
       {
          XMFLOAT3 pos;
@@ -56,7 +54,7 @@ ShapePicture::ShapePicture(Graphics &gfx, Shape::shapeType type, float range, co
       };
       auto model = gfx.shape.GetShapeTextureData<Vertex>();
 
-      std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
+      std::shared_ptr<Object> object = std::make_shared< Object>(gfx);
 
       object->LoadVerticesBuffer(model.vertices);
       object->LoadIndicesBuffer(model.indices);
@@ -73,10 +71,9 @@ ShapePicture::ShapePicture(Graphics &gfx, Shape::shapeType type, float range, co
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
-      addStaticBind(std::move(object), (UINT)model.indices.size());
-   }
+      AddBind(std::move(object));
 
-   std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
+   std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
 
    trans->CreateTexture(Surface::FromFile(filename));
 

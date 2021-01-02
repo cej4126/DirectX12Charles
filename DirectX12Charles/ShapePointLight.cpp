@@ -16,63 +16,60 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
    UINT indicesStart = gfx.shape.getIndiceStart(type);
    UINT indicesCount = gfx.shape.getIndiceCount(type);
 
-   if (!isStaticSet())
+   struct Vertex
    {
-      struct Vertex
-      {
-         XMFLOAT3 pos;
-      };
+      XMFLOAT3 pos;
+   };
 
-      auto model = gfx.shape.GetShapeData<Vertex>();
+   auto model = gfx.shape.GetShapeData<Vertex>();
 
-      std::vector< Vertex > vertices(verticesCount);
+   std::vector< Vertex > vertices(verticesCount);
 
-      FXMMATRIX matrix = XMMatrixScaling(size, size, size);
-      for (UINT i = 0; i < verticesCount; i++)
-      {
-         int index = verticesStart + i;
-         vertices[i] = model.vertices[index];
+   FXMMATRIX matrix = XMMatrixScaling(size, size, size);
+   for (UINT i = 0; i < verticesCount; i++)
+   {
+      int index = verticesStart + i;
+      vertices[i] = model.vertices[index];
 
-         const XMVECTOR pos = DirectX::XMLoadFloat3(&vertices[i].pos);
-         XMStoreFloat3(
-            &vertices[i].pos,
-            XMVector3Transform(pos, matrix)
-         );
-      }
-
-      std::unique_ptr<Object> object = std::make_unique< Object>(gfx);
-
-      std::vector <unsigned short> indices(indicesCount);
-      for (UINT i = 0; i < indicesCount; i++)
-      {
-         int index = indicesStart + i;
-         indices[i] = model.indices[index] - verticesStart;
-      }
-
-      object->LoadVerticesBuffer(vertices);
-      object->LoadIndicesBuffer(indices);
-      object->CreateShader(L"PointLightVS.cso", L"PointLightPS.cso");
-      // Define the vertex input layout.
-      const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
-      {
-          { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-      };
-      struct PSColorConstant
-      {
-         XMFLOAT3 color = { 1.0f, 1.0f, 1.0f };
-         float padding;
-      } colorConst;
-      object->CreateConstant(colorConst);
-
-      // Create Root Signature after constants
-      object->CreateRootSignature(false, false);
-
-      object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-
-      addStaticBind(std::move(object), (UINT)model.indices.size());
+      const XMVECTOR pos = DirectX::XMLoadFloat3(&vertices[i].pos);
+      XMStoreFloat3(
+         &vertices[i].pos,
+         XMVector3Transform(pos, matrix)
+      );
    }
 
-   std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
+   std::shared_ptr<Object> object = std::make_shared< Object>(gfx);
+
+   std::vector <unsigned short> indices(indicesCount);
+   for (UINT i = 0; i < indicesCount; i++)
+   {
+      int index = indicesStart + i;
+      indices[i] = model.indices[index] - verticesStart;
+   }
+
+   object->LoadVerticesBuffer(vertices);
+   object->LoadIndicesBuffer(indices);
+   object->CreateShader(L"PointLightVS.cso", L"PointLightPS.cso");
+   // Define the vertex input layout.
+   const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
+   {
+       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+   };
+   struct PSColorConstant
+   {
+      XMFLOAT3 color = { 1.0f, 1.0f, 1.0f };
+      float padding;
+   } colorConst;
+   object->CreateConstant(colorConst);
+
+   // Create Root Signature after constants
+   object->CreateRootSignature(false, false);
+
+   object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+
+   AddBind(std::move(object));
+
+   std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
    trans->setIndices(0, indicesCount);
    lightView = trans->CreateLightPosition(gfx.lightData);
    AddBind(std::move(trans));

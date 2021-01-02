@@ -5,7 +5,7 @@
 #include "DrawFunction.h"
 #include "Transform.h"
 
-class ShapePointLight : public DrawBase <ShapePointLight>
+class ShapePointLight : public DrawFunction
 {
 public:
    ShapePointLight(Graphics &gfx, float size);

@@ -5,7 +5,7 @@
 #include "DrawFunction.h"
 #include "Transform.h"
 
-class ShapePicture : public DrawBase <ShapePicture>
+class ShapePicture : public DrawFunction
 {
 public:
    ShapePicture(Graphics &gfx, Shape::shapeType type, float range, const std::string &filename);

@@ -40,11 +40,8 @@ float4 main(float3 worldPos : Position, float3 n : Normal, float2 tc : Texcoord)
 	// reflected light vector
 	const float3 w = n * dot(vToL, n);
 	const float3 r = w * 2.0f - vToL;
+
 	// calculate specular intensity based on angle between viewing vector and reflection vector, narrow with power function
-
-	//const float3 specular = att * (buf.diffuseColor * buf.diffuseIntensity) *
-	//	material.specularIntensity * pow(max(0.0f, dot(normalize(-r), normalize(worldPos))), material.specularPower);
-
 	const float4 specularSample = spec.Sample(s1, tc);
 	const float3 specularReflectionColor = specularSample.rgb;
 	const float specularPower = pow(2.0f, specularSample.a * 13.0f);

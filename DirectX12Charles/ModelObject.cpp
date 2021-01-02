@@ -363,8 +363,8 @@ void ModelObject::CreateTexture(const Surface &surface, int slot)
       &resourceDesc,
       D3D12_RESOURCE_STATE_GENERIC_READ,
       nullptr,
-      IID_PPV_ARGS(&textureBufferUploadHeap)));
-   textureBufferUploadHeap->SetName(L"Texture Upload Buffer");
+      IID_PPV_ARGS(&textureBufferUploadHeap[slot])));
+   textureBufferUploadHeap[slot]->SetName(L"Texture Upload Buffer");
 
    // copy data to the upload heap
    D3D12_SUBRESOURCE_DATA TextureData = {};
@@ -374,7 +374,7 @@ void ModelObject::CreateTexture(const Surface &surface, int slot)
 
    gfx.UpdateSubresource(
       textureBuffer[slot].Get(),
-      textureBufferUploadHeap.Get(),
+      textureBufferUploadHeap[slot].Get(),
       &TextureData); // pSrcData
 
    D3D12_RESOURCE_BARRIER resourceBarrier;

@@ -11,10 +11,10 @@
 #include <assimp/postprocess.h>
 #include "Transform.h"
 
-class Mesh : public DrawBase <Mesh>
+class Mesh : public DrawFunction
 {
 public:
-   Mesh(Graphics &gfx, std::vector<std::unique_ptr<Bindable>> bindPtrs, int indicesCount, int& MaterialIndex);
+   Mesh(Graphics &gfx, std::vector<std::shared_ptr<Bindable>> bindPtrs, int indicesCount, int& MaterialIndex);
    void Draw(Graphics &gfx, FXMMATRIX acculatedTransform, int index) const noexcept;
    int getMaterialIndex() const noexcept
    {
@@ -75,7 +75,7 @@ private:
    int m_materialIndex = -1;
    Graphics::MaterialType m_material;
 
-   std::vector<std::unique_ptr<Bindable>> bindablePtrs;
+   std::vector<std::shared_ptr<Bindable>> bindablePtrs;
 
    std::unique_ptr<class ModelWindow> pWindow;
 };

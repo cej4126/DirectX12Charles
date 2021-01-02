@@ -15,12 +15,12 @@ Object::Object(Graphics &gfx)
 void Object::Bind(Graphics &gfx, int drawStep) noexcept
 {
    //int drawStep = 0;
-   if (drawStep == 0)
-   {
+   //if (drawStep == 0)
+   //{
       commandList->SetGraphicsRootSignature(rootSignature.Get());
-   }
-   else if (drawStep == 2)
-   {
+   //}
+   //else if (drawStep == 2)
+   //{
       commandList->SetPipelineState(pipelineState.Get());
 
       commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -46,7 +46,7 @@ void Object::Bind(Graphics &gfx, int drawStep) noexcept
          // set the descriptor table to the descriptor heap (parameter 1, as constant buffer root descriptor is parameter index 0)
          commandList->SetGraphicsRootDescriptorTable(1, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
       }
-   }
+   //}
 }
 
 void Object::CreateRootSignature(bool materialFlag, bool textureFlag)

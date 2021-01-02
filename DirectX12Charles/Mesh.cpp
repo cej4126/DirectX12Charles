@@ -2,7 +2,7 @@
 #include "imgui/imgui.h"
 #include <unordered_map>
 
-Mesh::Mesh(Graphics &gfx, std::vector<std::unique_ptr<Bindable>> bindPtrs, int indicesCount, int &MaterialIndex)
+Mesh::Mesh(Graphics &gfx, std::vector<std::shared_ptr<Bindable>> bindPtrs, int indicesCount, int &MaterialIndex)
    :
    MaterialIndex(MaterialIndex)
 {
@@ -180,9 +180,6 @@ Model::Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightVie
       MaterialIndex = m_materialIndex;
    }
 
-   // Not used----------------------
-   m_material.materialColor = XMFLOAT3(1.0f, 0.4f, 0.2f);
-
    int nextId = 0;
    pRoot = ParseNode(nextId, *pScene->mRootNode);
 }
@@ -249,9 +246,10 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *con
       indices.push_back(face.mIndices[2]);
    }
 
-   std::unique_ptr<ModelObject> object = std::make_unique<ModelObject>(gfx);
+   std::shared_ptr<ModelObject> object = std::make_shared<ModelObject>(gfx);
 
    bool specular = false;
+   float shininess = 35.0f;
    if (mesh.mMaterialIndex >= 0)
    {
       using namespace std::string_literals;
@@ -266,6 +264,10 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *con
          object->CreateTexture(Surface::FromFile(path + texFileName.C_Str()), 1);
          specular = true;
       }
+      else
+      {
+         material.Get(AI_MATKEY_SHININESS, shininess);
+      }
    }
 
    object->LoadVerticesBuffer(vbuf);
@@ -278,6 +280,9 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *con
    else
    {
       object->CreateShader(L"ModelVS.cso", L"ModelPS.cso");
+      // copy at FirstCommand
+      m_material.specularInensity = 0.8f;
+      m_material.specularPower = shininess;
    }
 
    XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
