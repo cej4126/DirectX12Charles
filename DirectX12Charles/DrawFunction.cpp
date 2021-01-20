@@ -19,7 +19,7 @@ void DrawFunction::Draw(Graphics &gfx, int &index) const noexcept
    ++index;
 }
 
-void DrawFunction::AddBind(std::shared_ptr<Bindable> bind) noexcept
+void DrawFunction::AddBind(std::shared_ptr<Bind::Bindable> bind) noexcept
 {
    binds.push_back(std::move(bind));
 }

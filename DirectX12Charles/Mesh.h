@@ -14,7 +14,7 @@
 class Mesh : public DrawFunction
 {
 public:
-   Mesh(Graphics &gfx, std::vector<std::shared_ptr<Bindable>> bindPtrs, int indicesCount, int& MaterialIndex);
+   Mesh(Graphics &gfx, std::vector<std::shared_ptr<Bind::Bindable>> bindPtrs, int indicesCount, int& MaterialIndex);
    void Draw(Graphics &gfx, FXMMATRIX acculatedTransform, int index) const noexcept;
    int getMaterialIndex() const noexcept
    {
@@ -67,7 +67,7 @@ private:
    ID3D12Device *device;
    ID3D12GraphicsCommandList *commandList;
    ID3D12Resource *lightView;
-   Bindable *object = nullptr;
+   Bind::Bindable *object = nullptr;
 
    std::unique_ptr<Node> pRoot;
    std::vector<std::unique_ptr<Mesh>> meshPtrs;
@@ -75,7 +75,8 @@ private:
    int m_materialIndex = -1;
    Graphics::MaterialType m_material;
 
-   std::vector<std::shared_ptr<Bindable>> bindablePtrs;
+   std::vector<std::shared_ptr<Bind::Bindable>> bindablePtrs;
 
    std::unique_ptr<class ModelWindow> pWindow;
+   std::string filename;
 };

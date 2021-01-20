@@ -23,10 +23,10 @@ public:
 
 
 protected:
-   void AddBind(std::shared_ptr <Bindable> bind) noexcept;
+   void AddBind(std::shared_ptr <Bind::Bindable> bind) noexcept;
 
 private:
-   std::vector<std::shared_ptr<Bindable>> binds;
+   std::vector<std::shared_ptr<Bind::Bindable>> binds;
 };
 
 //template<class Y>
@@ -34,18 +34,18 @@ private:
 //{
 //public:
 //   bool isStaticSet() { return !staticBindsX12.empty(); }
-//   static void addStaticBind(std::unique_ptr < Bindable > bind, UINT indexBuffer)
+//   static void addStaticBind(std::unique_ptr < Bind::Bindable > bind, UINT indexBuffer)
 //   {
 //      staticBindsX12.push_back(std::move(bind));
 //   }
 //
 //private:
-//   const std::vector<std::unique_ptr < Bindable>> &GetStaticBinds() const noexcept override
+//   const std::vector<std::unique_ptr < Bind::Bindable>> &GetStaticBinds() const noexcept override
 //   {
 //      return staticBindsX12;
 //   }
-//   static std::vector<std::unique_ptr<Bindable>> staticBindsX12;
+//   static std::vector<std::unique_ptr<Bind::Bindable>> staticBindsX12;
 //};
 
 template<class R>
-std::vector<std::shared_ptr<Bindable>> DrawBase;
+std::vector<std::shared_ptr<Bind::Bindable>> DrawBase;

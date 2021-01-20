@@ -65,32 +65,40 @@ ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID
    UINT indicesStart = gfx.shape.getIndiceStart(type);
    UINT indicesCount = gfx.shape.getIndiceCount(type);
 
-      auto model = gfx.shape.GetShapeNormalData<Vertex>();
+   std::string tag = "Lighted";
+   std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, tag);
 
-      std::shared_ptr<Object> object = std::make_shared< Object>(gfx);
+   auto model = gfx.shape.GetShapeNormalData<Vertex>();
+   if (!object->isInitialized())
+   {
+      using hw3dexp::VertexLayout;
+      hw3dexp::VertexBuffer vbuf(std::move(
+         VertexLayout{}
+         .Append(VertexLayout::Position3D)
+         .Append(VertexLayout::Normal)
+      ));
+      for (unsigned int i = 0; i < model.vertices.size(); i++)
+      {
+         vbuf.EmplaceBack(
+            *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].pos),
+            *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].normal));
+      }
 
-      object->LoadVerticesBuffer(model.vertices);
+      object->LoadVerticesBufferTest(vbuf);
       object->LoadIndicesBuffer(model.indices);
       object->CreateShader(L"LightedVS.cso", L"LightedPS.cso");
 
-      // Define the vertex input layout.
-      const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
-      {
-          { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-          { "Normal", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-      };
-
-      XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
-      object->CreateConstant(position);
-
       // Create Root Signature after constants
-      object->CreateRootSignature(true, false);
+      object->CreateRootSignature(true, true, false);
 
-      object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
       object->SetLightView(mylightView);
 
-      AddBind(std::move(object));
+      object->setInitialized();
+   }
+
+   AddBind(std::move(object));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
 

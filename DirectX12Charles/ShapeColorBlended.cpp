@@ -40,39 +40,51 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
    spacePitchRate = 0.0f;
    spaceYawRate = 0.0f;
 #endif
+   
+   std::string tag = "ColorBlendedPS";
+   std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, tag);
 
-   std::shared_ptr<Object> object = std::make_shared< Object>(gfx);
-
-   struct Vertex
+   if (! object->isInitialized())
    {
-      XMFLOAT3 pos;
-      XMFLOAT4 color;
-   };
+      using hw3dexp::VertexLayout;
+      hw3dexp::VertexBuffer vbuf(std::move(
+         VertexLayout{}
+         .Append(VertexLayout::Position3D)
+         .Append(VertexLayout::Float4Color)
+      ));
 
-   auto model = gfx.shape.GetShapeData<Vertex>();
+      struct Vertex
+      {
+         XMFLOAT3 pos;
+      };
+      XMFLOAT4 color1;
 
-   for (int i = 0; i < model.vertices.size(); i++)
-   {
-      float r = randcolor(gen);
-      float b = randcolor(gen);
-      float g = randcolor(gen);
-      model.vertices[i].color = { r, b, g, 1.0f };
+      auto model = gfx.shape.GetShapeData<Vertex>();
+
+      for (int i = 0; i < model.vertices.size(); i++)
+      {
+         float r = randcolor(gen);
+         float b = randcolor(gen);
+         float g = randcolor(gen);
+         color1 = { r, b, g, 1.0f };
+         vbuf.EmplaceBack(
+            *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].pos),
+            *reinterpret_cast<XMFLOAT4 *>(&color1));
+      }
+
+      object->LoadVerticesBufferTest(vbuf);
+
+      //object->LoadVerticesBuffer(model.vertices);
+      object->LoadIndicesBuffer(model.indices);
+      object->CreateShader(L"ColorBlendedVS.cso", L"ColorBlendedPS.cso");
+
+      // Create Root Signature after constants
+      object->CreateRootSignature(false, false, false);
+
+      //   object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      object->setInitialized();
    }
-
-   object->LoadVerticesBuffer(model.vertices);
-   object->LoadIndicesBuffer(model.indices);
-   object->CreateShader(L"ColorBlendedVS.cso", L"ColorBlendedPS.cso");
-   // Define the vertex input layout.
-   const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
-   {
-       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-       { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-   };
-
-   // Create Root Signature after constants
-   object->CreateRootSignature(false, false);
-
-   object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
    AddBind(std::move(object));
 

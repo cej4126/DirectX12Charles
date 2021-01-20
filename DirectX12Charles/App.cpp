@@ -29,7 +29,7 @@ App::App()
 #ifndef NO_LIGHT
    light = std::make_unique<ShapePointLight>(wnd.Gfx(), 0.5f);
 #endif
-   int MaxBoxX12Count = 6;
+   int MaxBoxX12Count = 2;
    int MaterialCount = 0;
    int objectCount = 0;
 
@@ -46,6 +46,8 @@ App::App()
       //++objectCount;
       //++MaterialCount;
 
+      drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
+      ++objectCount;
 
       //drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));
       //++objectCount;

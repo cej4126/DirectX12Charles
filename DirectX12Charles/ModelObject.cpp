@@ -1,15 +1,35 @@
+#include "stdafx.h"
 #include "ModelObject.h"
 #include "App.h"
+#include "BindableCodex.h"
+#include <memory>
+#include <typeinfo>
 
 using namespace Microsoft::WRL;
 
 
-ModelObject::ModelObject(Graphics &gfx)
+ModelObject::ModelObject(Graphics &gfx, std::string tag)
    :
    gfx(gfx),
+   tag(tag),
    device(gfx.GetDevice()),
    commandList(gfx.GetCommandList())
 {
+}
+
+std::shared_ptr<Bind::Bindable> ModelObject::Resolve(Graphics &gfx, const std::string& tag)
+{
+   return Bind::BindableCodex::Resolve<ModelObject>(gfx, tag);
+}
+
+std::string ModelObject::GenerateUID(const std::string &tag)
+{
+   return typeid(ModelObject).name() + std::string("#") + tag;
+}
+
+std::string ModelObject::GetUID() const noexcept
+{
+   return GenerateUID(tag);
 }
 
 void ModelObject::Bind(Graphics &gfx, int drawStep) noexcept
@@ -38,7 +58,7 @@ void ModelObject::Bind(Graphics &gfx, int drawStep) noexcept
    }
 }
 
-void ModelObject::CreateRootSignature()
+void ModelObject::CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag)
 {
    D3D12_ROOT_DESCRIPTOR rootCBVDescriptor;
    rootCBVDescriptor.RegisterSpace = 0;
@@ -161,7 +181,7 @@ void ModelObject::SetLightView(ID3D12Resource *mylightView)
    lightView = mylightView;
 }
 
-void ModelObject::LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices)
+void ModelObject::LoadVerticesBufferTest(const hw3dexp::VertexBuffer &vertices)
 {
    const UINT vertexBufferSize = (UINT)(vertices.SizeByte());
 
@@ -208,7 +228,7 @@ void ModelObject::LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices)
 
    // copy data to the upload heap
    D3D12_SUBRESOURCE_DATA vertexData = {};
-   vertexData.pData = vertices.GetData(); //reinterpret_cast<BYTE *>(
+   vertexData.pData = vertices.GetData();
    vertexData.RowPitch = vertexBufferSize;
    vertexData.SlicePitch = vertexBufferSize;
 
@@ -231,6 +251,48 @@ void ModelObject::LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices)
    vertexBufferView.BufferLocation = vertexDefaultBuffer->GetGPUVirtualAddress();
    vertexBufferView.StrideInBytes = (UINT)vertices.GetLayout().Size();
    vertexBufferView.SizeInBytes = vertexBufferSize;
+}
+
+void ModelObject::CreateConstant(const XMFLOAT3 &colorBuffer)
+{
+   colorBufferActive = true;
+
+   D3D12_RESOURCE_DESC constantHeapDesc = {};
+   constantHeapDesc.Alignment = 0;
+   constantHeapDesc.DepthOrArraySize = 1;
+   constantHeapDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+   constantHeapDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+   constantHeapDesc.Format = DXGI_FORMAT_UNKNOWN;
+   constantHeapDesc.Height = 1;
+   constantHeapDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+   constantHeapDesc.SampleDesc.Count = 1;
+   constantHeapDesc.SampleDesc.Quality = 0;
+   constantHeapDesc.Width = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+   constantHeapDesc.MipLevels = 1;
+
+   D3D12_HEAP_PROPERTIES constantHeapUpload = {};
+   constantHeapUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+   constantHeapUpload.CreationNodeMask = 1;
+   constantHeapUpload.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+   constantHeapUpload.Type = D3D12_HEAP_TYPE_UPLOAD;
+   constantHeapUpload.VisibleNodeMask = 1;
+
+   ThrowIfFailed(device->CreateCommittedResource(
+      &constantHeapUpload,
+      D3D12_HEAP_FLAG_NONE,
+      &constantHeapDesc,
+      D3D12_RESOURCE_STATE_GENERIC_READ,
+      nullptr,
+      IID_PPV_ARGS(&colorBufferUploadHeaps)));
+
+   D3D12_RANGE readRange;
+   readRange.Begin = 1;
+   readRange.End = 0;
+   ThrowIfFailed(colorBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&colorBufferGPUAddress)));
+
+   int ConstantBufferPerObjectAlignedSize = (sizeof(colorBuffer) + 255) & ~255;
+
+   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
 }
 
 void ModelObject::LoadIndicesBuffer(const std::vector<unsigned short> &indices)

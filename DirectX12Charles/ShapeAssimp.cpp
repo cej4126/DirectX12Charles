@@ -98,10 +98,10 @@ ShapeAssimp::ShapeAssimp(Graphics &gfx, Shape::shapeType type, float range, ID3D
          model.vertices[verticesStart + i].normal);
    }
 
-   std::shared_ptr<Object> object = std::make_shared< Object>(gfx);
+   std::shared_ptr<Object> object = std::make_shared< Object>(gfx, "Lighted");
 
    //object->LoadVerticesBuffer(vertices);
-   object->LoadVerticesBuffer(vbuf);
+   object->LoadVerticesBufferTest(vbuf);
 
    object->LoadIndicesBuffer(indices);
    object->CreateShader(L"LightedVS.cso", L"LightedPS.cso");
@@ -117,7 +117,7 @@ ShapeAssimp::ShapeAssimp(Graphics &gfx, Shape::shapeType type, float range, ID3D
    object->CreateConstant(position);
 
    // Create Root Signature after constants
-   object->CreateRootSignature(true, false);
+   object->CreateRootSignature(true, true, false);
 
    //object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
    object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);

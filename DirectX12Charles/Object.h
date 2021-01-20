@@ -5,16 +5,22 @@
 #include "Surface.h"
 #include "Vertex.h"
 
-class Object : public Bindable
+class Object : public Bind::Bindable
 {
 public:
-   Object(Graphics &gfx);
+   Object(Graphics &gfx, std::string tag);
+
+   static std::shared_ptr<Bind::Bindable> Resolve(Graphics &gfx, const std::string& tag);
+   static std::string GenerateUID(const std::string &path);
+   std::string GetUID() const noexcept override;
 
    void CreateTexture(const Surface &surface);
-   void CreateRootSignature(bool materialFlag, bool textureFlag);
+   void CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag);
    void CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath);
    void SetLightView(ID3D12Resource *mylightView);
    void CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType);
+
+   void LoadVerticesBufferTest(const hw3dexp::VertexBuffer &vertices);
 
    template<class V>
    void LoadVerticesBuffer(const std::vector<V> &vertices)
@@ -89,8 +95,6 @@ public:
       vertexBufferView.SizeInBytes = vertexBufferSize;
    }
 
-   void LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices);
-
    void LoadIndicesBuffer(const std::vector<unsigned short> &indices);
 
    template<class V>
@@ -144,10 +148,12 @@ private:
    Graphics &gfx;
    ID3D12Device *device;
    ID3D12GraphicsCommandList *commandList;
-
+   
    bool colorBufferActive = false;
    Microsoft::WRL::ComPtr <ID3D12Resource> colorBufferUploadHeaps;
    UINT8 *colorBufferGPUAddress;
+
+   std::string tag;
 
    bool textureActive = false;
    Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer;

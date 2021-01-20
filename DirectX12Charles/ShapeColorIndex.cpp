@@ -42,7 +42,7 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
    spaceYawRate = 0.0f;
 #endif
 
-      std::shared_ptr<Object> object = std::make_shared< Object>(gfx);
+      std::shared_ptr<Object> object = std::make_shared< Object>(gfx, "ColorIndex");
 
       struct Vertex
       {
@@ -95,7 +95,7 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
       object->CreateConstant(colorBuffer);
 
       // Create Root Signature after constants
-      object->CreateRootSignature(false, false);
+      object->CreateRootSignature(true, false, false);
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
       // lookup table for cube face colors

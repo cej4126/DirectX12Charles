@@ -54,7 +54,7 @@ ShapePicture::ShapePicture(Graphics &gfx, Shape::shapeType type, float range, co
       };
       auto model = gfx.shape.GetShapeTextureData<Vertex>();
 
-      std::shared_ptr<Object> object = std::make_shared< Object>(gfx);
+      std::shared_ptr<Object> object = std::make_shared< Object>(gfx, filename);
 
       object->LoadVerticesBuffer(model.vertices);
       object->LoadIndicesBuffer(model.indices);
@@ -67,7 +67,7 @@ ShapePicture::ShapePicture(Graphics &gfx, Shape::shapeType type, float range, co
       };
 
       // Create Root Signature after constants
-      object->CreateRootSignature(false, true);
+      object->CreateRootSignature(false, false, true);
 
       object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 

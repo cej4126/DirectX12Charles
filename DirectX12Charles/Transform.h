@@ -4,7 +4,7 @@
 #include "DrawFunction.h"
 #include "Surface.h"
 
-class Transform : public Bindable
+class Transform : public Bind::Bindable
 {
 public:
 

@@ -26,7 +26,7 @@ private:
    void Scale(std::vector< Vertex > &vertices, float x, float y, float z);
    void SyncMaterial() noexcept;
 
-   Bindable *object = nullptr;
+   Bind::Bindable *object = nullptr;
 
 protected:
    float range = 0.0f;

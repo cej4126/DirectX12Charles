@@ -55,7 +55,7 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
 
    auto model = gfx.shape.GetShapeTextureData<Vertex>();
 
-   std::shared_ptr<Object> object = std::make_shared< Object>(gfx);
+   std::shared_ptr<Object> object = std::make_shared< Object>(gfx, "Cube");
 
    std::vector <unsigned short> indices(indicesCount);
    object->CreateTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\cube.png"));
@@ -71,7 +71,7 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
    };
 
    // Create Root Signature after constants
-   object->CreateRootSignature(false, true);
+   object->CreateRootSignature(false, false, true);
 
    object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 

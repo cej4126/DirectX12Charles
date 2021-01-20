@@ -1,16 +1,34 @@
 #include "Object.h"
 #include "App.h"
+#include "Bindable.h"
+#include "BindableCodex.h"
 
 using namespace Microsoft::WRL;
 
 
-Object::Object(Graphics &gfx)
+Object::Object(Graphics &gfx, std::string tag)
    :
    gfx(gfx),
    device(gfx.GetDevice()),
    commandList(gfx.GetCommandList())
 {
 }
+
+std::shared_ptr<Bind::Bindable> Object::Resolve(Graphics &gfx, const std::string &tag)
+{
+   return Bind::BindableCodex::Resolve<Object>(gfx, tag);
+}
+
+std::string Object::GenerateUID(const std::string &tag)
+{
+   return typeid(Object).name() + std::string("#") + tag;
+}
+
+std::string Object::GetUID() const noexcept
+{
+   return GenerateUID(tag);
+}
+
 
 void Object::Bind(Graphics &gfx, int drawStep) noexcept
 {
@@ -49,7 +67,7 @@ void Object::Bind(Graphics &gfx, int drawStep) noexcept
    //}
 }
 
-void Object::CreateRootSignature(bool materialFlag, bool textureFlag)
+void Object::CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag)
 {
    int rootCount = 0;
 
@@ -64,7 +82,7 @@ void Object::CreateRootSignature(bool materialFlag, bool textureFlag)
    rootParameters[rootCount].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
    ++rootCount;
 
-   if (colorBufferActive || lightActive)
+   if (constantFlag)
    {
       // Constant buffer for the color
       rootCBVDescriptor.RegisterSpace = 0;
@@ -166,7 +184,7 @@ void Object::SetLightView(ID3D12Resource *mylightView)
    lightView = mylightView;
 }
 
-void Object::LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices)
+void Object::LoadVerticesBufferTest(const hw3dexp::VertexBuffer &vertices)
 {
    const UINT vertexBufferSize = (UINT)(vertices.SizeByte());
 

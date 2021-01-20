@@ -15,7 +15,7 @@ public:
    void getMaterialData(Graphics::MaterialType &myMaterial) const noexcept {};
 
 private:
-   Bindable *object = nullptr;
+   Bind::Bindable *object = nullptr;
    float range = 0.0f;
 
    float boxRoll = 0.0f;

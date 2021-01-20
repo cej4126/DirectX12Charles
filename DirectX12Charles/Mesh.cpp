@@ -2,7 +2,7 @@
 #include "imgui/imgui.h"
 #include <unordered_map>
 
-Mesh::Mesh(Graphics &gfx, std::vector<std::shared_ptr<Bindable>> bindPtrs, int indicesCount, int &MaterialIndex)
+Mesh::Mesh(Graphics &gfx, std::vector<std::shared_ptr<Bind::Bindable>> bindPtrs, int indicesCount, int &MaterialIndex)
    :
    MaterialIndex(MaterialIndex)
 {
@@ -160,6 +160,7 @@ private:
 Model::Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightView, int &MaterialIndex, int &index)
    :
    gfx(gfx),
+   filename(fileName),
    lightView(lightView),
    pWindow(std::make_unique<ModelWindow>())
 {
@@ -246,54 +247,80 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *con
       indices.push_back(face.mIndices[2]);
    }
 
-   std::shared_ptr<ModelObject> object = std::make_shared<ModelObject>(gfx);
+   // create the tag and path
+   std::size_t pos = filename.find_last_of("/\\");
+   std::string path = filename.substr(0, pos) + std::string("\\");
+   pos = path.find_last_of("/\\");
+   std::string tag = path.substr(pos + 1);
+   aiString diffuseName;
+   aiString specularName;
 
+   bool diffuse = false;
    bool specular = false;
-   float shininess = 35.0f;
+   auto &material = *pMaterials[mesh.mMaterialIndex];
    if (mesh.mMaterialIndex >= 0)
    {
-      using namespace std::string_literals;
-      auto &material = *pMaterials[mesh.mMaterialIndex];
-      const auto path = "..\\..\\DirectX12Charles\\Models\\nano_textured\\"s;
-      aiString texFileName;
-      material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName);
-      object->CreateTexture(Surface::FromFile(path + texFileName.C_Str()), 0);
-
-      if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
+      if (material.GetTexture(aiTextureType_DIFFUSE, 0, &diffuseName) == aiReturn_SUCCESS)
       {
-         object->CreateTexture(Surface::FromFile(path + texFileName.C_Str()), 1);
+         diffuse = true;
+         tag += std::string("#") + diffuseName.C_Str();
+      }
+   }
+
+   if (mesh.mMaterialIndex >= 0)
+   {
+      if (material.GetTexture(aiTextureType_SPECULAR, 0, &specularName) == aiReturn_SUCCESS)
+      {
          specular = true;
+         tag += std::string("#") + specularName.C_Str();
+      }
+   }
+
+   auto object = ModelObject::Resolve(gfx, tag);
+
+   if (!object->isInitialized())
+   {
+      float shininess = 35.0f;
+      if (diffuse)
+      {
+         object->CreateTexture(Surface::FromFile(path + diffuseName.C_Str()), 0);
+      }
+
+      if (specular)
+      {
+         object->CreateTexture(Surface::FromFile(path + specularName.C_Str()), 1);
       }
       else
       {
          material.Get(AI_MATKEY_SHININESS, shininess);
       }
+
+      object->LoadVerticesBufferTest(vbuf);
+
+      object->LoadIndicesBuffer(indices);
+      if (specular)
+      {
+         object->CreateShader(L"ModelVS.cso", L"ModelSpecularPS.cso");
+      }
+      else
+      {
+         object->CreateShader(L"ModelVS.cso", L"ModelPS.cso");
+         // copy at FirstCommand
+         m_material.specularInensity = 0.8f;
+         m_material.specularPower = shininess;
+      }
+
+      XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
+      object->CreateConstant(position);
+
+      // Create Root Signature after constants
+      object->CreateRootSignature(false, false, false);
+
+      object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+
+      object->SetLightView(lightView);
+      object->setInitialized();
    }
-
-   object->LoadVerticesBuffer(vbuf);
-
-   object->LoadIndicesBuffer(indices);
-   if (specular)
-   {
-      object->CreateShader(L"ModelVS.cso", L"ModelSpecularPS.cso");
-   }
-   else
-   {
-      object->CreateShader(L"ModelVS.cso", L"ModelPS.cso");
-      // copy at FirstCommand
-      m_material.specularInensity = 0.8f;
-      m_material.specularPower = shininess;
-   }
-
-   XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
-   object->CreateConstant(position);
-
-   // Create Root Signature after constants
-   object->CreateRootSignature();
-
-   object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-
-   object->SetLightView(lightView);
 
    bindablePtrs.push_back(std::move(object));
    return std::make_unique<Mesh>(gfx, std::move(bindablePtrs), (UINT)indices.size(), m_materialIndex);

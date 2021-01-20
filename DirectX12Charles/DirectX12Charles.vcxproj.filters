@@ -357,6 +357,9 @@
     <ClInclude Include="Transform.h">
       <Filter>Header Files\Bindable</Filter>
     </ClInclude>
+    <ClInclude Include="BindableCodex.h">
+      <Filter>Header Files\Bindable</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -447,6 +450,9 @@
       <Filter>Source Files\Bindable</Filter>
     </ClCompile>
     <ClCompile Include="Transform.cpp">
+      <Filter>Source Files\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="BindableCodex.cpp">
       <Filter>Source Files\Bindable</Filter>
     </ClCompile>
   </ItemGroup>

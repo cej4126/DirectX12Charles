@@ -38,7 +38,7 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
       );
    }
 
-   std::shared_ptr<Object> object = std::make_shared< Object>(gfx);
+   std::shared_ptr<Object> object = std::make_shared< Object>(gfx, "PointLight");
 
    std::vector <unsigned short> indices(indicesCount);
    for (UINT i = 0; i < indicesCount; i++)
@@ -63,7 +63,7 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
    object->CreateConstant(colorConst);
 
    // Create Root Signature after constants
-   object->CreateRootSignature(false, false);
+   object->CreateRootSignature(true, false, false);
 
    object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 

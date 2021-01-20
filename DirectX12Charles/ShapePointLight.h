@@ -20,7 +20,7 @@ public:
 
 private:
    Graphics &gfx;
-   Bindable *object = nullptr;
+   Bind::Bindable *object = nullptr;
    float size = 1.0f;
    ID3D12Resource *lightView = nullptr;
 };
