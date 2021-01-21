@@ -55,26 +55,37 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
 
    auto model = gfx.shape.GetShapeTextureData<Vertex>();
 
-   std::shared_ptr<Object> object = std::make_shared< Object>(gfx, "Cube");
-
-   std::vector <unsigned short> indices(indicesCount);
-   object->CreateTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\cube.png"));
-
-   object->LoadVerticesBuffer(model.vertices);
-   object->LoadIndicesBuffer(model.indices);
-   object->CreateShader(L"TextureVS.cso", L"TexturePS.cso");
-   // Define the vertex input layout.
-   const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
+   std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, "Cube");
+   if (!object->isInitialized())
    {
-       { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-       { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-   };
+      object->setInitialized();
 
-   // Create Root Signature after constants
-   object->CreateRootSignature(false, false, true);
+      // Define the vertex input layout.
+      using hw3dexp::VertexLayout;
+      hw3dexp::VertexBuffer vbuf(std::move(
+         VertexLayout{}
+         .Append(VertexLayout::Position3D)
+         .Append(VertexLayout::Texture2D)
+      ));
 
-   object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      std::vector <unsigned short> indices(indicesCount);
+      object->CreateTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\cube.png"), 0);
 
+      for (int i = 0; i < model.vertices.size(); i++)
+      {
+         vbuf.EmplaceBack(
+            *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].pos),
+            *reinterpret_cast<XMFLOAT2 *>(&model.vertices[i].tex));
+      }
+
+      object->LoadVerticesBuffer(vbuf);
+      object->LoadIndicesBuffer(model.indices);
+      object->CreateShader(L"TextureVS.cso", L"TexturePS.cso");
+
+      // Create Root Signature after constants
+      object->CreateRootSignature(false, false, true);
+      object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+   }
    AddBind(std::move(object));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);

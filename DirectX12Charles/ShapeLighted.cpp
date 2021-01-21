@@ -68,15 +68,17 @@ ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID
    std::string tag = "Lighted";
    std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, tag);
 
-   auto model = gfx.shape.GetShapeNormalData<Vertex>();
    if (!object->isInitialized())
    {
+      object->setInitialized();
+
       using hw3dexp::VertexLayout;
       hw3dexp::VertexBuffer vbuf(std::move(
          VertexLayout{}
          .Append(VertexLayout::Position3D)
          .Append(VertexLayout::Normal)
       ));
+      auto model = gfx.shape.GetShapeNormalData<Vertex>();
       for (unsigned int i = 0; i < model.vertices.size(); i++)
       {
          vbuf.EmplaceBack(
@@ -84,7 +86,7 @@ ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID
             *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].normal));
       }
 
-      object->LoadVerticesBufferTest(vbuf);
+      object->LoadVerticesBuffer(vbuf);
       object->LoadIndicesBuffer(model.indices);
       object->CreateShader(L"LightedVS.cso", L"LightedPS.cso");
 
@@ -94,8 +96,6 @@ ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID
       object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
       object->SetLightView(mylightView);
-
-      object->setInitialized();
    }
 
    AddBind(std::move(object));

@@ -10,7 +10,7 @@ class ModelObject : public Bind::Bindable
 public:
    ModelObject(Graphics &gfx, std::string tag);
 
-   static std::shared_ptr<Bind::Bindable> Resolve(Graphics &gfx, const std::string& tag);
+   static std::shared_ptr<Bind::Bindable> Resolve(Graphics &gfx, const std::string &tag);
    static std::string GenerateUID(const std::string &tag);
    std::string GetUID() const noexcept override;
 
@@ -20,11 +20,11 @@ public:
    void SetLightView(ID3D12Resource *mylightView);
    void CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType);
 
-   void LoadVerticesBufferTest(const hw3dexp::VertexBuffer &vertices);
+   void LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices);
 
    void LoadIndicesBuffer(const std::vector<unsigned short> &indices);
 
-   void CreateConstant(const XMFLOAT3 &colorBuffer);
+   void CreateConstant(const XMFLOAT3 &colorBuffer, int size);
 
    void Bind(Graphics &gfx, int drawStep) noexcept override;
 

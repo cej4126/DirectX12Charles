@@ -40,12 +40,14 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
    spacePitchRate = 0.0f;
    spaceYawRate = 0.0f;
 #endif
-   
+
    std::string tag = "ColorBlendedPS";
    std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, tag);
 
-   if (! object->isInitialized())
+   if (!object->isInitialized())
    {
+      object->setInitialized();
+
       using hw3dexp::VertexLayout;
       hw3dexp::VertexBuffer vbuf(std::move(
          VertexLayout{}
@@ -72,7 +74,7 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
             *reinterpret_cast<XMFLOAT4 *>(&color1));
       }
 
-      object->LoadVerticesBufferTest(vbuf);
+      object->LoadVerticesBuffer(vbuf);
 
       //object->LoadVerticesBuffer(model.vertices);
       object->LoadIndicesBuffer(model.indices);
@@ -83,7 +85,6 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
 
       //   object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
       object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-      object->setInitialized();
    }
 
    AddBind(std::move(object));

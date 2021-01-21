@@ -29,23 +29,5 @@ private:
    std::vector<std::shared_ptr<Bind::Bindable>> binds;
 };
 
-//template<class Y>
-//class DrawBase : public DrawFunction
-//{
-//public:
-//   bool isStaticSet() { return !staticBindsX12.empty(); }
-//   static void addStaticBind(std::unique_ptr < Bind::Bindable > bind, UINT indexBuffer)
-//   {
-//      staticBindsX12.push_back(std::move(bind));
-//   }
-//
-//private:
-//   const std::vector<std::unique_ptr < Bind::Bindable>> &GetStaticBinds() const noexcept override
-//   {
-//      return staticBindsX12;
-//   }
-//   static std::vector<std::unique_ptr<Bind::Bindable>> staticBindsX12;
-//};
-
 template<class R>
 std::vector<std::shared_ptr<Bind::Bindable>> DrawBase;

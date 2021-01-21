@@ -42,23 +42,33 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
    spaceYawRate = 0.0f;
 #endif
 
-      std::shared_ptr<Object> object = std::make_shared< Object>(gfx, "ColorIndex");
+   struct Vertex
+   {
+      XMFLOAT3 pos;
+   };
+   auto model = gfx.shape.GetShapeData<Vertex>();
 
-      struct Vertex
+   std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, "ColorIndex");
+   //std::shared_ptr<Object> object = std::make_shared< Object>(gfx, "ColorIndex");
+   if (!object->isInitialized())
+   {
+      object->setInitialized();
+
+
+      using hw3dexp::VertexLayout;
+      hw3dexp::VertexBuffer vbuf(std::move(
+         VertexLayout{}
+         .Append(VertexLayout::Position3D)
+      ));
+      for (int i = 0; i < model.vertices.size(); i++)
       {
-         XMFLOAT3 pos;
-      };
-      auto model = gfx.shape.GetShapeData<Vertex>();
+         vbuf.EmplaceBack(
+            *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].pos));
+      }
 
-      object->LoadVerticesBuffer(model.vertices);
+      object->LoadVerticesBuffer(vbuf);
       object->LoadIndicesBuffer(model.indices);
       object->CreateShader(L"ColorIndexVS.cso", L"ColorIndexPS.cso");
-
-      // Define the vertex input layout.
-      const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
-      {
-          { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-      };
 
       struct ConstantBufferColor
       {
@@ -92,16 +102,16 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
          colorBuffer.face_colors[i].a = cb.face_colors[i].a;
       }
 
-      object->CreateConstant(colorBuffer);
+      object->CreateConstant((const XMFLOAT3 &)colorBuffer, sizeof(colorBuffer));
 
       // Create Root Signature after constants
       object->CreateRootSignature(true, false, false);
 
-      object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
       // lookup table for cube face colors
+   }
 
-
-      AddBind(std::move(object));
+   AddBind(std::move(object));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
    UINT start = gfx.shape.getIndiceStart(type);

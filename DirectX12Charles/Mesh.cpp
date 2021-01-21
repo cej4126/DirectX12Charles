@@ -295,7 +295,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *con
          material.Get(AI_MATKEY_SHININESS, shininess);
       }
 
-      object->LoadVerticesBufferTest(vbuf);
+      object->LoadVerticesBuffer(vbuf);
 
       object->LoadIndicesBuffer(indices);
       if (specular)
@@ -310,8 +310,8 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *con
          m_material.specularPower = shininess;
       }
 
-      XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
-      object->CreateConstant(position);
+      //XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
+      //object->CreateConstant(position);
 
       // Create Root Signature after constants
       object->CreateRootSignature(false, false, false);

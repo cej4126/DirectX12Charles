@@ -2,16 +2,6 @@
 
 void DrawFunction::Draw(Graphics &gfx, int &index) const noexcept
 {
-   //for (auto &b : GetStaticBinds())
-   //{
-   //   b->Bind(gfx, 0);
-   //}
-
-   //for (auto &b : GetStaticBinds())
-   //{
-   //   b->Bind(gfx, 2);
-   //}
-
    for (auto &b : binds)
    {
       b->Bind(gfx, index);

@@ -17,7 +17,7 @@ ModelObject::ModelObject(Graphics &gfx, std::string tag)
 {
 }
 
-std::shared_ptr<Bind::Bindable> ModelObject::Resolve(Graphics &gfx, const std::string& tag)
+std::shared_ptr<Bind::Bindable> ModelObject::Resolve(Graphics &gfx, const std::string &tag)
 {
    return Bind::BindableCodex::Resolve<ModelObject>(gfx, tag);
 }
@@ -35,7 +35,6 @@ std::string ModelObject::GetUID() const noexcept
 void ModelObject::Bind(Graphics &gfx, int drawStep) noexcept
 {
    commandList->SetGraphicsRootSignature(rootSignature.Get());
-
 
    commandList->SetPipelineState(pipelineState.Get());
 
@@ -181,7 +180,7 @@ void ModelObject::SetLightView(ID3D12Resource *mylightView)
    lightView = mylightView;
 }
 
-void ModelObject::LoadVerticesBufferTest(const hw3dexp::VertexBuffer &vertices)
+void ModelObject::LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices)
 {
    const UINT vertexBufferSize = (UINT)(vertices.SizeByte());
 
@@ -253,7 +252,7 @@ void ModelObject::LoadVerticesBufferTest(const hw3dexp::VertexBuffer &vertices)
    vertexBufferView.SizeInBytes = vertexBufferSize;
 }
 
-void ModelObject::CreateConstant(const XMFLOAT3 &colorBuffer)
+void ModelObject::CreateConstant(const XMFLOAT3 &colorBuffer, int size)
 {
    colorBufferActive = true;
 
@@ -292,7 +291,7 @@ void ModelObject::CreateConstant(const XMFLOAT3 &colorBuffer)
 
    int ConstantBufferPerObjectAlignedSize = (sizeof(colorBuffer) + 255) & ~255;
 
-   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, sizeof(colorBuffer));
+   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, size);
 }
 
 void ModelObject::LoadIndicesBuffer(const std::vector<unsigned short> &indices)

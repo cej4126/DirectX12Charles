@@ -77,52 +77,44 @@ ShapeAssimp::ShapeAssimp(Graphics &gfx, Shape::shapeType type, float range, ID3D
    ));
 
    auto model = gfx.shape.GetShapeNormalData<Vertex>();
-   //std::vector< Vertex > vertices(verticesCount);
-   //for (UINT i = 0; i < verticesCount; i++)
-   //{
-   //   vertices[i] = model.vertices[verticesStart + i];
-   //}
-
-   std::vector <unsigned short> indices(indicesCount);
-   for (UINT i = 0; i < indicesCount; i++)
-   {
-      int index = indicesStart + i;
-      indices[i] = model.indices[index] - verticesStart;
-   }
-
-   float scale = 1.0f;
-   for (unsigned int i = 0; i < verticesCount; i++)
-   {
-      vbuf.EmplaceBack(
-         model.vertices[verticesStart + i].pos,
-         model.vertices[verticesStart + i].normal);
-   }
 
    std::shared_ptr<Object> object = std::make_shared< Object>(gfx, "Lighted");
 
-   //object->LoadVerticesBuffer(vertices);
-   object->LoadVerticesBufferTest(vbuf);
+   if (!object->isInitialized())
+   {
+      object->setInitialized();
 
-   object->LoadIndicesBuffer(indices);
-   object->CreateShader(L"LightedVS.cso", L"LightedPS.cso");
+      std::vector <unsigned short> indices(indicesCount);
+      for (UINT i = 0; i < indicesCount; i++)
+      {
+         int index = indicesStart + i;
+         indices[i] = model.indices[index] - verticesStart;
+      }
 
-   //// Define the vertex input layout.
-   //const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
-   //{
-   //    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-   //    { "Normal", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-   //};
+      float scale = 1.0f;
+      for (unsigned int i = 0; i < verticesCount; i++)
+      {
+         vbuf.EmplaceBack(
+            model.vertices[verticesStart + i].pos,
+            model.vertices[verticesStart + i].normal);
+      }
 
-   XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
-   object->CreateConstant(position);
+      object->LoadVerticesBuffer(vbuf);
 
-   // Create Root Signature after constants
-   object->CreateRootSignature(true, true, false);
+      object->LoadIndicesBuffer(indices);
+      object->CreateShader(L"LightedVS.cso", L"LightedPS.cso");
 
-   //object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-   object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
+      object->CreateConstant(position, sizeof(position));
 
-   object->SetLightView(mylightView);
+      // Create Root Signature after constants
+      object->CreateRootSignature(true, true, false);
+
+      //object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+
+      object->SetLightView(mylightView);
+   }
 
    AddBind(std::move(object));
 

@@ -47,35 +47,52 @@ ShapePicture::ShapePicture(Graphics &gfx, Shape::shapeType type, float range, co
    UINT indicesStart = gfx.shape.getIndiceStart(type);
    UINT indicesCount = gfx.shape.getIndiceCount(type);
 
-      struct Vertex
+   struct Vertex
+   {
+      XMFLOAT3 pos;
+      XMFLOAT2 tex;
+   };
+   auto model = gfx.shape.GetShapeTextureData<Vertex>();
+
+   std::size_t pos = filename.find_last_of("/\\");
+   std::string tag = "cube#" + filename.substr(pos + 1);
+
+
+   std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, tag);
+   if (!object->isInitialized())
+   {
+      object->setInitialized();
+
+      // Define the vertex input layout.
+      using hw3dexp::VertexLayout;
+      hw3dexp::VertexBuffer vbuf(std::move(
+         VertexLayout{}
+         .Append(VertexLayout::Position3D)
+         .Append(VertexLayout::Texture2D)
+      ));
+
+      for (int i = 0; i < model.vertices.size(); i++)
       {
-         XMFLOAT3 pos;
-         XMFLOAT2 tex;
-      };
-      auto model = gfx.shape.GetShapeTextureData<Vertex>();
+         vbuf.EmplaceBack(
+            *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].pos),
+            *reinterpret_cast<XMFLOAT2 *>(&model.vertices[i].tex));
+      }
 
-      std::shared_ptr<Object> object = std::make_shared< Object>(gfx, filename);
+      object->CreateTexture(Surface::FromFile(filename), 0);
 
-      object->LoadVerticesBuffer(model.vertices);
+      object->LoadVerticesBuffer(vbuf);
       object->LoadIndicesBuffer(model.indices);
       object->CreateShader(L"TextureVS.cso", L"TexturePS.cso");
-      // Define the vertex input layout.
-      const std::vector < D3D12_INPUT_ELEMENT_DESC> inputElementDescs =
-      {
-          { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-          { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-      };
 
       // Create Root Signature after constants
       object->CreateRootSignature(false, false, true);
-
-      object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-
-      AddBind(std::move(object));
+      object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+   }
+   AddBind(std::move(object));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
 
-   trans->CreateTexture(Surface::FromFile(filename));
+   //trans->CreateTexture(Surface::FromFile(filename));
 
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);

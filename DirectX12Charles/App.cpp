@@ -38,15 +38,18 @@ App::App()
       float range = rangedist(rng);
 
       Shape::shapeType type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
-      drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), type, range, light->getLightView(), MaterialCount));
-      ++objectCount;
-      ++MaterialCount;
+      //drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), type, range, light->getLightView(), MaterialCount));
+      //++objectCount;
+      //++MaterialCount;
 
       //drawItems.push_back(std::make_unique<ShapeAssimp>(wnd.Gfx(), Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
       //++objectCount;
       //++MaterialCount;
 
-      drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
+      //drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
+      //++objectCount;
+
+      drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
       ++objectCount;
 
       //drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));

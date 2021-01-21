@@ -32,38 +32,32 @@ std::string Object::GetUID() const noexcept
 
 void Object::Bind(Graphics &gfx, int drawStep) noexcept
 {
-   //int drawStep = 0;
-   //if (drawStep == 0)
-   //{
-      commandList->SetGraphicsRootSignature(rootSignature.Get());
-   //}
-   //else if (drawStep == 2)
-   //{
-      commandList->SetPipelineState(pipelineState.Get());
+   commandList->SetGraphicsRootSignature(rootSignature.Get());
+   commandList->SetPipelineState(pipelineState.Get());
 
-      commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-      commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-      commandList->IASetIndexBuffer(&indexBufferView);
+   commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+   commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+   commandList->IASetIndexBuffer(&indexBufferView);
 
-      if (colorBufferActive)
-      {
-         commandList->SetGraphicsRootConstantBufferView(1, colorBufferUploadHeaps->GetGPUVirtualAddress());
-      }
+   if (colorBufferActive)
+   {
+      commandList->SetGraphicsRootConstantBufferView(1, colorBufferUploadHeaps->GetGPUVirtualAddress());
+   }
 
-      if (lightActive)
-      {
-         commandList->SetGraphicsRootConstantBufferView(1, lightView->GetGPUVirtualAddress());
-      }
+   if (lightActive)
+   {
+      commandList->SetGraphicsRootConstantBufferView(1, lightView->GetGPUVirtualAddress());
+   }
 
-      if (textureActive)
-      {
-         // set the descriptor heap
-         ID3D12DescriptorHeap *descriptorHeaps[] = { mainDescriptorHeap.Get() };
-         commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+   if (textureActive)
+   {
+      // set the descriptor heap
+      ID3D12DescriptorHeap *descriptorHeaps[] = { mainDescriptorHeap.Get() };
+      commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
-         // set the descriptor table to the descriptor heap (parameter 1, as constant buffer root descriptor is parameter index 0)
-         commandList->SetGraphicsRootDescriptorTable(1, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-      }
+      // set the descriptor table to the descriptor heap (parameter 1, as constant buffer root descriptor is parameter index 0)
+      commandList->SetGraphicsRootDescriptorTable(1, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+   }
    //}
 }
 
@@ -184,7 +178,7 @@ void Object::SetLightView(ID3D12Resource *mylightView)
    lightView = mylightView;
 }
 
-void Object::LoadVerticesBufferTest(const hw3dexp::VertexBuffer &vertices)
+void Object::LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices)
 {
    const UINT vertexBufferSize = (UINT)(vertices.SizeByte());
 
@@ -329,7 +323,7 @@ void Object::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
    indexBufferView.SizeInBytes = indicesBufferSize;
 }
 
-void Object::CreateTexture(const Surface &surface)
+void Object::CreateTexture(const Surface &surface, int slot)
 {
    textureActive = true;
    //const UINT indicesBufferSize = (UINT)(sizeof(unsigned short) * indices.size());
@@ -484,4 +478,46 @@ void Object::CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &in
    psoDesc.DepthStencilState = depthDesc;
    psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
    ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
+}
+
+void Object::CreateConstant(const XMFLOAT3 &colorBuffer, int size)
+{
+   colorBufferActive = true;
+
+   D3D12_RESOURCE_DESC constantHeapDesc = {};
+   constantHeapDesc.Alignment = 0;
+   constantHeapDesc.DepthOrArraySize = 1;
+   constantHeapDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+   constantHeapDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+   constantHeapDesc.Format = DXGI_FORMAT_UNKNOWN;
+   constantHeapDesc.Height = 1;
+   constantHeapDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+   constantHeapDesc.SampleDesc.Count = 1;
+   constantHeapDesc.SampleDesc.Quality = 0;
+   constantHeapDesc.Width = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+   constantHeapDesc.MipLevels = 1;
+
+   D3D12_HEAP_PROPERTIES constantHeapUpload = {};
+   constantHeapUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+   constantHeapUpload.CreationNodeMask = 1;
+   constantHeapUpload.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+   constantHeapUpload.Type = D3D12_HEAP_TYPE_UPLOAD;
+   constantHeapUpload.VisibleNodeMask = 1;
+
+   ThrowIfFailed(device->CreateCommittedResource(
+      &constantHeapUpload,
+      D3D12_HEAP_FLAG_NONE,
+      &constantHeapDesc,
+      D3D12_RESOURCE_STATE_GENERIC_READ,
+      nullptr,
+      IID_PPV_ARGS(&colorBufferUploadHeaps)));
+
+   D3D12_RANGE readRange;
+   readRange.Begin = 1;
+   readRange.End = 0;
+   ThrowIfFailed(colorBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&colorBufferGPUAddress)));
+
+   int ConstantBufferPerObjectAlignedSize = (sizeof(colorBuffer) + 255) & ~255;
+
+   memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, size);
 }

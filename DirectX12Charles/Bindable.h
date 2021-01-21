@@ -25,9 +25,9 @@ namespace Bind
       virtual void SetLightView(ID3D12Resource *mylightView) {};
       virtual void CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType) {}
 
-      virtual void LoadVerticesBufferTest(const hw3dexp::VertexBuffer& vertices) {}
+      virtual void LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices) {}
       virtual void LoadIndicesBuffer(const std::vector<unsigned short> &indices) {};
-      virtual void CreateConstant(const XMFLOAT3 &colorBuffer) {};
+      virtual void CreateConstant(const XMFLOAT3 &colorBuffer, int size) {};
 
    private:
       bool initialized = false;
