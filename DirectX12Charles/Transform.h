@@ -11,7 +11,6 @@ public:
 public:
    Transform(Graphics &gfx, const DrawFunction &parent);
    void Bind(Graphics &gfx) noexcept override;
-   void CreateTexture(const Surface &surface);
    
    void setIndices(int index, UINT start, UINT count)
    {
@@ -75,16 +74,10 @@ private:
    // Vetrix Constant Buffer
    Microsoft::WRL::ComPtr<ID3D11Buffer> pTransformConstantBuffer;
    const DrawFunction &parentTransform;
-   UINT8 *matrixBufferGPUAddress;
    UINT indicesStart = 0;
    UINT indicesCount = 0;
 
-   bool textureActive = false;
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer;
-   Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >mainDescriptorHeap;
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap;
-
    bool lightBufferActive = false;
    Microsoft::WRL::ComPtr <ID3D12Resource> lightBufferUploadHeaps;
-   UINT8 *lightBufferGPUAddress;
+   UINT8 *lightBufferGPUAddress = nullptr;
 };

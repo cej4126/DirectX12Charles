@@ -33,14 +33,14 @@ public:
    Assimp::Importer imp;
    const aiScene *modelSuzanne;
 
-   typedef enum
+   enum ShapeBaseType
    {
       basic,
       normal,
       texture
-   } ShapeBaseType;
+   };
 
-   typedef enum
+   enum shapeType
    {
       PictureCube,
       TextureCube,
@@ -56,19 +56,7 @@ public:
       Plane,
 
       ShapeCount
-   } shapeType;
-   //typedef enum
-   //{
-   //   Cube,
-   //   Cone,
-   //   Prism,
-   //   Cylinder,
-   //   Sphere,
-   //   Plane,
-   //   TextureCube,
-   //   TextureCylinder,
-   //   ShapeCount
-   //} shapeType;
+   };
 
    struct Vertex
    {

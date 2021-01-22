@@ -11,8 +11,6 @@
 
 GDIPlusManager gdipm;
 
-//#define NO_LIGHT
-
 App::App()
    :
    wnd(1280, 720)
@@ -26,12 +24,11 @@ App::App()
 
    dwriteitem = std::make_unique<dwritedraw>(wnd.Gfx());
 
-   int objectCount = 0;
-#ifndef NO_LIGHT
-   light = std::make_unique<ShapePointLight>(wnd.Gfx(), objectCount, 0.5f);
-#endif
-   int MaxBoxX12Count = 2;
+   int MaxBoxX12Count = 4;
    int MaterialCount = 0;
+   int objectCount = 0;
+
+   light = std::make_unique<ShapePointLight>(wnd.Gfx(), objectCount, 0.5f);
 
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
@@ -48,15 +45,11 @@ App::App()
       drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
    }
 
-   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nanosuit.obj",
-   //   light->getLightView(), MaterialCount);
-   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\boxy.gltf.glb",
-   //   light->getLightView(), MaterialCount);
-   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nano_hierarchy.gltf",
-   //   light->getLightView(), MaterialCount);
+   // problems with reading the file.
+   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\boxy.gltf.glb", light->getLightView(), MaterialCount);
+   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nano_hierarchy.gltf", light->getLightView(), MaterialCount);
 
-   nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj",
-      light->getLightView(), MaterialCount);
+   nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj", light->getLightView(), MaterialCount);
 
    wnd.Gfx().CreateMatrixConstant(objectCount);
    wnd.Gfx().CreateMaterialConstant(MaterialCount);
@@ -142,10 +135,8 @@ void App::DoFrame()
 
    int index = 0;
 
-#ifndef NO_LIGHT
    auto &lightObject = light;
    lightObject->Draw(wnd.Gfx());
-#endif
 
    nano->Draw(wnd.Gfx());
 
@@ -221,9 +212,7 @@ void App::DoFrame()
    SpawnSimulation();
 
    cam.CreateControlWindow();
-#ifndef NO_LIGHT
    lightObject->CreateLightControl();
-#endif
 
    SpawnObjectControl();
    nano->ShowWindow();
