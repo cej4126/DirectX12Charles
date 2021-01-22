@@ -5,11 +5,11 @@ using namespace std;
 
 //#define FIX_ROTATION
 
-ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID3D12Resource *mylightView, int MaterialIndex)
+ShapeLighted::ShapeLighted(Graphics &gfx, int &index, Shape::shapeType type, float range, ID3D12Resource *mylightView, int &MaterialIndex)
    :
    gfx(gfx),
    range(range),
-   MaterialIndex(MaterialIndex)
+   m_materialIndex(MaterialIndex)
 {
    random_device rd;
    mt19937 gen(rd());
@@ -43,6 +43,7 @@ ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID
    {
       material.materialColor = XMFLOAT3(randcolor(gen), randcolor(gen), randcolor(gen));
    }
+   ++MaterialIndex;
 
 #ifdef FIX_ROTATION
    boxRoll = 0.0f * 3.1415f;
@@ -104,7 +105,8 @@ ShapeLighted::ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID
 
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);
-   trans->setIndices(start, count);
+   trans->setIndices(index, start, count);
+   ++index;
 
    AddBind(std::move(trans));
 }
@@ -171,5 +173,5 @@ void ShapeLighted::SpawnControlWindow() noexcept
 
 void ShapeLighted::SyncMaterial() noexcept
 {
-   gfx.CopyMaterialConstant(MaterialIndex, material);
+   gfx.CopyMaterialConstant(m_materialIndex, material);
 }

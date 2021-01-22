@@ -3,7 +3,7 @@ using namespace std;
 
 //#define FIX_ROTATION
 
-ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float range)
+ShapeColorIndex::ShapeColorIndex(Graphics &gfx, int &index, Shape::shapeType type, float range)
    :
    range(range)
 {
@@ -116,7 +116,8 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float ran
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);
-   trans->setIndices(start, count);
+   trans->setIndices(index, start, count);
+   ++index;
 
    AddBind(std::move(trans));
 }

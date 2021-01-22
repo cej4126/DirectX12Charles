@@ -2,7 +2,7 @@
 using namespace std;
 
 //#define FIX_ROTATION
-ShapePicture::ShapePicture(Graphics &gfx, Shape::shapeType type, float range, const std::string &filename)
+ShapePicture::ShapePicture(Graphics &gfx, int &index, Shape::shapeType type, float range, const std::string &filename)
    :
    range(range)
 {
@@ -96,7 +96,8 @@ ShapePicture::ShapePicture(Graphics &gfx, Shape::shapeType type, float range, co
 
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);
-   trans->setIndices(start, count);
+   trans->setIndices(index, start, count);
+   ++index;
 
    AddBind(std::move(trans));
 }

@@ -10,7 +10,7 @@ Transform::Transform(Graphics &gfx, const DrawFunction &parent)
 {
 }
 
-void Transform::Bind(Graphics &gfx, int index) noexcept
+void Transform::Bind(Graphics &gfx) noexcept
 {
    if (textureActive)
    {
@@ -30,6 +30,18 @@ void Transform::Bind(Graphics &gfx, int index) noexcept
       modelView *
       gfx.GetProjection())
    };
+
+   int index = getIndex();
+   if (index == -1)
+   {
+      assert(false);
+   }
+
+   //tempindex = index;
+//   else if (tempindex != index)
+//   {
+//      tempindex = index;
+//   }
 
    gfx.SetMatrixConstant(index, contantMatrix);
 

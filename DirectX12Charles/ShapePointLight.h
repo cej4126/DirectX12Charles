@@ -8,7 +8,7 @@
 class ShapePointLight : public DrawFunction
 {
 public:
-   ShapePointLight(Graphics &gfx, float size);
+   ShapePointLight(Graphics &gfx, int &index, float size);
    //void SetPosition(XMFLOAT3 pos) noexcept;
    void CreateLightControl() noexcept;
    void ResetLightData() noexcept;

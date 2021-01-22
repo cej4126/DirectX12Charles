@@ -1,12 +1,11 @@
 #include "DrawFunction.h"
 
-void DrawFunction::Draw(Graphics &gfx, int &index) const noexcept
+void DrawFunction::Draw(Graphics &gfx) const noexcept
 {
    for (auto &b : binds)
    {
-      b->Bind(gfx, index);
+      b->Bind(gfx);
    }
-   ++index;
 }
 
 void DrawFunction::AddBind(std::shared_ptr<Bind::Bindable> bind) noexcept

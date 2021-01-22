@@ -14,8 +14,8 @@
 class Mesh : public DrawFunction
 {
 public:
-   Mesh(Graphics &gfx, std::vector<std::shared_ptr<Bind::Bindable>> bindPtrs, int indicesCount, int& MaterialIndex);
-   void Draw(Graphics &gfx, FXMMATRIX acculatedTransform, int index) const noexcept;
+   Mesh(Graphics &gfx, int index, std::vector<std::shared_ptr<Bind::Bindable>> bindPtrs, int indicesCount, int& MaterialIndex);
+   void Draw(Graphics &gfx, FXMMATRIX acculatedTransform) const noexcept;
    int getMaterialIndex() const noexcept
    {
       return MaterialIndex;
@@ -33,7 +33,7 @@ class Node
 
 public:
    Node(int id, const std::string& name, std::vector<Mesh * > meshPtrs, const DirectX::XMMATRIX &transform) noexcept;
-   void Draw(Graphics &gfx, FXMMATRIX accumulatedTrans, int& index);
+   void Draw(Graphics &gfx, FXMMATRIX accumulatedTrans);
    void SetAppliedTransform(FXMMATRIX transform) noexcept;
    int GetId() const noexcept;
    void ShowTree(Node *&pSelectedNode) const noexcept;
@@ -52,15 +52,15 @@ private:
 class Model
 {
 public:
-   Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightView, int& MaterialIndex, int &index);
+   Model(Graphics &gfx, int &index, const std::string fileName, ID3D12Resource *lightView, int& MaterialIndex);
    ~Model() noexcept;
 
    void FirstCommand();
-   void Draw(Graphics &gfx, int& index) const;
+   void Draw(Graphics &gfx) const;
    void ShowWindow(const char *windowName = nullptr) noexcept;
 
 private:
-   std::unique_ptr<Mesh> ParseMesh(const aiMesh& mesh, const aiMaterial *const *pMaterials);
+   std::unique_ptr<Mesh> ParseMesh(int index, const aiMesh& mesh, const aiMaterial *const *pMaterials);
    std::unique_ptr<Node> ParseNode(int & nextId, const aiNode &node) noexcept;
 
    Graphics &gfx;

@@ -3,7 +3,7 @@
 
 using namespace std;
 
-ShapePointLight::ShapePointLight(Graphics &gfx, float size)
+ShapePointLight::ShapePointLight(Graphics &gfx, int &index, float size)
    :
    size(size),
    gfx(gfx)
@@ -78,7 +78,8 @@ ShapePointLight::ShapePointLight(Graphics &gfx, float size)
    AddBind(std::move(object));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
-   trans->setIndices(0, indicesCount);
+   trans->setIndices(index, 0, indicesCount);
+   ++index;
    lightView = trans->CreateLightPosition(gfx.lightData);
    AddBind(std::move(trans));
 }

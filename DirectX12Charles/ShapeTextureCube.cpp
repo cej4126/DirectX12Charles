@@ -1,7 +1,7 @@
 #include "ShapeTextureCube.h"
 using namespace std;
 
-ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
+ShapeTextureCube::ShapeTextureCube(Graphics &gfx, int &index, float range)
    :
    range(range)
 {
@@ -91,7 +91,8 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, float range)
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);
-   trans->setIndices(start, count);
+   trans->setIndices(index, start, count);
+   ++index;
 
    AddBind(std::move(trans));
 }

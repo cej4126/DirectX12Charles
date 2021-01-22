@@ -26,7 +26,7 @@ public:
 
    void CreateConstant(const XMFLOAT3 &colorBuffer, int size);
 
-   void Bind(Graphics &gfx, int drawStep) noexcept override;
+   void Bind(Graphics &gfx) noexcept override;
 
 private:
    Graphics &gfx;

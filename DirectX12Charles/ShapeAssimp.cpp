@@ -9,11 +9,11 @@ using namespace std;
 
 //#define FIX_ROTATION
 
-ShapeAssimp::ShapeAssimp(Graphics &gfx, Shape::shapeType type, float range, ID3D12Resource *mylightView, int MaterialIndex)
+ShapeAssimp::ShapeAssimp(Graphics &gfx, int &index, Shape::shapeType type, float range, ID3D12Resource *mylightView, int &MaterialIndex)
    :
    gfx(gfx),
    range(range),
-   MaterialIndex(MaterialIndex)
+   m_materialIndex(MaterialIndex)
 {
    random_device rd;
    mt19937 gen(rd());
@@ -47,6 +47,7 @@ ShapeAssimp::ShapeAssimp(Graphics &gfx, Shape::shapeType type, float range, ID3D
    {
       material.materialColor = XMFLOAT3(randcolor(gen), randcolor(gen), randcolor(gen));
    }
+   ++MaterialIndex;
 
 #ifdef FIX_ROTATION
    boxRoll = 0.0f * 3.1415f;
@@ -120,7 +121,8 @@ ShapeAssimp::ShapeAssimp(Graphics &gfx, Shape::shapeType type, float range, ID3D
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
 
-   trans->setIndices(0, indicesCount);
+   trans->setIndices(index, 0, indicesCount);
+   ++index;
 
    //UINT start = gfx.shape.getIndiceStart(type);
    //UINT count = gfx.shape.getIndiceCount(type);
@@ -189,5 +191,5 @@ void ShapeAssimp::SpawnControlWindow() noexcept
 
 void ShapeAssimp::SyncMaterial() noexcept
 {
-   gfx.CopyMaterialConstant(MaterialIndex, material);
+   gfx.CopyMaterialConstant(m_materialIndex, material);
 }

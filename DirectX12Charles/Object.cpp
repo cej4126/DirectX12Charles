@@ -30,7 +30,7 @@ std::string Object::GetUID() const noexcept
 }
 
 
-void Object::Bind(Graphics &gfx, int drawStep) noexcept
+void Object::Bind(Graphics &gfx) noexcept
 {
    commandList->SetGraphicsRootSignature(rootSignature.Get());
    commandList->SetPipelineState(pipelineState.Get());

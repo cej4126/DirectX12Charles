@@ -8,7 +8,7 @@
 class ShapeColorBlended : public DrawFunction
 {
 public:
-   ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float range);
+   ShapeColorBlended(Graphics &gfx, int &index, Shape::shapeType type, float range);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
    int getMaterialIndex() const noexcept { return -1; }

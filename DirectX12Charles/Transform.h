@@ -10,10 +10,12 @@ public:
 
 public:
    Transform(Graphics &gfx, const DrawFunction &parent);
-   void Bind(Graphics &gfx, int index) noexcept override;
+   void Bind(Graphics &gfx) noexcept override;
    void CreateTexture(const Surface &surface);
-   void setIndices(UINT start, UINT count)
+   
+   void setIndices(int index, UINT start, UINT count)
    {
+      setIndex(index);
       indicesStart = start;
       indicesCount = count;
    }

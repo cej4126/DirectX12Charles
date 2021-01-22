@@ -8,7 +8,7 @@
 class ShapeTextureCube : public DrawFunction
 {
 public:
-   ShapeTextureCube(Graphics &gfx, float range);
+   ShapeTextureCube(Graphics &gfx, int &index, float range);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
    int getMaterialIndex() const noexcept { return -1; }

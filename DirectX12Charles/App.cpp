@@ -26,54 +26,37 @@ App::App()
 
    dwriteitem = std::make_unique<dwritedraw>(wnd.Gfx());
 
+   int objectCount = 0;
 #ifndef NO_LIGHT
-   light = std::make_unique<ShapePointLight>(wnd.Gfx(), 0.5f);
+   light = std::make_unique<ShapePointLight>(wnd.Gfx(), objectCount, 0.5f);
 #endif
    int MaxBoxX12Count = 2;
    int MaterialCount = 0;
-   int objectCount = 0;
 
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
       float range = rangedist(rng);
 
       Shape::shapeType type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
-      //drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), type, range, light->getLightView(), MaterialCount));
-      //++objectCount;
-      //++MaterialCount;
-
-      //drawItems.push_back(std::make_unique<ShapeAssimp>(wnd.Gfx(), Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
-      //++objectCount;
-      //++MaterialCount;
-
-      //drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), type, range));
-      //++objectCount;
-
-      drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), type, range));
-      ++objectCount;
-
-      //drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), range));
-      //++objectCount;
-      //drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
-      //++objectCount;
-      //drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
-      //++objectCount;
-      //drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
-      //++objectCount;
-
+      drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), objectCount, type, range, light->getLightView(), MaterialCount));
+      drawItems.push_back(std::make_unique<ShapeAssimp>(wnd.Gfx(), objectCount, Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
+      drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), objectCount, type, range));
+      drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), objectCount, type, range));
+      drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), objectCount, range));
+      drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
+      drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
+      drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
    }
 
-   //nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nanosuit.obj",
-   //   light->getLightView(), MaterialCount, objectCount);
-   //nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\boxy.gltf.glb",
-   //   light->getLightView(), MaterialCount, objectCount);
-   //nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nano_hierarchy.gltf",
-   //   light->getLightView(), MaterialCount, objectCount);
+   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nanosuit.obj",
+   //   light->getLightView(), MaterialCount);
+   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\boxy.gltf.glb",
+   //   light->getLightView(), MaterialCount);
+   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nano_hierarchy.gltf",
+   //   light->getLightView(), MaterialCount);
 
-
-   nano = std::make_unique<Model>(wnd.Gfx(), "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj",
-      light->getLightView(), MaterialCount, objectCount);
-   ++MaterialCount;
+   nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj",
+      light->getLightView(), MaterialCount);
 
    wnd.Gfx().CreateMatrixConstant(objectCount);
    wnd.Gfx().CreateMaterialConstant(MaterialCount);
@@ -161,15 +144,15 @@ void App::DoFrame()
 
 #ifndef NO_LIGHT
    auto &lightObject = light;
-   lightObject->Draw(wnd.Gfx(), index);
+   lightObject->Draw(wnd.Gfx());
 #endif
 
-   nano->Draw(wnd.Gfx(), index);
+   nano->Draw(wnd.Gfx());
 
    for (auto &b : drawItems)
    {
       b->Update(dt);
-      b->Draw(wnd.Gfx(), index);
+      b->Draw(wnd.Gfx());
    }
 
    dwriteitem->Draw();
@@ -244,6 +227,7 @@ void App::DoFrame()
 
    SpawnObjectControl();
    nano->ShowWindow();
+
    //ShowRawInputWindow();
 
    ImGui::Render();

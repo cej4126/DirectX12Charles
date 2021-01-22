@@ -8,13 +8,13 @@
 class ShapeAssimp : public DrawFunction
 {
 public:
-   ShapeAssimp(Graphics &gfx, Shape::shapeType type, float range, ID3D12Resource *mylightView, int MaterialIndex);
+   ShapeAssimp(Graphics &gfx, int &index, Shape::shapeType type, float range, ID3D12Resource *mylightView, int &MaterialIndex);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
    Graphics::MaterialType getMaterial() { return material; }
    void getMaterialData(Graphics::MaterialType &myMaterial) const noexcept;
    void SpawnControlWindow() noexcept;
-   int getMaterialIndex() const noexcept { return MaterialIndex; }
+   int getMaterialIndex() const noexcept { return m_materialIndex; }
 
 private:
    Graphics &gfx;
@@ -46,6 +46,6 @@ protected:
    float spaceYawRate = 0.0f;
 
 private:
-   int MaterialIndex = -1;
+   int m_materialIndex = -1;
    Graphics::MaterialType material;
 };

@@ -8,7 +8,7 @@ namespace Bind
    class Bindable
    {
    public:
-      virtual void Bind(Graphics &gfx, int drawStep) noexcept = 0;
+      virtual void Bind(Graphics &gfx) noexcept = 0;
       virtual ~Bindable() = default;
       virtual std::string GetUID() const noexcept
       {
@@ -18,6 +18,8 @@ namespace Bind
 
       bool isInitialized() { return initialized; }
       void setInitialized() { initialized = true; }
+      int getIndex() { return m_index; }
+      void setIndex(int index) { m_index = index; }
 
       virtual void CreateTexture(const Surface &surface, int slot) {}
       virtual void CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag) {}
@@ -31,5 +33,6 @@ namespace Bind
 
    private:
       bool initialized = false;
+      int m_index = -1;
    };
 }

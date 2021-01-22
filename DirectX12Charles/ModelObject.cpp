@@ -32,7 +32,7 @@ std::string ModelObject::GetUID() const noexcept
    return GenerateUID(tag);
 }
 
-void ModelObject::Bind(Graphics &gfx, int drawStep) noexcept
+void ModelObject::Bind(Graphics &gfx) noexcept
 {
    commandList->SetGraphicsRootSignature(rootSignature.Get());
 

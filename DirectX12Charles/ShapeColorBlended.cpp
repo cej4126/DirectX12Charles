@@ -1,7 +1,7 @@
 #include "ShapeColorBlended.h"
 using namespace std;
 
-ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float range)
+ShapeColorBlended::ShapeColorBlended(Graphics &gfx, int &index, Shape::shapeType type, float range)
    :
    range(range)
 {
@@ -92,7 +92,8 @@ ShapeColorBlended::ShapeColorBlended(Graphics &gfx, Shape::shapeType type, float
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);
-   trans->setIndices(start, count);
+   trans->setIndices(index, start, count);
+   ++index;
 
    AddBind(std::move(trans));
 }

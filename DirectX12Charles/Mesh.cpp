@@ -2,7 +2,7 @@
 #include "imgui/imgui.h"
 #include <unordered_map>
 
-Mesh::Mesh(Graphics &gfx, std::vector<std::shared_ptr<Bind::Bindable>> bindPtrs, int indicesCount, int &MaterialIndex)
+Mesh::Mesh(Graphics &gfx, int index, std::vector<std::shared_ptr<Bind::Bindable>> bindPtrs, int indicesCount, int &MaterialIndex)
    :
    MaterialIndex(MaterialIndex)
 {
@@ -12,14 +12,14 @@ Mesh::Mesh(Graphics &gfx, std::vector<std::shared_ptr<Bind::Bindable>> bindPtrs,
    }
 
    std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
-   trans->setIndices(0, indicesCount);
+   trans->setIndices(index, 0, indicesCount);
    AddBind(std::move(trans));
 }
 
-void Mesh::Draw(Graphics &gfx, FXMMATRIX acculatedTransform, int index) const noexcept
+void Mesh::Draw(Graphics &gfx, FXMMATRIX acculatedTransform) const noexcept
 {
    XMStoreFloat4x4(&transform, acculatedTransform);
-   DrawFunction::Draw(gfx, index);
+   DrawFunction::Draw(gfx);
 }
 
 Node::Node(int id, const std::string &name, std::vector<Mesh * > meshPtrs, const XMMATRIX &transformIn) noexcept
@@ -32,7 +32,7 @@ Node::Node(int id, const std::string &name, std::vector<Mesh * > meshPtrs, const
    XMStoreFloat4x4(&appliedTransform, XMMatrixIdentity());
 }
 
-void Node::Draw(Graphics &gfx, FXMMATRIX accumulatedTransform, int &index)
+void Node::Draw(Graphics &gfx, FXMMATRIX accumulatedTransform)
 {
    const auto built =
       XMLoadFloat4x4(&appliedTransform) *
@@ -41,13 +41,12 @@ void Node::Draw(Graphics &gfx, FXMMATRIX accumulatedTransform, int &index)
 
    for (const auto pm : meshPtrs)
    {
-      pm->Draw(gfx, built, index);
-      ++index;
+      pm->Draw(gfx, built);
    }
 
    for (const auto &pc : childPtrs)
    {
-      pc->Draw(gfx, built, index);
+      pc->Draw(gfx, built);
    }
 }
 
@@ -157,7 +156,7 @@ private:
    std::unordered_map<int, TransformParameters> transforms;
 };
 
-Model::Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightView, int &MaterialIndex, int &index)
+Model::Model(Graphics &gfx, int &index, const std::string fileName, ID3D12Resource *lightView, int &MaterialIndex)
    :
    gfx(gfx),
    filename(fileName),
@@ -176,7 +175,7 @@ Model::Model(Graphics &gfx, const std::string fileName, ID3D12Resource *lightVie
 
    for (size_t i = 0; i < pScene->mNumMeshes; i++)
    {
-      meshPtrs.push_back(ParseMesh(*pScene->mMeshes[i], pScene->mMaterials));
+      meshPtrs.push_back(ParseMesh(index, *pScene->mMeshes[i], pScene->mMaterials));
       ++index;
       MaterialIndex = m_materialIndex;
    }
@@ -217,7 +216,7 @@ void Model::FirstCommand()
    }
 }
 
-std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *const *pMaterials)
+std::unique_ptr<Mesh> Model::ParseMesh(int index, const aiMesh &mesh, const aiMaterial *const *pMaterials)
 {
    using hw3dexp::VertexLayout;
    hw3dexp::VertexBuffer vbuf(std::move(
@@ -323,17 +322,16 @@ std::unique_ptr<Mesh> Model::ParseMesh(const aiMesh &mesh, const aiMaterial *con
    }
 
    bindablePtrs.push_back(std::move(object));
-   return std::make_unique<Mesh>(gfx, std::move(bindablePtrs), (UINT)indices.size(), m_materialIndex);
+   return std::make_unique<Mesh>(gfx, index, std::move(bindablePtrs), (UINT)indices.size(), m_materialIndex);
 }
 
-void Model::Draw(Graphics &gfx, int &index) const
+void Model::Draw(Graphics &gfx) const
 {
    if (auto node = pWindow->GetSelectedNode())
    {
       node->SetAppliedTransform(pWindow->GetTransform());
    }
-   pRoot->Draw(gfx, XMMatrixIdentity(), index);
-   ++index;
+   pRoot->Draw(gfx, XMMatrixIdentity());
 }
 
 void Model::ShowWindow(const char *windowName) noexcept

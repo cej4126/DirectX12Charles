@@ -9,7 +9,7 @@
 class ShapeColorIndex : public DrawFunction
 {
 public:
-   ShapeColorIndex(Graphics &gfx, Shape::shapeType type, float range);
+   ShapeColorIndex(Graphics &gfx, int &index, Shape::shapeType type, float range);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
    int getMaterialIndex() const noexcept { return -1; }

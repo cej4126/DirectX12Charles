@@ -8,11 +8,11 @@
 class ShapeLighted : public DrawFunction
 {
 public:
-   ShapeLighted(Graphics &gfx, Shape::shapeType type, float range, ID3D12Resource *mylightView, int MaterialIndex);
+   ShapeLighted(Graphics &gfx, int &index, Shape::shapeType type, float range, ID3D12Resource *mylightView, int &MaterialIndex);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
    Graphics::MaterialType getMaterial() { return material; }
-   int getMaterialIndex() const noexcept { return MaterialIndex; }
+   int getMaterialIndex() const noexcept { return m_materialIndex; }
    void getMaterialData(Graphics::MaterialType &myMaterial) const noexcept;
    void SpawnControlWindow() noexcept;
 
@@ -23,7 +23,7 @@ private:
       XMFLOAT3 pos;
       XMFLOAT3 normal;
    };
-   void Scale(std::vector< Vertex > &vertices, float x, float y, float z);
+   //void Scale(std::vector< Vertex > &vertices, float x, float y, float z);
    void SyncMaterial() noexcept;
 
    Bind::Bindable *object = nullptr;
@@ -46,6 +46,6 @@ protected:
    float spaceYawRate = 0.0f;
 
 private:
-   int MaterialIndex = -1;
+   int m_materialIndex = -1;
    Graphics::MaterialType material;
 };
