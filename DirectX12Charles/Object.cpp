@@ -14,7 +14,7 @@ Object::Object(Graphics &gfx, std::string tag)
 {
 }
 
-std::shared_ptr<Bind::Bindable> Object::Resolve(Graphics &gfx, const std::string &tag)
+std::shared_ptr<Object> Object::Resolve(Graphics &gfx, const std::string &tag)
 {
    return Bind::BindableCodex::Resolve<Object>(gfx, tag);
 }

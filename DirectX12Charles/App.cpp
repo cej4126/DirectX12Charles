@@ -24,39 +24,39 @@ App::App()
 
    dwriteitem = std::make_unique<dwritedraw>(wnd.Gfx());
 
-   int MaxBoxX12Count = 4;
+   int MaxBoxX12Count = 1;
    int MaterialCount = 0;
    int objectCount = 0;
 
-   light = std::make_unique<ShapePointLight>(wnd.Gfx(), objectCount, 0.5f);
+   light = std::make_unique<DrawPointLight>(wnd.Gfx(), objectCount, 0.5f);
 
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
       float range = rangedist(rng);
 
       Shape::shapeType type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
-      drawItems.push_back(std::make_unique<ShapeLighted>(wnd.Gfx(), objectCount, type, range, light->getLightView(), MaterialCount));
-      drawItems.push_back(std::make_unique<ShapeAssimp>(wnd.Gfx(), objectCount, Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
-      drawItems.push_back(std::make_unique<ShapeColorBlended>(wnd.Gfx(), objectCount, type, range));
-      drawItems.push_back(std::make_unique<ShapeColorIndex>(wnd.Gfx(), objectCount, type, range));
-      drawItems.push_back(std::make_unique<ShapeTextureCube>(wnd.Gfx(), objectCount, range));
-      drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
-      drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
-      drawItems.push_back(std::make_unique<ShapePicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
+      drawItems.push_back(std::make_unique<DrawLighted>(wnd.Gfx(), objectCount, type, range, light->getLightView(), MaterialCount));
+      drawItems.push_back(std::make_unique<DrawAssimp>(wnd.Gfx(), objectCount, Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
+      drawItems.push_back(std::make_unique<DrawColorBlended>(wnd.Gfx(), objectCount, type, range));
+      drawItems.push_back(std::make_unique<DrawColorIndex>(wnd.Gfx(), objectCount, type, range));
+      drawItems.push_back(std::make_unique<DrawTextureCube>(wnd.Gfx(), objectCount, range));
+      drawItems.push_back(std::make_unique<DrawPicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
+      drawItems.push_back(std::make_unique<DrawPicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
+      drawItems.push_back(std::make_unique<DrawPicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
    }
 
    // problems with reading the file.
    //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\boxy.gltf.glb", light->getLightView(), MaterialCount);
    //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nano_hierarchy.gltf", light->getLightView(), MaterialCount);
 
-   nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj", light->getLightView(), MaterialCount);
+   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj", light->getLightView(), MaterialCount);
 
    wnd.Gfx().CreateMatrixConstant(objectCount);
    wnd.Gfx().CreateMaterialConstant(MaterialCount);
 
    for (auto &b : drawItems)
    {
-      if (auto po = dynamic_cast<ShapeLighted *>(b.get()))
+      if (auto po = dynamic_cast<DrawLighted *>(b.get()))
       {
          lightedObjects.push_back(po);
       }
@@ -69,7 +69,7 @@ App::App()
          wnd.Gfx().CopyMaterialConstant(materialIndex, material);
       }
    }
-   nano->FirstCommand();
+   //nano->FirstCommand();
 
    wnd.Gfx().RunCommandList();
    wnd.Gfx().SetProjection(XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 40.0f));
@@ -95,21 +95,6 @@ int App::Go()
 App::~App()
 {
 }
-
-//void App::ShowRawInputWindow()
-//{
-//   while (const auto d = wnd.input.ReadRawDelta())
-//   {
-//      x += d->x;
-//      y += d->y;
-//   }
-//   if (ImGui::Begin("Raw Input"))
-//   {
-//      ImGui::Text("Tally: (%d,%d)", x, y);
-//      ImGui::Text("Cursor: %s", wnd.CursorEnabled() ? "Enable" : "Disable");
-//   }
-//   ImGui::End();
-//}
 
 float App::TimeMark()
 {
@@ -138,7 +123,7 @@ void App::DoFrame()
    auto &lightObject = light;
    lightObject->Draw(wnd.Gfx());
 
-   nano->Draw(wnd.Gfx());
+   //nano->Draw(wnd.Gfx());
 
    for (auto &b : drawItems)
    {
@@ -215,9 +200,7 @@ void App::DoFrame()
    lightObject->CreateLightControl();
 
    SpawnObjectControl();
-   nano->ShowWindow();
-
-   //ShowRawInputWindow();
+   //nano->ShowWindow("Model");
 
    ImGui::Render();
    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -264,9 +247,9 @@ void App::SpawnObjectControl()
                objectIndex = (int)lightedObjects.size();
             }
 
-            for (std::vector<class ShapeLighted *>::iterator it = lightedObjects.begin(); it != lightedObjects.end(); ++it)
+            for (std::vector<class DrawLighted *>::iterator it = lightedObjects.begin(); it != lightedObjects.end(); ++it)
             {
-               ShapeLighted *c = *it;
+               DrawLighted *c = *it;
                int i = c->getMaterialIndex() + 1;
                if (objectIndex == i)
                {

@@ -1,9 +1,9 @@
-#include "ShapePointLight.h"
+#include "DrawPointLight.h"
 #include "imgui/imgui.h"
 
 using namespace std;
 
-ShapePointLight::ShapePointLight(Graphics &gfx, int &index, float size)
+DrawPointLight::DrawPointLight(Graphics &gfx, int &index, float size)
    :
    size(size),
    gfx(gfx)
@@ -84,7 +84,7 @@ ShapePointLight::ShapePointLight(Graphics &gfx, int &index, float size)
    AddBind(std::move(trans));
 }
 
-void ShapePointLight::CreateLightControl() noexcept
+void DrawPointLight::CreateLightControl() noexcept
 {
    if (ImGui::Begin("Light"))
    {
@@ -115,7 +115,7 @@ void ShapePointLight::CreateLightControl() noexcept
    ImGui::End();
 }
 
-void ShapePointLight::ResetLightData() noexcept
+void DrawPointLight::ResetLightData() noexcept
 {
    gfx.lightData =
    {
@@ -129,11 +129,11 @@ void ShapePointLight::ResetLightData() noexcept
    };
 }
 
-void ShapePointLight::Update(float dt) noexcept
+void DrawPointLight::Update(float dt) noexcept
 {
 }
 
-XMMATRIX ShapePointLight::GetTransformXM() const noexcept
+XMMATRIX DrawPointLight::GetTransformXM() const noexcept
 {
    return XMMatrixTranslation(gfx.lightData.position.x, gfx.lightData.position.y, gfx.lightData.position.z);
 }

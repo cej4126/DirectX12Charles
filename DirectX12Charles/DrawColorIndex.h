@@ -4,11 +4,12 @@
 #include "Object.h"
 #include "DrawFunction.h"
 #include "Transform.h"
+#include "Shape.h"
 
-class ShapeTextureCube : public DrawFunction
+class DrawColorIndex : public DrawFunction
 {
 public:
-   ShapeTextureCube(Graphics &gfx, int &index, float range);
+   DrawColorIndex(Graphics &gfx, int &index, Shape::shapeType type, float range);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
    int getMaterialIndex() const noexcept { return -1; }
@@ -32,3 +33,4 @@ private:
    float spacePitchRate = 0.0f;
    float spaceYawRate = 0.0f;
 };
+

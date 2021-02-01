@@ -5,10 +5,10 @@
 #include "DrawFunction.h"
 #include "Transform.h"
 
-class ShapeLighted : public DrawFunction
+class DrawLighted : public DrawFunction
 {
 public:
-   ShapeLighted(Graphics &gfx, int &index, Shape::shapeType type, float range, ID3D12Resource *mylightView, int &MaterialIndex);
+   DrawLighted(Graphics &gfx, int &index, Shape::shapeType type, float range, ID3D12Resource *mylightView, int &MaterialIndex);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
    Graphics::MaterialType getMaterial() { return material; }

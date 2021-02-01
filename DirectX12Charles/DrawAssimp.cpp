@@ -1,4 +1,4 @@
-#include "ShapeAssimp.h"
+#include "DrawAssimp.h"
 #include "imgui/imgui.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -9,7 +9,7 @@ using namespace std;
 
 //#define FIX_ROTATION
 
-ShapeAssimp::ShapeAssimp(Graphics &gfx, int &index, Shape::shapeType type, float range, ID3D12Resource *mylightView, int &MaterialIndex)
+DrawAssimp::DrawAssimp(Graphics &gfx, int &index, Shape::shapeType type, float range, ID3D12Resource *mylightView, int &MaterialIndex)
    :
    gfx(gfx),
    range(range),
@@ -77,14 +77,13 @@ ShapeAssimp::ShapeAssimp(Graphics &gfx, int &index, Shape::shapeType type, float
       .Append(VertexLayout::Normal)
    ));
 
-   auto model = gfx.shape.GetShapeNormalData<Vertex>();
-
    std::shared_ptr<Object> object = std::make_shared< Object>(gfx, "Lighted");
 
    if (!object->isInitialized())
    {
       object->setInitialized();
 
+      auto model = gfx.shape.GetShapeNormalData<Vertex>();
       std::vector <unsigned short> indices(indicesCount);
       for (UINT i = 0; i < indicesCount; i++)
       {
@@ -131,7 +130,7 @@ ShapeAssimp::ShapeAssimp(Graphics &gfx, int &index, Shape::shapeType type, float
    AddBind(std::move(trans));
 }
 
-void ShapeAssimp::Update(float dt) noexcept
+void DrawAssimp::Update(float dt) noexcept
 {
    float pi_2 = (float)(2.0 * M_PI);
    boxRoll += boxRollRate * dt;
@@ -153,19 +152,19 @@ void ShapeAssimp::Update(float dt) noexcept
    spaceYaw = remainder(spaceYaw, pi_2);
 }
 
-XMMATRIX ShapeAssimp::GetTransformXM() const noexcept
+XMMATRIX DrawAssimp::GetTransformXM() const noexcept
 {
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *
       DirectX::XMMatrixRotationRollPitchYaw(spacePitch, spaceYaw, spaceRoll);
 }
 
-void ShapeAssimp::getMaterialData(Graphics::MaterialType &myMaterial) const noexcept
+void DrawAssimp::getMaterialData(Graphics::MaterialType &myMaterial) const noexcept
 {
    myMaterial.materialColor = material.materialColor;
 }
 
-void ShapeAssimp::SpawnControlWindow() noexcept
+void DrawAssimp::SpawnControlWindow() noexcept
 {
    using namespace std::string_literals;
 
@@ -189,7 +188,7 @@ void ShapeAssimp::SpawnControlWindow() noexcept
    }
 }
 
-void ShapeAssimp::SyncMaterial() noexcept
+void DrawAssimp::SyncMaterial() noexcept
 {
    gfx.CopyMaterialConstant(m_materialIndex, material);
 }

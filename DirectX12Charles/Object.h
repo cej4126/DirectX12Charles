@@ -10,11 +10,11 @@ class Object : public Bind::Bindable
 public:
    Object(Graphics &gfx, std::string tag);
 
-   static std::shared_ptr<Bind::Bindable> Resolve(Graphics &gfx, const std::string &tag);
+   static std::shared_ptr<Object> Resolve(Graphics &gfx, const std::string &tag);
    static std::string GenerateUID(const std::string &path);
    std::string GetUID() const noexcept override;
 
-   void CreateTexture(const Surface &surface, int slot);
+   void CreateTexture(const Surface &surface, int slot = 0);
    void CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag);
    void CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath);
    void SetLightView(ID3D12Resource *mylightView);

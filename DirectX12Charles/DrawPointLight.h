@@ -5,10 +5,10 @@
 #include "DrawFunction.h"
 #include "Transform.h"
 
-class ShapePointLight : public DrawFunction
+class DrawPointLight : public DrawFunction
 {
 public:
-   ShapePointLight(Graphics &gfx, int &index, float size);
+   DrawPointLight(Graphics &gfx, int &index, float size);
    //void SetPosition(XMFLOAT3 pos) noexcept;
    void CreateLightControl() noexcept;
    void ResetLightData() noexcept;

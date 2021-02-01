@@ -1,8 +1,8 @@
-#include "ShapePicture.h"
+#include "DrawPicture.h"
 using namespace std;
 
 //#define FIX_ROTATION
-ShapePicture::ShapePicture(Graphics &gfx, int &index, Shape::shapeType type, float range, const std::string &filename)
+DrawPicture::DrawPicture(Graphics &gfx, int &index, Shape::shapeType type, float range, const std::string &filename)
    :
    range(range)
 {
@@ -47,13 +47,6 @@ ShapePicture::ShapePicture(Graphics &gfx, int &index, Shape::shapeType type, flo
    UINT indicesStart = gfx.shape.getIndiceStart(type);
    UINT indicesCount = gfx.shape.getIndiceCount(type);
 
-   struct Vertex
-   {
-      XMFLOAT3 pos;
-      XMFLOAT2 tex;
-   };
-   auto model = gfx.shape.GetShapeTextureData<Vertex>();
-
    std::size_t pos = filename.find_last_of("/\\");
    std::string tag = "cube#" + filename.substr(pos + 1);
 
@@ -70,6 +63,13 @@ ShapePicture::ShapePicture(Graphics &gfx, int &index, Shape::shapeType type, flo
          .Append(VertexLayout::Position3D)
          .Append(VertexLayout::Texture2D)
       ));
+
+      struct Vertex
+      {
+         XMFLOAT3 pos;
+         XMFLOAT2 tex;
+      };
+      auto model = gfx.shape.GetShapeTextureData<Vertex>();
 
       for (int i = 0; i < model.vertices.size(); i++)
       {
@@ -91,9 +91,6 @@ ShapePicture::ShapePicture(Graphics &gfx, int &index, Shape::shapeType type, flo
    AddBind(std::move(object));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
-
-   //trans->CreateTexture(Surface::FromFile(filename));
-
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);
    trans->setIndices(index, start, count);
@@ -102,7 +99,7 @@ ShapePicture::ShapePicture(Graphics &gfx, int &index, Shape::shapeType type, flo
    AddBind(std::move(trans));
 }
 
-void ShapePicture::Update(float dt) noexcept
+void DrawPicture::Update(float dt) noexcept
 {
    boxRoll += boxRollRate * dt;
    boxPitch += boxPitchRate * dt;
@@ -112,7 +109,7 @@ void ShapePicture::Update(float dt) noexcept
    spaceYaw += spaceYawRate * dt;
 }
 
-XMMATRIX ShapePicture::GetTransformXM() const noexcept
+XMMATRIX DrawPicture::GetTransformXM() const noexcept
 {
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *

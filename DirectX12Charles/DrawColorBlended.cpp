@@ -1,7 +1,7 @@
-#include "ShapeTextureCube.h"
+#include "DrawColorBlended.h"
 using namespace std;
 
-ShapeTextureCube::ShapeTextureCube(Graphics &gfx, int &index, float range)
+DrawColorBlended::DrawColorBlended(Graphics &gfx, int &index, Shape::shapeType type, float range)
    :
    range(range)
 {
@@ -40,52 +40,53 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, int &index, float range)
    spacePitchRate = 0.0f;
    spaceYawRate = 0.0f;
 #endif
-   Shape::shapeType type = Shape::PictureCube;
 
-   UINT verticesStart = gfx.shape.getVerticesStart(type);
-   UINT verticesCount = gfx.shape.getVerticesCount(type);
-   UINT indicesStart = gfx.shape.getIndiceStart(type);
-   UINT indicesCount = gfx.shape.getIndiceCount(type);
+   std::string tag = "ColorBlendedPS";
+   std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, tag);
 
-   struct Vertex
-   {
-      XMFLOAT3 pos;
-      XMFLOAT2 tex;
-   };
-
-   auto model = gfx.shape.GetShapeTextureData<Vertex>();
-
-   std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, "Cube");
    if (!object->isInitialized())
    {
       object->setInitialized();
 
-      // Define the vertex input layout.
       using hw3dexp::VertexLayout;
       hw3dexp::VertexBuffer vbuf(std::move(
          VertexLayout{}
          .Append(VertexLayout::Position3D)
-         .Append(VertexLayout::Texture2D)
+         .Append(VertexLayout::Float4Color)
       ));
 
-      std::vector <unsigned short> indices(indicesCount);
-      object->CreateTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\cube.png"), 0);
+      struct Vertex
+      {
+         XMFLOAT3 pos;
+      };
+      XMFLOAT4 color1;
+
+      auto model = gfx.shape.GetShapeData<Vertex>();
 
       for (int i = 0; i < model.vertices.size(); i++)
       {
+         float r = randcolor(gen);
+         float b = randcolor(gen);
+         float g = randcolor(gen);
+         color1 = { r, b, g, 1.0f };
          vbuf.EmplaceBack(
             *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].pos),
-            *reinterpret_cast<XMFLOAT2 *>(&model.vertices[i].tex));
+            *reinterpret_cast<XMFLOAT4 *>(&color1));
       }
 
       object->LoadVerticesBuffer(vbuf);
+
+      //object->LoadVerticesBuffer(model.vertices);
       object->LoadIndicesBuffer(model.indices);
-      object->CreateShader(L"TextureVS.cso", L"TexturePS.cso");
+      object->CreateShader(L"ColorBlendedVS.cso", L"ColorBlendedPS.cso");
 
       // Create Root Signature after constants
-      object->CreateRootSignature(false, false, true);
+      object->CreateRootSignature(false, false, false);
+
+      //   object->CreatePipelineState(inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
       object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
    }
+
    AddBind(std::move(object));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
@@ -97,7 +98,7 @@ ShapeTextureCube::ShapeTextureCube(Graphics &gfx, int &index, float range)
    AddBind(std::move(trans));
 }
 
-void ShapeTextureCube::Update(float dt) noexcept
+void DrawColorBlended::Update(float dt) noexcept
 {
    boxRoll += boxRollRate * dt;
    boxPitch += boxPitchRate * dt;
@@ -107,7 +108,7 @@ void ShapeTextureCube::Update(float dt) noexcept
    spaceYaw += spaceYawRate * dt;
 }
 
-XMMATRIX ShapeTextureCube::GetTransformXM() const noexcept
+XMMATRIX DrawColorBlended::GetTransformXM() const noexcept
 {
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *

@@ -1,11 +1,11 @@
-#include "ShapeLighted.h"
+#include "DrawLighted.h"
 #include "imgui/imgui.h"
 
 using namespace std;
 
 //#define FIX_ROTATION
 
-ShapeLighted::ShapeLighted(Graphics &gfx, int &index, Shape::shapeType type, float range, ID3D12Resource *mylightView, int &MaterialIndex)
+DrawLighted::DrawLighted(Graphics &gfx, int &index, Shape::shapeType type, float range, ID3D12Resource *mylightView, int &MaterialIndex)
    :
    gfx(gfx),
    range(range),
@@ -111,7 +111,7 @@ ShapeLighted::ShapeLighted(Graphics &gfx, int &index, Shape::shapeType type, flo
    AddBind(std::move(trans));
 }
 
-void ShapeLighted::Update(float dt) noexcept
+void DrawLighted::Update(float dt) noexcept
 {
    float pi_2 = (float)(2.0 * M_PI);
    boxRoll += boxRollRate * dt;
@@ -133,19 +133,19 @@ void ShapeLighted::Update(float dt) noexcept
    spaceYaw = remainder(spaceYaw, pi_2);
 }
 
-XMMATRIX ShapeLighted::GetTransformXM() const noexcept
+XMMATRIX DrawLighted::GetTransformXM() const noexcept
 {
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *
       DirectX::XMMatrixRotationRollPitchYaw(spacePitch, spaceYaw, spaceRoll);
 }
 
-void ShapeLighted::getMaterialData(Graphics::MaterialType &myMaterial) const noexcept
+void DrawLighted::getMaterialData(Graphics::MaterialType &myMaterial) const noexcept
 {
    myMaterial.materialColor = material.materialColor;
 }
 
-void ShapeLighted::SpawnControlWindow() noexcept
+void DrawLighted::SpawnControlWindow() noexcept
 {
    using namespace std::string_literals;
 
@@ -171,7 +171,7 @@ void ShapeLighted::SpawnControlWindow() noexcept
    }
 }
 
-void ShapeLighted::SyncMaterial() noexcept
+void DrawLighted::SyncMaterial() noexcept
 {
    gfx.CopyMaterialConstant(m_materialIndex, material);
 }

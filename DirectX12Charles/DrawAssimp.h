@@ -5,10 +5,10 @@
 #include "DrawFunction.h"
 #include "Transform.h"
 
-class ShapeAssimp : public DrawFunction
+class DrawAssimp : public DrawFunction
 {
 public:
-   ShapeAssimp(Graphics &gfx, int &index, Shape::shapeType type, float range, ID3D12Resource *mylightView, int &MaterialIndex);
+   DrawAssimp(Graphics &gfx, int &index, Shape::shapeType type, float range, ID3D12Resource *mylightView, int &MaterialIndex);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
    Graphics::MaterialType getMaterial() { return material; }

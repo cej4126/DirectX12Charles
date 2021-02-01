@@ -10,7 +10,7 @@ class ModelObject : public Bind::Bindable
 public:
    ModelObject(Graphics &gfx, std::string tag);
 
-   static std::shared_ptr<Bind::Bindable> Resolve(Graphics &gfx, const std::string &tag);
+   static std::shared_ptr<ModelObject> Resolve(Graphics &gfx, const std::string &tag);
    static std::string GenerateUID(const std::string &tag);
    std::string GetUID() const noexcept override;
 

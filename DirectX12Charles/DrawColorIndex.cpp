@@ -1,9 +1,9 @@
-#include "ShapeColorIndex.h"
+#include "DrawColorIndex.h"
 using namespace std;
 
 //#define FIX_ROTATION
 
-ShapeColorIndex::ShapeColorIndex(Graphics &gfx, int &index, Shape::shapeType type, float range)
+DrawColorIndex::DrawColorIndex(Graphics &gfx, int &index, Shape::shapeType type, float range)
    :
    range(range)
 {
@@ -42,14 +42,8 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, int &index, Shape::shapeType typ
    spaceYawRate = 0.0f;
 #endif
 
-   struct Vertex
-   {
-      XMFLOAT3 pos;
-   };
-   auto model = gfx.shape.GetShapeData<Vertex>();
 
    std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, "ColorIndex");
-   //std::shared_ptr<Object> object = std::make_shared< Object>(gfx, "ColorIndex");
    if (!object->isInitialized())
    {
       object->setInitialized();
@@ -60,6 +54,13 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, int &index, Shape::shapeType typ
          VertexLayout{}
          .Append(VertexLayout::Position3D)
       ));
+
+      struct Vertex
+      {
+         XMFLOAT3 pos;
+      };
+      auto model = gfx.shape.GetShapeData<Vertex>();
+
       for (int i = 0; i < model.vertices.size(); i++)
       {
          vbuf.EmplaceBack(
@@ -122,7 +123,7 @@ ShapeColorIndex::ShapeColorIndex(Graphics &gfx, int &index, Shape::shapeType typ
    AddBind(std::move(trans));
 }
 
-void ShapeColorIndex::Update(float dt) noexcept
+void DrawColorIndex::Update(float dt) noexcept
 {
    boxRoll += boxRollRate * dt;
    boxPitch += boxPitchRate * dt;
@@ -132,7 +133,7 @@ void ShapeColorIndex::Update(float dt) noexcept
    spaceYaw += spaceYawRate * dt;
 }
 
-XMMATRIX ShapeColorIndex::GetTransformXM() const noexcept
+XMMATRIX DrawColorIndex::GetTransformXM() const noexcept
 {
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *
