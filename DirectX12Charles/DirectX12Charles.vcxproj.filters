@@ -369,6 +369,12 @@
     <ClInclude Include="DrawPointLight.h">
       <Filter>Header Files\Draw</Filter>
     </ClInclude>
+    <ClInclude Include="ShapeAssimp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapeData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -466,6 +472,9 @@
     </ClCompile>
     <ClCompile Include="DrawPointLight.cpp">
       <Filter>Source Files\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="ShapeAssimp.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

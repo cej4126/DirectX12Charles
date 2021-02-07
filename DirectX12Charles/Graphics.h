@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "Shape.h"
+#include "ShapeAssimp.h"
 
 using namespace DirectX;
 
@@ -85,6 +86,7 @@ public:
    int GetHeight() { return height; }
 
    Shape shape;
+   ShapeAssimp shapeAssimp;
 
 private:
    void WaitForPreviousFrame();

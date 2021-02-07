@@ -9,36 +9,29 @@
 
 using namespace DirectX;
 
-class Shape
+//template<class T>
+//class ShapeData
+//{
+//public:
+//   ShapeData() = default;
+//   ShapeData(std::vector<T> vert_in, std::vector<unsigned short> indices_in)
+//      :
+//      vertices(std::move(vert_in)),
+//      indices(std::move(indices_in))
+//   {
+//      assert(vertices.size() > 2);
+//      assert(indices.size() % 3 == 0);
+//   }
+//
+//   std::vector<T> vertices;
+//   std::vector<unsigned short>indices;
+//};
+
+class ShapeAssimp
 {
 public:
    Assimp::Importer imp;
    const aiScene *modelSuzanne;
-
-   enum ShapeBaseType
-   {
-      basic,
-      normal,
-      texture
-   };
-
-   enum shapeType
-   {
-      PictureCube,
-      TextureCube,
-      TextureCylinder,
-      TextureCone,
-      TexturePrism,
-      TextureSuzanne,
-      Cube,
-      Cone,
-      Prism,
-      Cylinder,
-      Sphere,
-      Plane,
-
-      ShapeCount
-   };
 
    struct Vertex
    {
@@ -107,11 +100,11 @@ public:
       UINT indiceCount;
    };
 
-   Shape();
-   UINT getIndiceStart(shapeType type) { return shapedata[type].indiceStart; }
-   UINT getIndiceCount(shapeType type) { return shapedata[type].indiceCount; }
-   UINT getVerticesStart(shapeType type) { return shapedata[type].verticesStart; }
-   UINT getVerticesCount(shapeType type) { return shapedata[type].verticesCount; }
+   ShapeAssimp();
+   UINT getIndiceStart() { return m_indiceStart; }
+   UINT getIndiceCount() { return m_indiceCount; }
+   UINT getVerticesStart() { return m_verticesStart; }
+   UINT getVerticesCount() { return m_verticesCount; }
 
    template<class V>
    ShapeData<V> GetShapeData()
@@ -156,20 +149,12 @@ public:
 
 private:
    void SetNormals();
-   void CreateCone(int longDiv);
-   void CreateCube();
-   void CratePrism();
-   void CreatePlane(int divisions_x, int divisions_y);
-   void CreateCylinder(int longDiv);
-   void CreateSphere(int latDiv, int longDiv);
-   void CreateTextureCube();
-   void CreatePictureCube();
-   void CreateTextureCylinder(int longDiv);
    void CreateTextureSuzanne();
-   void CreateTextureCone(int longDiv);
-   void CreateTexturePrism();
 
-   std::array<ShapeDataType, ShapeCount> shapedata;
+   UINT m_verticesStart;
+   UINT m_verticesCount;
+   UINT m_indiceStart;
+   UINT m_indiceCount;
    std::vector<Vertex> vertices;
    std::vector<unsigned short>indices;
 

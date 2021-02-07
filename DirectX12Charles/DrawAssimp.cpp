@@ -65,10 +65,10 @@ DrawAssimp::DrawAssimp(Graphics &gfx, int &index, Shape::shapeType type, float r
    spaceYawRate = 0.0f;
 #endif
 
-   UINT verticesStart = gfx.shape.getVerticesStart(type);
-   UINT verticesCount = gfx.shape.getVerticesCount(type);
-   UINT indicesStart = gfx.shape.getIndiceStart(type);
-   UINT indicesCount = gfx.shape.getIndiceCount(type);
+   UINT verticesStart = gfx.shapeAssimp.getVerticesStart();
+   UINT verticesCount = gfx.shapeAssimp.getVerticesCount();
+   UINT indicesStart = gfx.shapeAssimp.getIndiceStart();
+   UINT indicesCount = gfx.shapeAssimp.getIndiceCount();
 
    using hw3dexp::VertexLayout;
    hw3dexp::VertexBuffer vbuf(std::move(
@@ -83,7 +83,7 @@ DrawAssimp::DrawAssimp(Graphics &gfx, int &index, Shape::shapeType type, float r
    {
       object->setInitialized();
 
-      auto model = gfx.shape.GetShapeNormalData<Vertex>();
+      auto model = gfx.shapeAssimp.GetShapeNormalData<Vertex>();
       std::vector <unsigned short> indices(indicesCount);
       for (UINT i = 0; i < indicesCount; i++)
       {
@@ -114,20 +114,19 @@ DrawAssimp::DrawAssimp(Graphics &gfx, int &index, Shape::shapeType type, float r
       object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
       object->SetLightView(mylightView);
+      //object->setIndices(index, 0, indicesCount);
    }
 
    AddBind(std::move(object));
 
+
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
 
    trans->setIndices(index, 0, indicesCount);
-   ++index;
-
-   //UINT start = gfx.shape.getIndiceStart(type);
-   //UINT count = gfx.shape.getIndiceCount(type);
-   //trans->setIndices(start, count);
 
    AddBind(std::move(trans));
+
+   ++index;
 }
 
 void DrawAssimp::Update(float dt) noexcept

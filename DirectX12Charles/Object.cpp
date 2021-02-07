@@ -58,7 +58,11 @@ void Object::Bind(Graphics &gfx) noexcept
       // set the descriptor table to the descriptor heap (parameter 1, as constant buffer root descriptor is parameter index 0)
       commandList->SetGraphicsRootDescriptorTable(1, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
    }
-   //}
+
+   if (indicesCount > 0)
+   {
+      commandList->DrawIndexedInstanced(indicesCount, 1u, indicesStart, 0u, 0u);
+   }
 }
 
 void Object::CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag)
@@ -252,7 +256,7 @@ void Object::LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices)
 
 void Object::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
 {
-   indicesCount = (UINT)indices.size();
+   //indicesCount = (UINT)indices.size();
    const UINT indicesBufferSize = (UINT)(sizeof(unsigned short) * indices.size());
 
    D3D12_HEAP_PROPERTIES heapProps;

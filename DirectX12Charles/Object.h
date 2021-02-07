@@ -26,6 +26,12 @@ public:
 
    void CreateConstant(const XMFLOAT3 &colorBuffer, int size);
 
+   void setIndices(int index, UINT start, UINT count)
+   {
+      indicesStart = start;
+      indicesCount = count;
+   }
+
    void Bind(Graphics &gfx) noexcept override;
 
 private:
@@ -56,10 +62,12 @@ private:
    Microsoft::WRL::ComPtr <ID3D12Resource> indexDefaultBuffer;
    Microsoft::WRL::ComPtr <ID3D12Resource> indexUploadBuffer;
    D3D12_INDEX_BUFFER_VIEW indexBufferView;
-   UINT indicesCount;
    D3D12_PRIMITIVE_TOPOLOGY_TYPE topology = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
    bool lightActive = false;
    ID3D12Resource *lightView = nullptr;
+
+   UINT indicesStart = 0;
+   UINT indicesCount = 0;
 };
 

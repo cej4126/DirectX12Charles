@@ -248,6 +248,8 @@
     <ClInclude Include="DrawPicture.h" />
     <ClInclude Include="DrawPointLight.h" />
     <ClInclude Include="DrawTextureCube.h" />
+    <ClInclude Include="ShapeAssimp.h" />
+    <ClInclude Include="ShapeData.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Surface.h" />
     <ClInclude Include="Transform.h" />
@@ -282,6 +284,7 @@
     <ClCompile Include="DrawPicture.cpp" />
     <ClCompile Include="DrawPointLight.cpp" />
     <ClCompile Include="DrawTextureCube.cpp" />
+    <ClCompile Include="ShapeAssimp.cpp" />
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Vertex.cpp" />

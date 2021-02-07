@@ -35,7 +35,10 @@ void Transform::Bind(Graphics &gfx) noexcept
       gfx.SetMaterialConstant(materialIndex);
    }
 
-   commandList->DrawIndexedInstanced(indicesCount, 1u, indicesStart, 0u, 0u);
+   if (indicesCount > 0)
+   {
+      commandList->DrawIndexedInstanced(indicesCount, 1u, indicesStart, 0u, 0u);
+   }
 
    if (lightBufferActive)
    {

@@ -37,12 +37,12 @@ App::App()
       Shape::shapeType type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
       drawItems.push_back(std::make_unique<DrawLighted>(wnd.Gfx(), objectCount, type, range, light->getLightView(), MaterialCount));
       drawItems.push_back(std::make_unique<DrawAssimp>(wnd.Gfx(), objectCount, Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
-      drawItems.push_back(std::make_unique<DrawColorBlended>(wnd.Gfx(), objectCount, type, range));
-      drawItems.push_back(std::make_unique<DrawColorIndex>(wnd.Gfx(), objectCount, type, range));
-      drawItems.push_back(std::make_unique<DrawTextureCube>(wnd.Gfx(), objectCount, range));
-      drawItems.push_back(std::make_unique<DrawPicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
-      drawItems.push_back(std::make_unique<DrawPicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
-      drawItems.push_back(std::make_unique<DrawPicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
+      //drawItems.push_back(std::make_unique<DrawColorBlended>(wnd.Gfx(), objectCount, type, range));
+      //drawItems.push_back(std::make_unique<DrawColorIndex>(wnd.Gfx(), objectCount, type, range));
+      //drawItems.push_back(std::make_unique<DrawTextureCube>(wnd.Gfx(), objectCount, range));
+      //drawItems.push_back(std::make_unique<DrawPicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
+      //drawItems.push_back(std::make_unique<DrawPicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
+      //drawItems.push_back(std::make_unique<DrawPicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
    }
 
    // problems with reading the file.
