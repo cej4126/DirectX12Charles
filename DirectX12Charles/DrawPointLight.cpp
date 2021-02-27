@@ -77,7 +77,7 @@ DrawPointLight::DrawPointLight(Graphics &gfx, int &index, float size)
    }
    AddBind(std::move(object));
 
-   std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
+   std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this, 0, -1);
    trans->setIndices(index, 0, indicesCount);
    ++index;
    lightView = trans->CreateLightPosition(gfx.lightData);

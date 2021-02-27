@@ -1,12 +1,14 @@
 #include "Transform.h"
 #include "Graphics.h"
 
-Transform::Transform(Graphics &gfx, const DrawFunction &parent)
+Transform::Transform(Graphics &gfx, const DrawFunction &parent, int rootVS, int rootPS)
    :
    gfx(gfx),
    device(gfx.GetDevice()),
    commandList(gfx.GetCommandList()),
-   parentTransform(parent)
+   parentTransform(parent),
+   m_rootVS(rootVS),
+   m_rootPS(rootPS)
 {
 }
 
@@ -27,7 +29,7 @@ void Transform::Bind(Graphics &gfx) noexcept
       assert(false);
    }
 
-   gfx.SetMatrixConstant(index, contantMatrix);
+   gfx.SetMatrixConstant(index, contantMatrix, m_rootVS, m_rootPS);
 
    int materialIndex = parentTransform.getMaterialIndex();
    if (materialIndex != -1)

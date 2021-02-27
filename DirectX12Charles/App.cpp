@@ -30,26 +30,50 @@ App::App()
 
    light = std::make_unique<DrawPointLight>(wnd.Gfx(), objectCount, 0.5f);
 
+   plane = std::make_unique<DrawNormal>(wnd.Gfx(),
+      objectCount,
+      Shape::Plane, 6.0f,
+      "..\\..\\DirectX12Charles\\Images\\brickwall.jpg",
+      "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg",
+      light->getLightView(), MaterialCount);
+   plane->SetPos(XMFLOAT3(15.0f, 5.0f, 20.0f));
+   //drawItems.push_back(std::move(plane1));
+
+   cube = std::make_unique<DrawNormal>(wnd.Gfx(),
+      objectCount,
+      Shape::TextureCube, 12.0f,
+      "..\\..\\DirectX12Charles\\Images\\brickwall.jpg",
+      "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg",
+      light->getLightView(), MaterialCount);
+   cube->SetPos(XMFLOAT3(-15.0f, 5.0f, 30.0f));
+   //drawItems.push_back(std::move(cube));
+
+   //drawItems.push_back(std::make_unique<DrawNormal>(wnd.Gfx(), objectCount, Shape::Plane, 6.0f,
+   //   "..\\..\\DirectX12Charles\\Images\\brickwall.jpg", "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg", light->getLightView(), MaterialCount));
+
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
       float range = rangedist(rng);
 
-      Shape::shapeType type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
-      drawItems.push_back(std::make_unique<DrawLighted>(wnd.Gfx(), objectCount, type, range, light->getLightView(), MaterialCount));
-      drawItems.push_back(std::make_unique<DrawAssimp>(wnd.Gfx(), objectCount, Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
+
+      //Shape::shapeType type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
+      //drawItems.push_back(std::make_unique<DrawLighted>(wnd.Gfx(), objectCount, type, range, light->getLightView(), MaterialCount));
+      //drawItems.push_back(std::make_unique<DrawAssimp>(wnd.Gfx(), objectCount, Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
       //drawItems.push_back(std::make_unique<DrawColorBlended>(wnd.Gfx(), objectCount, type, range));
       //drawItems.push_back(std::make_unique<DrawColorIndex>(wnd.Gfx(), objectCount, type, range));
       //drawItems.push_back(std::make_unique<DrawTextureCube>(wnd.Gfx(), objectCount, range));
-      //drawItems.push_back(std::make_unique<DrawPicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
-      //drawItems.push_back(std::make_unique<DrawPicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
-      //drawItems.push_back(std::make_unique<DrawPicture>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
+      //drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
+      //drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
+      //drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
    }
 
    // problems with reading the file.
    //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\boxy.gltf.glb", light->getLightView(), MaterialCount);
    //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nano_hierarchy.gltf", light->getLightView(), MaterialCount);
 
-   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj", light->getLightView(), MaterialCount);
+   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount,
+   //   "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj",
+   //   light->getLightView(), MaterialCount);
 
    wnd.Gfx().CreateMatrixConstant(objectCount);
    wnd.Gfx().CreateMaterialConstant(MaterialCount);
@@ -72,7 +96,7 @@ App::App()
    //nano->FirstCommand();
 
    wnd.Gfx().RunCommandList();
-   wnd.Gfx().SetProjection(XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 40.0f));
+   wnd.Gfx().SetProjection(XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 80.0f));
 }
 
 int App::Go()
@@ -123,6 +147,8 @@ void App::DoFrame()
    auto &lightObject = light;
    lightObject->Draw(wnd.Gfx());
 
+   plane->Draw(wnd.Gfx());
+   cube->Draw(wnd.Gfx());
    //nano->Draw(wnd.Gfx());
 
    for (auto &b : drawItems)
@@ -190,14 +216,14 @@ void App::DoFrame()
             cam.Rotate((float)delta->x, (float)delta->y);
          }
       }
-
-
    }
 
    SpawnSimulation();
 
    cam.CreateControlWindow();
    lightObject->CreateLightControl();
+
+   cube->SpawnControlWindow();
 
    SpawnObjectControl();
    //nano->ShowWindow("Model");

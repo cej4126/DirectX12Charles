@@ -1,8 +1,8 @@
-#include "Mesh.h"
+#include "DrawMesh.h"
 #include "imgui/imgui.h"
 #include <unordered_map>
 
-Mesh::Mesh(Graphics &gfx, int index, std::vector<std::shared_ptr<Bind::Bindable>> bindPtrs, int indicesCount, int &MaterialIndex)
+DrawMesh::DrawMesh(Graphics &gfx, int index, std::vector<std::shared_ptr<Bind::Bindable>> bindPtrs, int indicesCount, int &MaterialIndex)
    :
    MaterialIndex(MaterialIndex)
 {
@@ -11,21 +11,21 @@ Mesh::Mesh(Graphics &gfx, int index, std::vector<std::shared_ptr<Bind::Bindable>
       AddBind(std::move(pb));
    }
 
-   std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this);
+   std::unique_ptr < Transform > trans = std::make_unique<Transform>(gfx, *this, 0, -1);
    trans->setIndices(index, 0, indicesCount);
    AddBind(std::move(trans));
 }
 
-void Mesh::Draw(Graphics &gfx, FXMMATRIX acculatedTransform) const noexcept
+void DrawMesh::Draw(Graphics &gfx, FXMMATRIX acculatedTransform) const noexcept
 {
    XMStoreFloat4x4(&transform, acculatedTransform);
    DrawFunction::Draw(gfx);
 }
 
-Node::Node(int id, const std::string &name, std::vector<Mesh * > meshPtrs, const XMMATRIX &transformIn) noexcept
+Node::Node(int id, const std::string &name, std::vector<DrawMesh * > DrawMeshPtrs, const XMMATRIX &transformIn) noexcept
    :
    id(id),
-   meshPtrs(std::move(meshPtrs)),
+   MeshPtrs(std::move(DrawMeshPtrs)),
    name(name)
 {
    XMStoreFloat4x4(&transform, transformIn);
@@ -39,7 +39,7 @@ void Node::Draw(Graphics &gfx, FXMMATRIX accumulatedTransform)
       XMLoadFloat4x4(&transform) *
       accumulatedTransform;
 
-   for (const auto pm : meshPtrs)
+   for (const auto pm : MeshPtrs)
    {
       pm->Draw(gfx, built);
    }
@@ -175,7 +175,7 @@ Model::Model(Graphics &gfx, int &index, const std::string fileName, ID3D12Resour
 
    for (size_t i = 0; i < pScene->mNumMeshes; i++)
    {
-      meshPtrs.push_back(ParseMesh(index, *pScene->mMeshes[i], pScene->mMaterials));
+      MeshPtrs.push_back(ParseMesh(index, *pScene->mMeshes[i], pScene->mMaterials));
       ++index;
       MaterialIndex = m_materialIndex;
    }
@@ -192,12 +192,12 @@ std::unique_ptr<Node> Model::ParseNode(int &nextId, const aiNode &node) noexcept
    const auto transform = XMMatrixTranspose(XMLoadFloat4x4(
       reinterpret_cast<const XMFLOAT4X4 *>(&node.mTransformation)));
 
-   std::vector<Mesh *> curMeshPtrs;
+   std::vector<DrawMesh *> curMeshPtrs;
    curMeshPtrs.reserve(node.mNumMeshes);
    for (size_t i = 0; i < node.mNumMeshes; i++)
    {
-      const auto meshIndex = node.mMeshes[i];
-      curMeshPtrs.push_back(meshPtrs.at(meshIndex).get());
+      const auto MeshIndex = node.mMeshes[i];
+      curMeshPtrs.push_back(MeshPtrs.at(MeshIndex).get());
    }
 
    auto pNode = std::make_unique<Node>(nextId++, node.mName.C_Str(), std::move(curMeshPtrs), transform);
@@ -216,7 +216,7 @@ void Model::FirstCommand()
    }
 }
 
-std::unique_ptr<Mesh> Model::ParseMesh(int index, const aiMesh &mesh, const aiMaterial *const *pMaterials)
+std::unique_ptr<DrawMesh> Model::ParseMesh(int index, const aiMesh &mesh, const aiMaterial *const *pMaterials)
 {
    using hw3dexp::VertexLayout;
    hw3dexp::VertexBuffer vbuf(std::move(
@@ -279,11 +279,16 @@ std::unique_ptr<Mesh> Model::ParseMesh(int index, const aiMesh &mesh, const aiMa
 
    if (!object->isInitialized())
    {
+      object->setInitialized();
+
       float shininess = 35.0f;
       if (diffuse)
       {
          object->CreateTexture(Surface::FromFile(path + diffuseName.C_Str()), 0);
       }
+
+      object->LoadVerticesBuffer(vbuf);
+      object->LoadIndicesBuffer(indices);
 
       if (specular)
       {
@@ -294,9 +299,6 @@ std::unique_ptr<Mesh> Model::ParseMesh(int index, const aiMesh &mesh, const aiMa
          material.Get(AI_MATKEY_SHININESS, shininess);
       }
 
-      object->LoadVerticesBuffer(vbuf);
-
-      object->LoadIndicesBuffer(indices);
       if (specular)
       {
          object->CreateShader(L"ModelVS.cso", L"ModelSpecularPS.cso");
@@ -318,11 +320,10 @@ std::unique_ptr<Mesh> Model::ParseMesh(int index, const aiMesh &mesh, const aiMa
       object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
       object->SetLightView(lightView);
-      object->setInitialized();
    }
 
    bindablePtrs.push_back(std::move(object));
-   return std::make_unique<Mesh>(gfx, index, std::move(bindablePtrs), (UINT)indices.size(), m_materialIndex);
+   return std::make_unique<DrawMesh>(gfx, index, std::move(bindablePtrs), (UINT)indices.size(), m_materialIndex);
 }
 
 void Model::Draw(Graphics &gfx) const

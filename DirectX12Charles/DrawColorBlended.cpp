@@ -89,7 +89,7 @@ DrawColorBlended::DrawColorBlended(Graphics &gfx, int &index, Shape::shapeType t
 
    AddBind(std::move(object));
 
-   std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
+   std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this, 0, -1);
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);
    trans->setIndices(index, start, count);

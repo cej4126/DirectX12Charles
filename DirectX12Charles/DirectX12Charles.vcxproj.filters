@@ -327,9 +327,6 @@
     <ClInclude Include="Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Bindable.h">
       <Filter>Header Files\Bindable</Filter>
     </ClInclude>
@@ -345,9 +342,6 @@
     <ClInclude Include="BindableCodex.h">
       <Filter>Header Files\Bindable</Filter>
     </ClInclude>
-    <ClInclude Include="PlaneTexture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DrawColorBlended.h">
       <Filter>Header Files\Draw</Filter>
     </ClInclude>
@@ -358,9 +352,6 @@
       <Filter>Header Files\Draw</Filter>
     </ClInclude>
     <ClInclude Include="DrawLighted.h">
-      <Filter>Header Files\Draw</Filter>
-    </ClInclude>
-    <ClInclude Include="DrawPicture.h">
       <Filter>Header Files\Draw</Filter>
     </ClInclude>
     <ClInclude Include="DrawTextureCube.h">
@@ -374,6 +365,18 @@
     </ClInclude>
     <ClInclude Include="ShapeData.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawPictureCube.h">
+      <Filter>Header Files\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawMesh.h">
+      <Filter>Header Files\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="NormalObject.h">
+      <Filter>Header Files\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawNormal.h">
+      <Filter>Header Files\Draw</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -431,9 +434,6 @@
     <ClCompile Include="Vertex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Bindable.cpp">
       <Filter>Source Files\Bindable</Filter>
     </ClCompile>
@@ -449,9 +449,6 @@
     <ClCompile Include="BindableCodex.cpp">
       <Filter>Source Files\Bindable</Filter>
     </ClCompile>
-    <ClCompile Include="PlaneTexture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DrawColorBlended.cpp">
       <Filter>Source Files\Draw</Filter>
     </ClCompile>
@@ -464,9 +461,6 @@
     <ClCompile Include="DrawLighted.cpp">
       <Filter>Source Files\Draw</Filter>
     </ClCompile>
-    <ClCompile Include="DrawPicture.cpp">
-      <Filter>Source Files\Draw</Filter>
-    </ClCompile>
     <ClCompile Include="DrawTextureCube.cpp">
       <Filter>Source Files\Draw</Filter>
     </ClCompile>
@@ -475,6 +469,18 @@
     </ClCompile>
     <ClCompile Include="ShapeAssimp.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawPictureCube.cpp">
+      <Filter>Source Files\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawMesh.cpp">
+      <Filter>Source Files\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="NormalObject.cpp">
+      <Filter>Source Files\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawNormal.cpp">
+      <Filter>Source Files\Draw</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -517,6 +523,9 @@
     <FxCompile Include="ModelSpecularPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="PhongPSNormalMap.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Images\test.png">
@@ -536,6 +545,12 @@
     </Image>
     <Image Include="Images\cube.png">
       <Filter>Images</Filter>
+    </Image>
+    <Image Include="Images\brickwall.jpg">
+      <Filter>models</Filter>
+    </Image>
+    <Image Include="Images\brickwall_normal.jpg">
+      <Filter>models</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

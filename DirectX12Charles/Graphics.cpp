@@ -300,13 +300,24 @@ void Graphics::CreateMatrixConstant(UINT count)
    ThrowIfFailed(MatrixBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&matrixBufferGPUAddress)));
 }
 
-void Graphics::SetMatrixConstant(UINT index, TransformMatrix matrix) noexcept
+void Graphics::SetMatrixConstant(UINT index, TransformMatrix matrix, int rootVS, int rootPS) noexcept
 {
 
    int ConstantBufferPerObjectAlignedSize = (sizeof(matrix) + 255) & ~255;
 
-   commandList->SetGraphicsRootConstantBufferView(0,
-      MatrixBufferUploadHeaps->GetGPUVirtualAddress() + index * ConstantBufferPerObjectAlignedSize);
+
+   if (rootVS >= 0)
+   {
+      commandList->SetGraphicsRootConstantBufferView(rootVS,
+         MatrixBufferUploadHeaps->GetGPUVirtualAddress() + index * ConstantBufferPerObjectAlignedSize);
+   }
+
+   if (rootPS >= 0)
+   {
+      commandList->SetGraphicsRootConstantBufferView(rootPS,
+         MatrixBufferUploadHeaps->GetGPUVirtualAddress() + index * ConstantBufferPerObjectAlignedSize);
+   }
+
    memcpy(matrixBufferGPUAddress + index * ConstantBufferPerObjectAlignedSize, &matrix, sizeof(matrix));
 }
 
@@ -349,7 +360,7 @@ void Graphics::CreateMaterialConstant(UINT count)
    ThrowIfFailed(MaterialBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&MaterialBufferGPUAddress)));
 }
 
-void Graphics::CopyMaterialConstant(UINT index, MaterialType& material) noexcept
+void Graphics::CopyMaterialConstant(UINT index, MaterialType &material) noexcept
 {
    int ConstantBufferPerObjectAlignedSize = (sizeof(MaterialType) + 255) & ~255;
    memcpy(MaterialBufferGPUAddress + index * ConstantBufferPerObjectAlignedSize, &material, sizeof(material));

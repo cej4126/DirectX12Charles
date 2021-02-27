@@ -30,7 +30,7 @@ void dwritedraw::Draw()
 {
    //D2D1_SIZE_F rtSize = x11d2dRenderTargets[frameIndex]->GetSize();
    D2D1_RECT_F textRect = D2D1::RectF(20, 20, width, height);
-   static const WCHAR textx12[] = L"DirectX12";
+   static const WCHAR textx12[] = L"DirectX12 ESC Mouse Move";
 
    //// Render text directly to the back buffer.
    //gfx.Get2dContext()->SetTarget(x11d2dRenderTargets[frameIndex].Get());

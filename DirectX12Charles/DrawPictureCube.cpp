@@ -1,8 +1,8 @@
-#include "DrawPicture.h"
+#include "DrawPictureCube.h"
 using namespace std;
 
 //#define FIX_ROTATION
-DrawPicture::DrawPicture(Graphics &gfx, int &index, Shape::shapeType type, float range, const std::string &filename)
+DrawPictureCube::DrawPictureCube(Graphics &gfx, int &index, Shape::shapeType type, float range, const std::string &filename)
    :
    range(range)
 {
@@ -49,7 +49,6 @@ DrawPicture::DrawPicture(Graphics &gfx, int &index, Shape::shapeType type, float
 
    std::size_t pos = filename.find_last_of("/\\");
    std::string tag = "cube#" + filename.substr(pos + 1);
-
 
    std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, tag);
    if (!object->isInitialized())
@@ -99,7 +98,7 @@ DrawPicture::DrawPicture(Graphics &gfx, int &index, Shape::shapeType type, float
    AddBind(std::move(trans));
 }
 
-void DrawPicture::Update(float dt) noexcept
+void DrawPictureCube::Update(float dt) noexcept
 {
    boxRoll += boxRollRate * dt;
    boxPitch += boxPitchRate * dt;
@@ -109,7 +108,7 @@ void DrawPicture::Update(float dt) noexcept
    spaceYaw += spaceYawRate * dt;
 }
 
-XMMATRIX DrawPicture::GetTransformXM() const noexcept
+XMMATRIX DrawPictureCube::GetTransformXM() const noexcept
 {
    return DirectX::XMMatrixRotationRollPitchYaw(boxPitch, boxYaw, boxRoll) *
       DirectX::XMMatrixTranslation(range, 0.0f, 0.0f) *

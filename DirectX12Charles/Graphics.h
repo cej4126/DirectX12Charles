@@ -57,9 +57,9 @@ public:
 
    void CreateMatrixConstant(UINT count);
    void CreateMaterialConstant(UINT count);
-   void SetMatrixConstant(UINT index, TransformMatrix matrix) noexcept;
+   void SetMatrixConstant(UINT index, TransformMatrix matrix, int rootVS, int rootPS) noexcept;
 
-   void CopyMaterialConstant(UINT index, MaterialType& matrix) noexcept;
+   void CopyMaterialConstant(UINT index, MaterialType &matrix) noexcept;
    void SetMaterialConstant(UINT index) noexcept;
 
 

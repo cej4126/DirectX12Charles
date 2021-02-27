@@ -232,10 +232,11 @@
     <ClInclude Include="imgui\imstb_rectpack.h" />
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
-    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="DrawMesh.h" />
     <ClInclude Include="ModelObject.h" />
+    <ClInclude Include="NormalObject.h" />
     <ClInclude Include="Object.h" />
-    <ClInclude Include="PlaneTexture.h" />
+    <ClInclude Include="DrawNormal.h" />
     <ClInclude Include="DrawAssimp.h" />
     <ClInclude Include="DrawColorBlended.h" />
     <ClInclude Include="DrawColorIndex.h" />
@@ -245,7 +246,7 @@
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="DrawLighted.h" />
-    <ClInclude Include="DrawPicture.h" />
+    <ClInclude Include="DrawPictureCube.h" />
     <ClInclude Include="DrawPointLight.h" />
     <ClInclude Include="DrawTextureCube.h" />
     <ClInclude Include="ShapeAssimp.h" />
@@ -268,10 +269,11 @@
     <ClCompile Include="imgui\imgui_impl_dx11.cpp" />
     <ClCompile Include="imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
-    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="DrawMesh.cpp" />
     <ClCompile Include="ModelObject.cpp" />
+    <ClCompile Include="NormalObject.cpp" />
     <ClCompile Include="Object.cpp" />
-    <ClCompile Include="PlaneTexture.cpp" />
+    <ClCompile Include="DrawNormal.cpp" />
     <ClCompile Include="DrawAssimp.cpp" />
     <ClCompile Include="DrawColorBlended.cpp" />
     <ClCompile Include="DrawColorIndex.cpp" />
@@ -281,7 +283,7 @@
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="DrawLighted.cpp" />
-    <ClCompile Include="DrawPicture.cpp" />
+    <ClCompile Include="DrawPictureCube.cpp" />
     <ClCompile Include="DrawPointLight.cpp" />
     <ClCompile Include="DrawTextureCube.cpp" />
     <ClCompile Include="ShapeAssimp.cpp" />
@@ -351,6 +353,13 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
     </FxCompile>
+    <FxCompile Include="PhongPSNormalMap.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+    </FxCompile>
     <FxCompile Include="PointLightPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -382,6 +391,8 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Images\280893.jpg" />
+    <Image Include="Images\brickwall.jpg" />
+    <Image Include="Images\brickwall_normal.jpg" />
     <Image Include="Images\cobalt-city.jpg" />
     <Image Include="Images\cube.png" />
     <Image Include="Images\kappa50.png" />

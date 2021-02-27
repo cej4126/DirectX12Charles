@@ -154,6 +154,23 @@ public:
       return{ verts, indices };
    }
 
+   template<class V>
+   ShapeData<V> GetShapeTextureNormalData()
+   {
+      SetNormals();
+
+      std::vector<V> verts(vertices.size());
+      for (size_t i = 0; i < vertices.size(); i++)
+      {
+         verts[i].pos = vertices[i].pos;
+         verts[i].normal = vertices[i].normal;
+         verts[i].tex = vertices[i].tex;
+      }
+
+      return{ verts, indices };
+   }
+
+
 private:
    void SetNormals();
    void CreateCone(int longDiv);

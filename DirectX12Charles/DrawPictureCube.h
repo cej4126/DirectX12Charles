@@ -5,10 +5,10 @@
 #include "DrawFunction.h"
 #include "Transform.h"
 
-class DrawPicture : public DrawFunction
+class DrawPictureCube : public DrawFunction
 {
 public:
-   DrawPicture(Graphics &gfx, int &index, Shape::shapeType type, float range, const std::string &filename);
+   DrawPictureCube(Graphics &gfx, int &index, Shape::shapeType type, float range, const std::string &filename);
    void Update(float dt) noexcept override;
    XMMATRIX GetTransformXM() const noexcept override;
    int getMaterialIndex() const noexcept { return -1; }

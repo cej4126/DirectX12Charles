@@ -4,13 +4,14 @@
 #include "dwritedraw.h"
 #include "DrawColorIndex.h"
 #include "DrawColorBlended.h"
-#include "DrawPicture.h"
+#include "DrawPictureCube.h"
+#include "DrawNormal.h"
 #include "DrawTextureCube.h"
 #include "DrawLighted.h"
 #include "DrawPointLight.h"
 #include "DrawAssimp.h"
 #include "Camera.h"
-#include "Mesh.h"
+#include "DrawMesh.h"
 
 class App
 {
@@ -36,6 +37,8 @@ private:
    std::vector<std::unique_ptr<class DrawFunction>> drawItems;
    std::vector<class DrawLighted * > lightedObjects;
    std::unique_ptr<class DrawPointLight > light;
+   std::unique_ptr<class DrawNormal > plane;
+   std::unique_ptr<class DrawNormal > cube;
 
    Camera cam;
    float speedFactor = 1.0f;

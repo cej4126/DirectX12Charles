@@ -9,9 +9,9 @@ class Transform : public Bind::Bindable
 public:
 
 public:
-   Transform(Graphics &gfx, const DrawFunction &parent);
+   Transform(Graphics &gfx, const DrawFunction &parent, int rootVS = 0, int rootPS = -1);
    void Bind(Graphics &gfx) noexcept override;
-   
+
    void setIndices(int index, UINT start, UINT count)
    {
       setIndex(index);
@@ -80,4 +80,8 @@ private:
    bool lightBufferActive = false;
    Microsoft::WRL::ComPtr <ID3D12Resource> lightBufferUploadHeaps;
    UINT8 *lightBufferGPUAddress = nullptr;
+
+   int m_rootVS;
+   int m_rootPS;
+
 };

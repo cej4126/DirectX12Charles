@@ -11,10 +11,10 @@
 #include <assimp/postprocess.h>
 #include "Transform.h"
 
-class Mesh : public DrawFunction
+class DrawMesh : public DrawFunction
 {
 public:
-   Mesh(Graphics &gfx, int index, std::vector<std::shared_ptr<Bind::Bindable>> bindPtrs, int indicesCount, int& MaterialIndex);
+   DrawMesh(Graphics &gfx, int index, std::vector<std::shared_ptr<Bind::Bindable>> bindPtrs, int indicesCount, int& MaterialIndex);
    void Draw(Graphics &gfx, FXMMATRIX acculatedTransform) const noexcept;
    int getMaterialIndex() const noexcept
    {
@@ -32,7 +32,7 @@ class Node
    friend class Model;
 
 public:
-   Node(int id, const std::string& name, std::vector<Mesh * > meshPtrs, const DirectX::XMMATRIX &transform) noexcept;
+   Node(int id, const std::string& name, std::vector<DrawMesh * > MeshPtrs, const DirectX::XMMATRIX &transform) noexcept;
    void Draw(Graphics &gfx, FXMMATRIX accumulatedTrans);
    void SetAppliedTransform(FXMMATRIX transform) noexcept;
    int GetId() const noexcept;
@@ -44,7 +44,7 @@ private:
    std::string name;
    int id;
    std::vector<std::unique_ptr<Node>> childPtrs;
-   std::vector<Mesh *> meshPtrs;
+   std::vector<DrawMesh *> MeshPtrs;
    DirectX::XMFLOAT4X4 transform;
    DirectX::XMFLOAT4X4 appliedTransform;
 };
@@ -60,7 +60,7 @@ public:
    void ShowWindow(const char *windowName = nullptr) noexcept;
 
 private:
-   std::unique_ptr<Mesh> ParseMesh(int index, const aiMesh& mesh, const aiMaterial *const *pMaterials);
+   std::unique_ptr<DrawMesh> ParseMesh(int index, const aiMesh& mesh, const aiMaterial *const *pMaterials);
    std::unique_ptr<Node> ParseNode(int & nextId, const aiNode &node) noexcept;
 
    Graphics &gfx;
@@ -70,7 +70,7 @@ private:
    Bind::Bindable *object = nullptr;
 
    std::unique_ptr<Node> pRoot;
-   std::vector<std::unique_ptr<Mesh>> meshPtrs;
+   std::vector<std::unique_ptr<DrawMesh>> MeshPtrs;
 
    int m_materialIndex = -1;
    Graphics::MaterialType m_material;

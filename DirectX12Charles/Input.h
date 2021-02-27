@@ -44,8 +44,8 @@ public:
       std::pair <int, int> GetPos() const noexcept { return { x, y }; }
       int GetPosX() { return x; }
       int GetPosY() { return y; }
-      bool LeftIsPressed() const noexcept { return leftIsPressed; }
-      bool RightIsPressed() const noexcept { return rightIsPressed; }
+      bool isLeftPressed() const noexcept { return leftIsPressed; }
+      bool isRightPressed() const noexcept { return rightIsPressed; }
 
    private:
       MouseType type;

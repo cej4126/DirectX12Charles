@@ -22,6 +22,7 @@ namespace Bind
       void setIndex(int index) { m_index = index; }
 
       virtual void CreateTexture(const Surface &surface, int slot) {}
+      virtual void CreateNormal(const Surface &surface, int slot) {}
       virtual void CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag) {}
       virtual void CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath) {}
       virtual void SetLightView(ID3D12Resource *mylightView) {};
