@@ -66,7 +66,8 @@ DrawNormal::DrawNormal(Graphics &gfx, int &index, Shape::shapeType type, float s
       object->CreateTexture(Surface::FromFile(texturefilename), 0);
       if (specular)
       {
-         object->CreateNormal(Surface::FromFile(normalfilename), 1);
+         object->CreateTexture(Surface::FromFile(normalfilename), 1);
+         //object->CreateNormal(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\picture3.jpg"), 1);
          object->CreateShader(L"ModelVS.cso", L"PhongPSNormalMap.cso");
       }
       else
@@ -87,7 +88,7 @@ DrawNormal::DrawNormal(Graphics &gfx, int &index, Shape::shapeType type, float s
    }
    AddBind(std::move(object));
 
-   std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this, 0, 5);
+   std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this, NormalObject::VIEW_CB, NormalObject::VIEW_PS_CB);
    UINT start = gfx.shape.getIndiceStart(type);
    UINT count = gfx.shape.getIndiceCount(type);
    trans->setIndices(index, start, count);
@@ -114,7 +115,7 @@ void DrawNormal::SyncMaterial() noexcept
    m_gfx.CopyMaterialConstant(m_materialIndex, m_material);
 }
 
-void DrawNormal::SpawnControlWindow() noexcept
+void DrawNormal::SpawnControlWindow(const std::string &name) noexcept
 {
    DirectX::XMFLOAT3 pos;
    pos.x = m_pos.x;
@@ -122,16 +123,16 @@ void DrawNormal::SpawnControlWindow() noexcept
    pos.z = m_pos.z;
 
    //using namespace std::string_literals;
-   if (ImGui::Begin("Normal"))
+   if (ImGui::Begin(name.c_str()))
    {
       ImGui::Text("Material");
       bool iChanged = ImGui::SliderFloat("Specular Intensity", &m_material.specularInensity, 0.05f, 4.0f, "%.2f");
       bool pChanged = ImGui::SliderFloat("Specular Power", &m_material.specularPower, 1.0f, 200.0f, "%.2f");
 
       ImGui::Text("Position");
-      ImGui::SliderFloat("X", &m_pos.x, -30.0f, 30.0f, "%0.1f");
-      ImGui::SliderFloat("Y", &m_pos.y, -30.0f, 30.0f, "%0.1f");
-      ImGui::SliderFloat("Z", &m_pos.z, -30.0f, 30.0f, "%0.1f");
+      ImGui::SliderFloat("X", &m_pos.x, -50.0f, 50.0f, "%0.1f");
+      ImGui::SliderFloat("Y", &m_pos.y, -50.0f, 50.0f, "%0.1f");
+      ImGui::SliderFloat("Z", &m_pos.z, -50.0f, 50.0f, "%0.1f");
 
       ImGui::Text("Orientation");
       ImGui::SliderAngle("Roll", &m_rot.x, -180.0f, 180.0f);

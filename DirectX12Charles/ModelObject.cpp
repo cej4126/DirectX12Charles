@@ -50,11 +50,6 @@ void ModelObject::Bind(Graphics &gfx) noexcept
 
    // set the descriptor table to the descriptor heap (parameter 1, as constant buffer root descriptor is parameter index 0)
    commandList->SetGraphicsRootDescriptorTable(TEXTURE_CB, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-
-   if (specularActive)
-   {
-      commandList->SetGraphicsRootDescriptorTable(SPECULAR_CB, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-   }
 }
 
 void ModelObject::CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag)
@@ -87,7 +82,7 @@ void ModelObject::CreateRootSignature(bool constantFlag, bool materialFlag, bool
    // this is a range of descriptors inside a descriptor heap
    D3D12_DESCRIPTOR_RANGE  descriptorTableRanges[1]; // only one range right now
    descriptorTableRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // this is a range of shader resource views (descriptors)
-   descriptorTableRanges[0].NumDescriptors = 1; // we only have one texture right now, so the range is only 1
+   descriptorTableRanges[0].NumDescriptors = 2; // we only have one texture right now, so the range is only 1
    descriptorTableRanges[0].BaseShaderRegister = 0; // start index of the shader registers in the range
    descriptorTableRanges[0].RegisterSpace = 0; // space 0. can usually be zero
    descriptorTableRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // this appends the range to the end of the root signature descriptor tables
@@ -104,32 +99,8 @@ void ModelObject::CreateRootSignature(bool constantFlag, bool materialFlag, bool
    rootParameters[TEXTURE_CB].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
 
    int rootCount = TEXTURE_CB + 1;
-   if (specularActive)
-   {
-      // create a descriptor range (descriptor table) and fill it out
-      // this is a range of descriptors inside a descriptor heap
-      D3D12_DESCRIPTOR_RANGE  descriptorSpecularTableRanges[1]; // only one range right now
-      descriptorSpecularTableRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // this is a range of shader resource views (descriptors)
-      descriptorSpecularTableRanges[0].NumDescriptors = 1; // we only have one texture right now, so the range is only 1
-      descriptorSpecularTableRanges[0].BaseShaderRegister = 1; // start index of the shader registers in the range
-      descriptorSpecularTableRanges[0].RegisterSpace = 0; // space 0. can usually be zero
-      descriptorSpecularTableRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // this appends the range to the end of the root signature descriptor tables
 
-      // create a descriptor table
-      D3D12_ROOT_DESCRIPTOR_TABLE descriptorSpecularTable;
-      descriptorSpecularTable.NumDescriptorRanges = _countof(descriptorSpecularTableRanges); // we only have one range
-      descriptorSpecularTable.pDescriptorRanges = &descriptorSpecularTableRanges[0]; // the pointer to the beginning of our ranges array
-
-      // fill out the parameter for our descriptor table. Remember it's a good idea to sort parameters by frequency of change. Our constant
-      // buffer will be changed multiple times per frame, while our descriptor table will not be changed at all (in this tutorial)
-      rootParameters[SPECULAR_CB].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // this is a descriptor table
-      rootParameters[SPECULAR_CB].DescriptorTable = descriptorSpecularTable; // this is our descriptor table for this root parameter
-      rootParameters[SPECULAR_CB].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
-
-      rootCount = SPECULAR_CB + 1;
-   }
-
-   //// create a static sampler
+   // create a static sampler
    D3D12_STATIC_SAMPLER_DESC sampler = {};
    sampler.Filter = D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
    sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -447,12 +418,15 @@ void ModelObject::CreateTexture(const Surface &surface, int slot)
    resourceBarrier.Transition.pResource = textureBuffer[slot].Get();
    commandList->ResourceBarrier(1, &resourceBarrier);
 
-   // create the descriptor heap that will store our srv
-   D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-   heapDesc.NumDescriptors = 1;
-   heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-   heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-   ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mainDescriptorHeap)));
+   if (slot == 0)
+   {
+      // create the descriptor heap that will store our srv
+      D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+      heapDesc.NumDescriptors = 2;
+      heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+      heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+      ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mainDescriptorHeap)));
+   }
 
    // now we create a shader resource view (descriptor that points to the texture and describes it)
    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -460,7 +434,12 @@ void ModelObject::CreateTexture(const Surface &surface, int slot)
    srvDesc.Format = resourceDesc.Format;
    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
    srvDesc.Texture2D.MipLevels = 1;
-   device->CreateShaderResourceView(textureBuffer[slot].Get(), &srvDesc, mainDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+
+   D3D12_CPU_DESCRIPTOR_HANDLE handle = mainDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+   int size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+   handle.ptr += slot * size;
+
+   device->CreateShaderResourceView(textureBuffer[slot].Get(), &srvDesc, handle);
 }
 
 void ModelObject::CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType)

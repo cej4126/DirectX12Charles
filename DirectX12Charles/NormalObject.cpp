@@ -50,10 +50,6 @@ void NormalObject::Bind(Graphics &gfx) noexcept
    commandList->SetDescriptorHeaps(_countof(textureDescriptorHeaps), textureDescriptorHeaps);
    // set the descriptor table to the descriptor heap (parameter 1, as constant buffer root descriptor is parameter index 0)
    commandList->SetGraphicsRootDescriptorTable(TEXTURE_CB, textureDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-
-   ID3D12DescriptorHeap *normalDescriptorHeaps[] = { normalDescriptorHeap.Get() };
-   commandList->SetDescriptorHeaps(_countof(normalDescriptorHeaps), normalDescriptorHeaps);
-   commandList->SetGraphicsRootDescriptorTable(NORMAL_CB, normalDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 }
 
 void NormalObject::CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag)
@@ -86,7 +82,7 @@ void NormalObject::CreateRootSignature(bool constantFlag, bool materialFlag, boo
    // this is a range of descriptors inside a descriptor heap
    D3D12_DESCRIPTOR_RANGE  descriptorTableRanges[1]; // only one range right now
    descriptorTableRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // this is a range of shader resource views (descriptors)
-   descriptorTableRanges[0].NumDescriptors = 1; // we only have one texture right now, so the range is only 1
+   descriptorTableRanges[0].NumDescriptors = NUMBER_OF_VIEW; // we only have one texture right now, so the range is only 1
    descriptorTableRanges[0].BaseShaderRegister = 0; // start index of the shader registers in the range
    descriptorTableRanges[0].RegisterSpace = 0; // space 0. can usually be zero
    descriptorTableRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // this appends the range to the end of the root signature descriptor tables
@@ -102,26 +98,6 @@ void NormalObject::CreateRootSignature(bool constantFlag, bool materialFlag, boo
    rootParameters[TEXTURE_CB].DescriptorTable = descriptorTable; // this is our descriptor table for this root parameter
    rootParameters[TEXTURE_CB].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
 
-   // create a descriptor range (descriptor table) and fill it out
-   // this is a range of descriptors inside a descriptor heap
-   D3D12_DESCRIPTOR_RANGE  descriptorNormalTableRanges[1]; // only one range right now
-   descriptorNormalTableRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // this is a range of shader resource views (descriptors)
-   descriptorNormalTableRanges[0].NumDescriptors = 1; // we only have one texture right now, so the range is only 1
-   descriptorNormalTableRanges[0].BaseShaderRegister = 1; // start index of the shader registers in the range
-   descriptorNormalTableRanges[0].RegisterSpace = 0; // space 0. can usually be zero
-   descriptorNormalTableRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // this appends the range to the end of the root signature descriptor tables
-
-   // create a descriptor table
-   D3D12_ROOT_DESCRIPTOR_TABLE descriptorNormalTable;
-   descriptorNormalTable.NumDescriptorRanges = _countof(descriptorNormalTableRanges); // we only have one range
-   descriptorNormalTable.pDescriptorRanges = &descriptorNormalTableRanges[0]; // the pointer to the beginning of our ranges array
-
-   // fill out the parameter for our descriptor table. Remember it's a good idea to sort parameters by frequency of change. Our constant
-   // buffer will be changed multiple times per frame, while our descriptor table will not be changed at all (in this tutorial)
-   rootParameters[NORMAL_CB].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // this is a descriptor table
-   rootParameters[NORMAL_CB].DescriptorTable = descriptorNormalTable; // this is our descriptor table for this root parameter
-   rootParameters[NORMAL_CB].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // our pixel shader will be the only shader accessing this parameter for now
-
    rootCBVDescriptor.RegisterSpace = 0;
    rootCBVDescriptor.ShaderRegister = 0;
 
@@ -130,7 +106,7 @@ void NormalObject::CreateRootSignature(bool constantFlag, bool materialFlag, boo
    rootParameters[VIEW_PS_CB].Descriptor = rootCBVDescriptor;
    rootParameters[VIEW_PS_CB].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
-   //// create a static sampler
+   // create a static sampler
    D3D12_STATIC_SAMPLER_DESC sampler = {};
    sampler.Filter = D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
    sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -398,8 +374,8 @@ void NormalObject::CreateTexture(const Surface &surface, int slot)
       &resourceDesc,
       D3D12_RESOURCE_STATE_COPY_DEST,
       nullptr,
-      IID_PPV_ARGS(&textureBuffer)));
-   textureBuffer->SetName(L"Texture Default Buffer");
+      IID_PPV_ARGS(&textureBuffer[slot])));
+   textureBuffer[slot]->SetName(L"Texture Default Buffer");
 
    // Upload heap
    heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
@@ -418,8 +394,8 @@ void NormalObject::CreateTexture(const Surface &surface, int slot)
       &resourceDesc,
       D3D12_RESOURCE_STATE_GENERIC_READ,
       nullptr,
-      IID_PPV_ARGS(&textureBufferUploadHeap)));
-   textureBufferUploadHeap->SetName(L"Texture Upload Buffer");
+      IID_PPV_ARGS(&textureBufferUploadHeap[slot])));
+   textureBufferUploadHeap[slot]->SetName(L"Texture Upload Buffer");
 
    // copy data to the upload heap
    D3D12_SUBRESOURCE_DATA TextureData = {};
@@ -428,8 +404,8 @@ void NormalObject::CreateTexture(const Surface &surface, int slot)
    TextureData.SlicePitch = surface.GetWidth() * sizeof(Surface::Color) * surface.GetHeight();
 
    gfx.UpdateSubresource(
-      textureBuffer.Get(),
-      textureBufferUploadHeap.Get(),
+      textureBuffer[slot].Get(),
+      textureBufferUploadHeap[slot].Get(),
       &TextureData); // pSrcData
 
    D3D12_RESOURCE_BARRIER resourceBarrier;
@@ -438,15 +414,18 @@ void NormalObject::CreateTexture(const Surface &surface, int slot)
    resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
    resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
    resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-   resourceBarrier.Transition.pResource = textureBuffer.Get();
+   resourceBarrier.Transition.pResource = textureBuffer[slot].Get();
    commandList->ResourceBarrier(1, &resourceBarrier);
 
-   // create the descriptor heap that will store our srv
-   D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-   heapDesc.NumDescriptors = 1;
-   heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-   heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-   ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&textureDescriptorHeap)));
+   if (slot == 0)
+   {
+      // create the descriptor heap that will store our srv
+      D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+      heapDesc.NumDescriptors = NUMBER_OF_VIEW;
+      heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+      heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+      ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&textureDescriptorHeap)));
+   }
 
    // now we create a shader resource view (descriptor that points to the texture and describes it)
    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -454,97 +433,11 @@ void NormalObject::CreateTexture(const Surface &surface, int slot)
    srvDesc.Format = resourceDesc.Format;
    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
    srvDesc.Texture2D.MipLevels = 1;
-   device->CreateShaderResourceView(textureBuffer.Get(), &srvDesc, textureDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-}
+   D3D12_CPU_DESCRIPTOR_HANDLE handle = textureDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+   int size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+   handle.ptr += slot * size;
 
-
-void NormalObject::CreateNormal(const Surface &surface, int slot)
-{
-   D3D12_HEAP_PROPERTIES heapProps;
-   ZeroMemory(&heapProps, sizeof(heapProps));
-   heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
-   heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-   heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-   heapProps.CreationNodeMask = 1;
-   heapProps.VisibleNodeMask = 1;
-
-   D3D12_RESOURCE_DESC resourceDesc;
-   ZeroMemory(&resourceDesc, sizeof(resourceDesc));
-   resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-   resourceDesc.Alignment = 0;
-   resourceDesc.Width = surface.GetWidth();
-   resourceDesc.Height = surface.GetHeight();
-   resourceDesc.DepthOrArraySize = 1;
-   resourceDesc.MipLevels = 1;
-   resourceDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-   resourceDesc.SampleDesc.Count = 1;
-   resourceDesc.SampleDesc.Quality = 0;
-   resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-   resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-   ThrowIfFailed(device->CreateCommittedResource(
-      &heapProps,
-      D3D12_HEAP_FLAG_NONE,
-      &resourceDesc,
-      D3D12_RESOURCE_STATE_COPY_DEST,
-      nullptr,
-      IID_PPV_ARGS(&normalBuffer)));
-   normalBuffer->SetName(L"Normal Default Buffer");
-
-   // Upload heap
-   heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
-   UINT64 normalUploadBufferSize;
-   device->GetCopyableFootprints(&resourceDesc, 0, 1, 0, nullptr, nullptr, nullptr, &normalUploadBufferSize);
-
-   resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-   resourceDesc.Width = normalUploadBufferSize;
-   resourceDesc.Height = 1;
-   resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
-   resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-
-   ThrowIfFailed(device->CreateCommittedResource(
-      &heapProps,
-      D3D12_HEAP_FLAG_NONE,
-      &resourceDesc,
-      D3D12_RESOURCE_STATE_GENERIC_READ,
-      nullptr,
-      IID_PPV_ARGS(&normalBufferUploadHeap)));
-   normalBufferUploadHeap->SetName(L"Normal Upload Buffer");
-
-   // copy data to the upload heap
-   D3D12_SUBRESOURCE_DATA normalData = {};
-   normalData.pData = surface.GetBufferPtr();
-   normalData.RowPitch = surface.GetWidth() * sizeof(Surface::Color);
-   normalData.SlicePitch = surface.GetWidth() * sizeof(Surface::Color) * surface.GetHeight();
-
-   gfx.UpdateSubresource(
-      normalBuffer.Get(),
-      normalBufferUploadHeap.Get(),
-      &normalData); // pSrcData
-
-   D3D12_RESOURCE_BARRIER resourceBarrier;
-   resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-   resourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-   resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-   resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-   resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-   resourceBarrier.Transition.pResource = normalBuffer.Get();
-   commandList->ResourceBarrier(1, &resourceBarrier);
-
-   // create the descriptor heap that will store our srv
-   D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-   heapDesc.NumDescriptors = 1;
-   heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-   heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-   ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&normalDescriptorHeap)));
-
-   // now we create a shader resource view (descriptor that points to the normal and describes it)
-   D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-   srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-   srvDesc.Format = resourceDesc.Format;
-   srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-   srvDesc.Texture2D.MipLevels = 1;
-   device->CreateShaderResourceView(normalBuffer.Get(), &srvDesc, normalDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+   device->CreateShaderResourceView(textureBuffer[slot].Get(), &srvDesc, handle);
 }
 
 void NormalObject::CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType)

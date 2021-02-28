@@ -35,7 +35,6 @@ private:
       LIGHT_CB,
       MATERIAL_CB,
       TEXTURE_CB,
-      SPECULAR_CB,
       COUNT_CB
    };
 

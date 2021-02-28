@@ -30,23 +30,21 @@ App::App()
 
    light = std::make_unique<DrawPointLight>(wnd.Gfx(), objectCount, 0.5f);
 
-   plane = std::make_unique<DrawNormal>(wnd.Gfx(),
-      objectCount,
-      Shape::Plane, 6.0f,
-      "..\\..\\DirectX12Charles\\Images\\brickwall.jpg",
-      "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg",
-      light->getLightView(), MaterialCount);
-   plane->SetPos(XMFLOAT3(15.0f, 5.0f, 20.0f));
-   //drawItems.push_back(std::move(plane1));
+   //plane = std::make_unique<DrawNormal>(wnd.Gfx(),
+   //   objectCount,
+   //   Shape::Plane, 6.0f,
+   //   "..\\..\\DirectX12Charles\\Images\\brickwall.jpg",
+   //   "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg",
+   //   light->getLightView(), MaterialCount);
+   //plane->SetPos(XMFLOAT3(15.0f, 5.0f, 20.0f));
 
-   cube = std::make_unique<DrawNormal>(wnd.Gfx(),
-      objectCount,
-      Shape::TextureCube, 12.0f,
-      "..\\..\\DirectX12Charles\\Images\\brickwall.jpg",
-      "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg",
-      light->getLightView(), MaterialCount);
-   cube->SetPos(XMFLOAT3(-15.0f, 5.0f, 30.0f));
-   //drawItems.push_back(std::move(cube));
+   //cube = std::make_unique<DrawNormal>(wnd.Gfx(),
+   //   objectCount,
+   //   Shape::TextureCube, 12.0f,
+   //   "..\\..\\DirectX12Charles\\Images\\brickwall.jpg",
+   //   "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg",
+   //   light->getLightView(), MaterialCount);
+   //cube->SetPos(XMFLOAT3(-15.0f, 5.0f, 30.0f));
 
    //drawItems.push_back(std::make_unique<DrawNormal>(wnd.Gfx(), objectCount, Shape::Plane, 6.0f,
    //   "..\\..\\DirectX12Charles\\Images\\brickwall.jpg", "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg", light->getLightView(), MaterialCount));
@@ -71,9 +69,9 @@ App::App()
    //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\boxy.gltf.glb", light->getLightView(), MaterialCount);
    //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nano_hierarchy.gltf", light->getLightView(), MaterialCount);
 
-   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount,
-   //   "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj",
-   //   light->getLightView(), MaterialCount);
+   nano = std::make_unique<Model>(wnd.Gfx(), objectCount,
+      "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj",
+      light->getLightView(), MaterialCount);
 
    wnd.Gfx().CreateMatrixConstant(objectCount);
    wnd.Gfx().CreateMaterialConstant(MaterialCount);
@@ -147,9 +145,9 @@ void App::DoFrame()
    auto &lightObject = light;
    lightObject->Draw(wnd.Gfx());
 
-   plane->Draw(wnd.Gfx());
-   cube->Draw(wnd.Gfx());
-   //nano->Draw(wnd.Gfx());
+   //plane->Draw(wnd.Gfx());
+   //cube->Draw(wnd.Gfx());
+   nano->Draw(wnd.Gfx());
 
    for (auto &b : drawItems)
    {
@@ -223,10 +221,11 @@ void App::DoFrame()
    cam.CreateControlWindow();
    lightObject->CreateLightControl();
 
-   cube->SpawnControlWindow();
+   //plane->SpawnControlWindow("plane");
+   //cube->SpawnControlWindow("cube");
 
    SpawnObjectControl();
-   //nano->ShowWindow("Model");
+   nano->ShowWindow("Model");
 
    ImGui::Render();
    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());

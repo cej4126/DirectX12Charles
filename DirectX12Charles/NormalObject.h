@@ -15,7 +15,7 @@ public:
    std::string GetUID() const noexcept override;
 
    void CreateTexture(const Surface &surface, int slot);
-   void CreateNormal(const Surface &surface, int slot);
+   //void CreateNormal(const Surface &surface, int slot);
    void CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag);
    void CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath);
    void SetLightView(ID3D12Resource *mylightView);
@@ -29,17 +29,18 @@ public:
 
    void Bind(Graphics &gfx) noexcept override;
 
-private:
    enum
    {
       VIEW_CB = 0,
       LIGHT_CB,
       MATERIAL_CB,
       TEXTURE_CB,
-      NORMAL_CB,
+      //NORMAL_CB,
       VIEW_PS_CB,
       COUNT_CB
    };
+private:
+   static const int NUMBER_OF_VIEW = 2;
 
    Graphics &gfx;
    ID3D12Device *device;
@@ -51,9 +52,9 @@ private:
    Microsoft::WRL::ComPtr <ID3D12Resource> colorBufferUploadHeaps;
    UINT8 *colorBufferGPUAddress;
 
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer;
+   Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer[NUMBER_OF_VIEW];
    Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >textureDescriptorHeap;
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap;
+   Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap[NUMBER_OF_VIEW];
 
    Microsoft::WRL::ComPtr < ID3D12Resource > normalBuffer;
    Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >normalDescriptorHeap;

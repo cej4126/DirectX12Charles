@@ -25,7 +25,7 @@ public:
 		myMaterial.pad[1] = 0.0f;
 	}
 	void SyncMaterial() noexcept;
-	void SpawnControlWindow() noexcept;
+	void SpawnControlWindow(const std::string &name) noexcept;
 
 private:
 	Graphics &m_gfx;

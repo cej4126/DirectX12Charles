@@ -30,6 +30,7 @@ struct TransformCBuf
 ConstantBuffer <TransformCBuf> transform: register(b0);
 
 Texture2D tex : register(t0);
+//Texture2D tex2 : register(t2);
 Texture2D nmap : register(t1);
 SamplerState s1 : register(s0);
 
@@ -59,5 +60,6 @@ float4 main(float3 worldPos : Position, float3 n : Normal, float2 tc : Texcoord)
 
    // final color
    return float4(saturate((diffuse + buf.ambient) * tex.Sample(s1, tc).rgb + specular), 1.0f);
+   //return float4(saturate((diffuse + buf.ambient) * tex2.Sample(s1, tc).rgb + specular), 1.0f);
    //return float4(saturate((diffuse + buf.ambient) * nmap.Sample(s1, tc).rgb + specular), 1.0f);
 }
