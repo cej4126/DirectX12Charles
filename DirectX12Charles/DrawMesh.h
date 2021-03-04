@@ -5,7 +5,8 @@
 #include "Vertex.h"
 #include "DrawFunction.h"
 #include "imgui/imgui.h"
-#include "ModelObject.h"
+//#include "ModelObject.h"
+#include "ModelSpec.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -52,12 +53,13 @@ private:
 class Model
 {
 public:
-   Model(Graphics &gfx, int &index, const std::string fileName, ID3D12Resource *lightView, int& MaterialIndex);
+   Model(Graphics &gfx, int &index, float size, const std::string fileName, ID3D12Resource *lightView, int& MaterialIndex);
    ~Model() noexcept;
 
    void FirstCommand();
    void Draw(Graphics &gfx) const;
    void ShowWindow(const char *windowName = nullptr) noexcept;
+   void SetPosition(FXMMATRIX tf);
 
 private:
    std::unique_ptr<DrawMesh> ParseMesh(int index, const aiMesh& mesh, const aiMaterial *const *pMaterials);
@@ -68,6 +70,7 @@ private:
    ID3D12GraphicsCommandList *commandList;
    ID3D12Resource *lightView;
    Bind::Bindable *object = nullptr;
+   float m_size = 1.0f;
 
    std::unique_ptr<Node> pRoot;
    std::vector<std::unique_ptr<DrawMesh>> MeshPtrs;

@@ -67,8 +67,7 @@ DrawNormal::DrawNormal(Graphics &gfx, int &index, Shape::shapeType type, float s
       if (specular)
       {
          object->CreateTexture(Surface::FromFile(normalfilename), 1);
-         //object->CreateNormal(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\picture3.jpg"), 1);
-         object->CreateShader(L"ModelVS.cso", L"PhongPSNormalMap.cso");
+         object->CreateShader(L"ModelVS.cso", L"PhongPSNormal.cso");
       }
       else
       {
@@ -81,8 +80,10 @@ DrawNormal::DrawNormal(Graphics &gfx, int &index, Shape::shapeType type, float s
 
       object->SetLightView(lightView);
 
-      m_material.specularInensity = 0.8f;
-      m_material.specularPower = 45.0f;
+      m_material.specularInensity = 0.18f;
+      m_material.specularPower = 18.0f;
+      //m_material.specularInensity = 0.8f;
+      //m_material.specularPower = 45.0f;
       ++MaterialIndex;
 
    }

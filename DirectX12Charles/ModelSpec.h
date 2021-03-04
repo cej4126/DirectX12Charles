@@ -5,12 +5,12 @@
 #include "Surface.h"
 #include "Vertex.h"
 
-class ModelObject : public Bind::Bindable
+class ModelSpec : public Bind::Bindable
 {
 public:
-   ModelObject(Graphics &gfx, std::string tag);
+   ModelSpec(Graphics &gfx, std::string tag);
 
-   static std::shared_ptr<ModelObject> Resolve(Graphics &gfx, const std::string &tag);
+   static std::shared_ptr<ModelSpec> Resolve(Graphics &gfx, const std::string &tag);
    static std::string GenerateUID(const std::string &tag);
    std::string GetUID() const noexcept override;
 
@@ -47,13 +47,13 @@ private:
 
    bool colorBufferActive = false;
    Microsoft::WRL::ComPtr <ID3D12Resource> colorBufferUploadHeaps;
-   UINT8 *colorBufferGPUAddress;
+   UINT8 *colorBufferGPUAddress = 0;
 
    bool textureActive = false;
    bool specularActive = false;
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer[2];
+   Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer[NUMBER_OF_VIEW];
    Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >mainDescriptorHeap;
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap[2];
+   Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap[NUMBER_OF_VIEW];
 
    Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
    D3D12_INPUT_LAYOUT_DESC inputLayoutDesc;

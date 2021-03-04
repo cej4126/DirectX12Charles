@@ -30,13 +30,13 @@ App::App()
 
    light = std::make_unique<DrawPointLight>(wnd.Gfx(), objectCount, 0.5f);
 
-   //plane = std::make_unique<DrawNormal>(wnd.Gfx(),
-   //   objectCount,
-   //   Shape::Plane, 6.0f,
-   //   "..\\..\\DirectX12Charles\\Images\\brickwall.jpg",
-   //   "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg",
-   //   light->getLightView(), MaterialCount);
-   //plane->SetPos(XMFLOAT3(15.0f, 5.0f, 20.0f));
+   plane = std::make_unique<DrawNormal>(wnd.Gfx(),
+      objectCount,
+      Shape::Plane, 6.0f,
+      "..\\..\\DirectX12Charles\\Images\\brickwall.jpg",
+      "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg",
+      light->getLightView(), MaterialCount);
+   plane->SetPos(XMFLOAT3(15.0f, 5.0f, 20.0f));
 
    //cube = std::make_unique<DrawNormal>(wnd.Gfx(),
    //   objectCount,
@@ -46,8 +46,18 @@ App::App()
    //   light->getLightView(), MaterialCount);
    //cube->SetPos(XMFLOAT3(-15.0f, 5.0f, 30.0f));
 
-   //drawItems.push_back(std::make_unique<DrawNormal>(wnd.Gfx(), objectCount, Shape::Plane, 6.0f,
+   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, 1.0f,
+   //   "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj",
+   //   light->getLightView(), MaterialCount);
+
+   wall = std::make_unique<Model>(wnd.Gfx(), objectCount, 5.0f,
+      "..\\..\\DirectX12Charles\\models\\brick_wall\\brick_wall.obj",
+      light->getLightView(), MaterialCount);
+   wall->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f ));
+
+   //drawItems.push_back(std::make_unique<DrawNormal>(wnd.Gfx(), objectCount, Shape::Plane, 3.0f,
    //   "..\\..\\DirectX12Charles\\Images\\brickwall.jpg", "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg", light->getLightView(), MaterialCount));
+
 
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {
@@ -64,14 +74,6 @@ App::App()
       //drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
       //drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
    }
-
-   // problems with reading the file.
-   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\boxy.gltf.glb", light->getLightView(), MaterialCount);
-   //nano = std::make_unique<Model>(wnd.Gfx(), objectCount, "..\\..\\DirectX12Charles\\Models\\nano_hierarchy.gltf", light->getLightView(), MaterialCount);
-
-   nano = std::make_unique<Model>(wnd.Gfx(), objectCount,
-      "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj",
-      light->getLightView(), MaterialCount);
 
    wnd.Gfx().CreateMatrixConstant(objectCount);
    wnd.Gfx().CreateMaterialConstant(MaterialCount);
@@ -91,7 +93,15 @@ App::App()
          wnd.Gfx().CopyMaterialConstant(materialIndex, material);
       }
    }
-   //nano->FirstCommand();
+
+   if (nano != nullptr)
+   {
+      nano->FirstCommand();
+   }
+   if (wall != nullptr)
+   {
+      wall->FirstCommand();
+   }
 
    wnd.Gfx().RunCommandList();
    wnd.Gfx().SetProjection(XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 80.0f));
@@ -145,9 +155,22 @@ void App::DoFrame()
    auto &lightObject = light;
    lightObject->Draw(wnd.Gfx());
 
-   //plane->Draw(wnd.Gfx());
-   //cube->Draw(wnd.Gfx());
-   nano->Draw(wnd.Gfx());
+   if (plane != nullptr)
+   {
+      plane->Draw(wnd.Gfx());
+   }
+   if (cube != nullptr)
+   {
+      cube->Draw(wnd.Gfx());
+   }
+   if (nano != nullptr)
+   {
+      nano->Draw(wnd.Gfx());
+   }
+   if (wall != nullptr)
+   {
+      wall->Draw(wnd.Gfx());
+   }
 
    for (auto &b : drawItems)
    {
@@ -221,11 +244,24 @@ void App::DoFrame()
    cam.CreateControlWindow();
    lightObject->CreateLightControl();
 
-   //plane->SpawnControlWindow("plane");
-   //cube->SpawnControlWindow("cube");
-
    SpawnObjectControl();
-   nano->ShowWindow("Model");
+
+   if (plane != nullptr)
+   {
+      plane->SpawnControlWindow("plane");
+   }
+   if (cube != nullptr)
+   {
+      cube->SpawnControlWindow("cube");
+   }
+   if (nano != nullptr)
+   {
+      nano->ShowWindow("Model");
+   }
+   if (wall != nullptr)
+   {
+      wall->ShowWindow("Model");
+   }
 
    ImGui::Render();
    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());

@@ -378,6 +378,9 @@
     <ClInclude Include="DrawNormal.h">
       <Filter>Header Files\Draw</Filter>
     </ClInclude>
+    <ClInclude Include="ModelSpec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -482,6 +485,9 @@
     <ClCompile Include="DrawNormal.cpp">
       <Filter>Source Files\Draw</Filter>
     </ClCompile>
+    <ClCompile Include="ModelSpec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="ColorIndexPS.hlsl">
@@ -517,13 +523,19 @@
     <FxCompile Include="ModelPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="ModelPSSpecNormal.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
     <FxCompile Include="ModelVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="ModelSpecularPS.hlsl">
+    <FxCompile Include="ModelPSNormal.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="PhongPSNormalMap.hlsl">
+    <FxCompile Include="PhongPSNormal.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="ModelVSNormal.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

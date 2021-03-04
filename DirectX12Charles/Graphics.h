@@ -40,7 +40,8 @@ public:
       XMFLOAT3 materialColor;
       float specularInensity = 0.6f;
       float specularPower = 30.0f;
-      float pad[2];
+      int hasNormal;
+      float pad;
    };
 
    TransformMatrix matrixBuffer;

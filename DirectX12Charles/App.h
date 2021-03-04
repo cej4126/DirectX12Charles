@@ -37,13 +37,14 @@ private:
    std::vector<std::unique_ptr<class DrawFunction>> drawItems;
    std::vector<class DrawLighted * > lightedObjects;
    std::unique_ptr<class DrawPointLight > light;
-   std::unique_ptr<class DrawNormal > plane;
-   std::unique_ptr<class DrawNormal > cube;
+   std::unique_ptr<class DrawNormal > plane = nullptr;
+   std::unique_ptr<class DrawNormal > cube = nullptr;
 
    Camera cam;
    float speedFactor = 1.0f;
    int objectIndex = 1;
    DrawLighted *currentObject = nullptr;
-   std::unique_ptr<class Model > nano;
+   std::unique_ptr<class Model > nano = nullptr;
+   std::unique_ptr<class Model > wall = nullptr;
 };
 

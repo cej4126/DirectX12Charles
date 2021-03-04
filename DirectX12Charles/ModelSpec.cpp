@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ModelObject.h"
+#include "ModelSpec.h"
 #include "App.h"
 #include "BindableCodex.h"
 #include <memory>
@@ -8,7 +8,7 @@
 using namespace Microsoft::WRL;
 
 
-ModelObject::ModelObject(Graphics &gfx, std::string tag)
+ModelSpec::ModelSpec(Graphics &gfx, std::string tag)
    :
    gfx(gfx),
    tag(tag),
@@ -17,22 +17,22 @@ ModelObject::ModelObject(Graphics &gfx, std::string tag)
 {
 }
 
-std::shared_ptr<ModelObject> ModelObject::Resolve(Graphics &gfx, const std::string &tag)
+std::shared_ptr<ModelSpec> ModelSpec::Resolve(Graphics &gfx, const std::string &tag)
 {
-   return Bind::BindableCodex::Resolve<ModelObject>(gfx, tag);
+   return Bind::BindableCodex::Resolve<ModelSpec>(gfx, tag);
 }
 
-std::string ModelObject::GenerateUID(const std::string &tag)
+std::string ModelSpec::GenerateUID(const std::string &tag)
 {
-   return typeid(ModelObject).name() + std::string("#") + tag;
+   return typeid(ModelSpec).name() + std::string("#") + tag;
 }
 
-std::string ModelObject::GetUID() const noexcept
+std::string ModelSpec::GetUID() const noexcept
 {
    return GenerateUID(tag);
 }
 
-void ModelObject::Bind(Graphics &gfx) noexcept
+void ModelSpec::Bind(Graphics &gfx) noexcept
 {
    commandList->SetGraphicsRootSignature(rootSignature.Get());
 
@@ -52,7 +52,7 @@ void ModelObject::Bind(Graphics &gfx) noexcept
    commandList->SetGraphicsRootDescriptorTable(TEXTURE_CB, mainDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 }
 
-void ModelObject::CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag)
+void ModelSpec::CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag)
 {
    D3D12_ROOT_DESCRIPTOR rootCBVDescriptor;
    rootCBVDescriptor.RegisterSpace = 0;
@@ -138,7 +138,7 @@ void ModelObject::CreateRootSignature(bool constantFlag, bool materialFlag, bool
       signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
 }
 
-void ModelObject::CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath)
+void ModelSpec::CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath)
 {
    ThrowIfFailed(D3DReadFileToBlob(vertexPath.c_str(), vertexShaderBlob.ReleaseAndGetAddressOf()));
 
@@ -146,12 +146,12 @@ void ModelObject::CreateShader(const std::wstring &vertexPath, const std::wstrin
    ThrowIfFailed(D3DReadFileToBlob(pixelPath.c_str(), pixelShaderBlob.ReleaseAndGetAddressOf()));
 }
 
-void ModelObject::SetLightView(ID3D12Resource *mylightView)
+void ModelSpec::SetLightView(ID3D12Resource *mylightView)
 {
    lightView = mylightView;
 }
 
-void ModelObject::LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices)
+void ModelSpec::LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices)
 {
    const UINT vertexBufferSize = (UINT)(vertices.SizeByte());
 
@@ -223,7 +223,7 @@ void ModelObject::LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices)
    vertexBufferView.SizeInBytes = vertexBufferSize;
 }
 
-void ModelObject::CreateConstant(const XMFLOAT3 &colorBuffer, int size)
+void ModelSpec::CreateConstant(const XMFLOAT3 &colorBuffer, int size)
 {
    colorBufferActive = true;
 
@@ -265,7 +265,7 @@ void ModelObject::CreateConstant(const XMFLOAT3 &colorBuffer, int size)
    memcpy(colorBufferGPUAddress + 0 * ConstantBufferPerObjectAlignedSize, &colorBuffer, size);
 }
 
-void ModelObject::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
+void ModelSpec::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
 {
    indicesCount = (UINT)indices.size();
    const UINT indicesBufferSize = (UINT)(sizeof(unsigned short) * indices.size());
@@ -338,7 +338,7 @@ void ModelObject::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
    indexBufferView.SizeInBytes = indicesBufferSize;
 }
 
-void ModelObject::CreateTexture(const Surface &surface, int slot)
+void ModelSpec::CreateTexture(const Surface &surface, int slot)
 {
    textureActive = true;
    if (slot == 1)
@@ -422,7 +422,7 @@ void ModelObject::CreateTexture(const Surface &surface, int slot)
    {
       // create the descriptor heap that will store our srv
       D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-      heapDesc.NumDescriptors = 2;
+      heapDesc.NumDescriptors = NUMBER_OF_VIEW;
       heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
       heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
       ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mainDescriptorHeap)));
@@ -442,7 +442,7 @@ void ModelObject::CreateTexture(const Surface &surface, int slot)
    device->CreateShaderResourceView(textureBuffer[slot].Get(), &srvDesc, handle);
 }
 
-void ModelObject::CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType)
+void ModelSpec::CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType)
 {
    topology = topologyType;
 

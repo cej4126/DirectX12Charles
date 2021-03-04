@@ -35,7 +35,6 @@ public:
       LIGHT_CB,
       MATERIAL_CB,
       TEXTURE_CB,
-      //NORMAL_CB,
       VIEW_PS_CB,
       COUNT_CB
    };

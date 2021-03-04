@@ -156,11 +156,12 @@ private:
    std::unordered_map<int, TransformParameters> transforms;
 };
 
-Model::Model(Graphics &gfx, int &index, const std::string fileName, ID3D12Resource *lightView, int &MaterialIndex)
+Model::Model(Graphics &gfx, int &index, float size, const std::string fileName, ID3D12Resource *lightView, int &MaterialIndex)
    :
    gfx(gfx),
    filename(fileName),
    lightView(lightView),
+   m_size(size),
    pWindow(std::make_unique<ModelWindow>())
 {
    Assimp::Importer imp;
@@ -169,7 +170,8 @@ Model::Model(Graphics &gfx, int &index, const std::string fileName, ID3D12Resour
       aiProcess_Triangulate |
       aiProcess_JoinIdenticalVertices |
       aiProcess_ConvertToLeftHanded |
-      aiProcess_GenNormals);
+      aiProcess_GenNormals |
+      aiProcess_CalcTangentSpace);
 
    m_materialIndex = MaterialIndex;
 
@@ -223,14 +225,19 @@ std::unique_ptr<DrawMesh> Model::ParseMesh(int index, const aiMesh &mesh, const 
       VertexLayout{}
       .Append(VertexLayout::Position3D)
       .Append(VertexLayout::Normal)
+      .Append(VertexLayout::Tangent)
+      .Append(VertexLayout::Bitangent)
       .Append(VertexLayout::Texture2D)
    ));
 
    for (unsigned int i = 0; i < mesh.mNumVertices; i++)
    {
+      XMFLOAT3 vertices = { mesh.mVertices[i].x * m_size, mesh.mVertices[i].y * m_size, mesh.mVertices[i].z * m_size };
       vbuf.EmplaceBack(
-         *reinterpret_cast<XMFLOAT3 *>(&mesh.mVertices[i]),
+         *reinterpret_cast<XMFLOAT3 *>(&vertices),
          *reinterpret_cast<XMFLOAT3 *>(&mesh.mNormals[i]),
+         *reinterpret_cast<XMFLOAT3 *>(&mesh.mTangents[i]),
+         *reinterpret_cast<XMFLOAT3 *>(&mesh.mBitangents[i]),
          *reinterpret_cast<XMFLOAT2 *>(&mesh.mTextureCoords[0][i])
       );
    }
@@ -253,9 +260,11 @@ std::unique_ptr<DrawMesh> Model::ParseMesh(int index, const aiMesh &mesh, const 
    std::string tag = path.substr(pos + 1);
    aiString diffuseName;
    aiString specularName;
+   aiString normalName;
 
    bool diffuse = false;
    bool specular = false;
+   bool normal = false;
    auto &material = *pMaterials[mesh.mMaterialIndex];
    if (mesh.mMaterialIndex >= 0)
    {
@@ -264,18 +273,21 @@ std::unique_ptr<DrawMesh> Model::ParseMesh(int index, const aiMesh &mesh, const 
          diffuse = true;
          tag += std::string("#") + diffuseName.C_Str();
       }
-   }
 
-   if (mesh.mMaterialIndex >= 0)
-   {
       if (material.GetTexture(aiTextureType_SPECULAR, 0, &specularName) == aiReturn_SUCCESS)
       {
          specular = true;
          tag += std::string("#") + specularName.C_Str();
       }
+
+      if (material.GetTexture(aiTextureType_NORMALS, 0, &normalName) == aiReturn_SUCCESS)
+      {
+         normal = true;
+         tag += std::string("#") + normalName.C_Str();
+      } 
    }
 
-   auto object = ModelObject::Resolve(gfx, tag);
+   auto object = ModelSpec::Resolve(gfx, tag);
 
    if (!object->isInitialized())
    {
@@ -299,17 +311,23 @@ std::unique_ptr<DrawMesh> Model::ParseMesh(int index, const aiMesh &mesh, const 
          material.Get(AI_MATKEY_SHININESS, shininess);
       }
 
+      if (normal)
+      {
+         object->CreateTexture(Surface::FromFile(path + normalName.C_Str()), 2);
+      }
+
       if (specular)
       {
-         object->CreateShader(L"ModelVS.cso", L"ModelSpecularPS.cso");
+         object->CreateShader(L"ModelVSNormal.cso", L"ModelPSSpecNormal.cso");
       }
       else
       {
-         object->CreateShader(L"ModelVS.cso", L"ModelPS.cso");
+         object->CreateShader(L"ModelVSNormal.cso", L"ModelPSNormal.cso");
          // copy at FirstCommand
          m_material.specularInensity = 0.8f;
          m_material.specularPower = shininess;
       }
+      m_material.hasNormal = normal;
 
       //XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
       //object->CreateConstant(position);
@@ -320,7 +338,7 @@ std::unique_ptr<DrawMesh> Model::ParseMesh(int index, const aiMesh &mesh, const 
       object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
       object->SetLightView(lightView);
-   }
+   } 
 
    bindablePtrs.push_back(std::move(object));
    return std::make_unique<DrawMesh>(gfx, index, std::move(bindablePtrs), (UINT)indices.size(), m_materialIndex);
@@ -338,4 +356,9 @@ void Model::Draw(Graphics &gfx) const
 void Model::ShowWindow(const char *windowName) noexcept
 {
    pWindow->Show(windowName, *pRoot);
+}
+
+void Model::SetPosition(FXMMATRIX tf)
+{
+   pRoot->SetAppliedTransform(tf);
 }
