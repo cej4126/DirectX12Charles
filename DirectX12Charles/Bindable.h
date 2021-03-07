@@ -30,6 +30,7 @@ namespace Bind
       virtual void LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices) {}
       virtual void LoadIndicesBuffer(const std::vector<unsigned short> &indices) {};
       virtual void CreateConstant(const XMFLOAT3 &colorBuffer, int size) {};
+      //virtual void FirstCommand() {};
 
    private:
       bool initialized = false;

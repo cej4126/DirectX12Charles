@@ -223,6 +223,10 @@
     <ClInclude Include="Bindable.h" />
     <ClInclude Include="BindableCodex.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="DrawGobber.h" />
+    <ClInclude Include="DrawModel.h" />
+    <ClInclude Include="DrawModelWindow.h" />
+    <ClInclude Include="DrawNode.h" />
     <ClInclude Include="GDIPlusManager.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
@@ -263,6 +267,10 @@
     <ClCompile Include="Bindable.cpp" />
     <ClCompile Include="BindableCodex.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DrawGobber.cpp" />
+    <ClCompile Include="DrawModel.cpp" />
+    <ClCompile Include="DrawModelWindow.cpp" />
+    <ClCompile Include="DrawNode.cpp" />
     <ClCompile Include="GDIPlusManager.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />

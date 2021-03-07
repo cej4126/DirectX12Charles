@@ -11,7 +11,8 @@
 #include "DrawPointLight.h"
 #include "DrawAssimp.h"
 #include "Camera.h"
-#include "DrawMesh.h"
+#include "DrawModel.h"
+#include "DrawGobber.h"
 
 class App
 {
@@ -44,7 +45,9 @@ private:
    float speedFactor = 1.0f;
    int objectIndex = 1;
    DrawLighted *currentObject = nullptr;
-   std::unique_ptr<class Model > nano = nullptr;
-   std::unique_ptr<class Model > wall = nullptr;
+
+   std::unique_ptr<class DrawModel > nano = nullptr;
+   std::unique_ptr<class DrawModel > wall = nullptr;
+   std::unique_ptr<class DrawGobber > gobber = nullptr;
 };
 
