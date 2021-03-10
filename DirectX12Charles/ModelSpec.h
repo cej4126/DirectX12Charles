@@ -27,6 +27,8 @@ public:
    void CreateConstant(const XMFLOAT3 &colorBuffer, int size);
 
    void Bind(Graphics &gfx) noexcept override;
+   void setSize(int size) { m_size = size; };
+   int getSize() { return m_size; };
 
 private:
    enum
@@ -48,6 +50,7 @@ private:
    bool colorBufferActive = false;
    Microsoft::WRL::ComPtr <ID3D12Resource> colorBufferUploadHeaps;
    UINT8 *colorBufferGPUAddress = 0;
+   int m_size;
 
    bool textureActive = false;
    bool specularActive = false;

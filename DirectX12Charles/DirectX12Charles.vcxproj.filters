@@ -562,6 +562,18 @@
     <FxCompile Include="ModelVSNormal.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="GobberNormalTexVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="GobberNormalTexPS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="GobberNormalPS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="GobberNormalVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Images\test.png">

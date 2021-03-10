@@ -1,6 +1,7 @@
 #include "DrawGobber.h"
 #include "imgui/imgui.h"
 #include <unordered_map>
+#include <sstream>
 
 DrawGobber::DrawGobber(Graphics &gfx, int &index, float size, const std::string fileName, ID3D12Resource *lightView, int &MaterialIndex)
    :
@@ -66,44 +67,13 @@ void DrawGobber::FirstCommand()
 
 std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, const aiMaterial *const *pMaterials)
 {
-   using hw3dexp::VertexLayout;
-   hw3dexp::VertexBuffer vbuf(std::move(
-      VertexLayout{}
-      .Append(VertexLayout::Position3D)
-      .Append(VertexLayout::Normal)
-      .Append(VertexLayout::Tangent)
-      .Append(VertexLayout::Bitangent)
-      .Append(VertexLayout::Texture2D)
-   ));
-
-   for (unsigned int i = 0; i < mesh.mNumVertices; i++)
-   {
-      XMFLOAT3 vertices = { mesh.mVertices[i].x * m_size, mesh.mVertices[i].y * m_size, mesh.mVertices[i].z * m_size };
-      vbuf.EmplaceBack(
-         *reinterpret_cast<XMFLOAT3 *>(&vertices),
-         *reinterpret_cast<XMFLOAT3 *>(&mesh.mNormals[i]),
-         *reinterpret_cast<XMFLOAT3 *>(&mesh.mTangents[i]),
-         *reinterpret_cast<XMFLOAT3 *>(&mesh.mBitangents[i]),
-         *reinterpret_cast<XMFLOAT2 *>(&mesh.mTextureCoords[0][i])
-      );
-   }
-
-   std::vector<unsigned short> indices;
-   indices.reserve((size_t)mesh.mNumFaces * 3);
-   for (unsigned int i = 0; i < mesh.mNumFaces; i++)
-   {
-      const auto &face = mesh.mFaces[i];
-      assert(face.mNumIndices == 3);
-      indices.push_back(face.mIndices[0]);
-      indices.push_back(face.mIndices[1]);
-      indices.push_back(face.mIndices[2]);
-   }
 
    // create the tag and path
    std::size_t pos = filename.find_last_of("/\\");
    std::string path = filename.substr(0, pos) + std::string("\\");
    pos = path.find_last_of("/\\");
-   std::string tag = path.substr(pos + 1);
+   std::string tag = "gobber";
+   tag += path.substr(pos + 1);
    aiString diffuseName;
    aiString specularName;
    aiString normalName;
@@ -135,6 +105,8 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
 
    auto object = ModelSpec::Resolve(gfx, tag);
 
+   int size = 0;
+
    if (!object->isInitialized())
    {
       object->setInitialized();
@@ -144,9 +116,6 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
       {
          object->CreateTexture(Surface::FromFile(path + diffuseName.C_Str()), 0);
       }
-
-      object->LoadVerticesBuffer(vbuf);
-      object->LoadIndicesBuffer(indices);
 
       if (specular)
       {
@@ -162,32 +131,208 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
          object->CreateTexture(Surface::FromFile(path + normalName.C_Str()), 2);
       }
 
-      if (specular)
+
+      if (diffuse && normal && specular)
       {
+         using hw3dexp::VertexLayout;
+         hw3dexp::VertexBuffer vbuf(std::move(
+            VertexLayout{}
+            .Append(VertexLayout::Position3D)
+            .Append(VertexLayout::Normal)
+            .Append(VertexLayout::Tangent)
+            .Append(VertexLayout::Bitangent)
+            .Append(VertexLayout::Texture2D)
+         ));
+
+         for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+         {
+            XMFLOAT3 vertices = { mesh.mVertices[i].x * m_size, mesh.mVertices[i].y * m_size, mesh.mVertices[i].z * m_size };
+            vbuf.EmplaceBack(
+               *reinterpret_cast<XMFLOAT3 *>(&vertices),
+               *reinterpret_cast<XMFLOAT3 *>(&mesh.mNormals[i]),
+               *reinterpret_cast<XMFLOAT3 *>(&mesh.mTangents[i]),
+               *reinterpret_cast<XMFLOAT3 *>(&mesh.mBitangents[i]),
+               *reinterpret_cast<XMFLOAT2 *>(&mesh.mTextureCoords[0][i])
+            );
+         }
+
+         std::vector<unsigned short> indices;
+         indices.reserve((size_t)mesh.mNumFaces * 3);
+         for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+         {
+            const auto &face = mesh.mFaces[i];
+            assert(face.mNumIndices == 3);
+            indices.push_back(face.mIndices[0]);
+            indices.push_back(face.mIndices[1]);
+            indices.push_back(face.mIndices[2]);
+         }
+         size = (int)indices.size();
+
+         object->LoadVerticesBuffer(vbuf);
+         object->LoadIndicesBuffer(indices);
+
          object->CreateShader(L"ModelVSNormal.cso", L"ModelPSSpecNormal.cso");
+         m_material.hasNormal = true;
+      
+         // Create Root Signature after constants
+         object->CreateRootSignature(false, false, false);
+         object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      }
+      else if (diffuse && normal)
+      {
+         using hw3dexp::VertexLayout;
+         hw3dexp::VertexBuffer vbuf(std::move(
+            VertexLayout{}
+            .Append(VertexLayout::Position3D)
+            .Append(VertexLayout::Normal)
+            .Append(VertexLayout::Tangent)
+            .Append(VertexLayout::Bitangent)
+            .Append(VertexLayout::Texture2D)
+         ));
+
+         for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+         {
+            XMFLOAT3 vertices = { mesh.mVertices[i].x * m_size, mesh.mVertices[i].y * m_size, mesh.mVertices[i].z * m_size };
+            vbuf.EmplaceBack(
+               *reinterpret_cast<XMFLOAT3 *>(&vertices),
+               *reinterpret_cast<XMFLOAT3 *>(&mesh.mNormals[i]),
+               *reinterpret_cast<XMFLOAT3 *>(&mesh.mTangents[i]),
+               *reinterpret_cast<XMFLOAT3 *>(&mesh.mBitangents[i]),
+               *reinterpret_cast<XMFLOAT2 *>(&mesh.mTextureCoords[0][i])
+            );
+         }
+
+         std::vector<unsigned short> indices;
+         indices.reserve((size_t)mesh.mNumFaces * 3);
+         for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+         {
+            const auto &face = mesh.mFaces[i];
+            assert(face.mNumIndices == 3);
+            indices.push_back(face.mIndices[0]);
+            indices.push_back(face.mIndices[1]);
+            indices.push_back(face.mIndices[2]);
+         }
+         size = (int)indices.size();
+
+         object->LoadVerticesBuffer(vbuf);
+         object->LoadIndicesBuffer(indices);
+
+         object->CreateShader(L"ModelVSNormal.cso", L"ModelPSSpecNormal.cso");
+         m_material.hasNormal = true;
+
+         m_material.specularInensity = 0.18f;
+         m_material.specularPower = shininess;
+         m_material.hasNormal = true;
+
+         // Create Root Signature after constants
+         object->CreateRootSignature(false, false, false);
+         object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      }
+      else if (diffuse)
+      {
+         using hw3dexp::VertexLayout;
+         hw3dexp::VertexBuffer vbuf(std::move(
+            VertexLayout{}
+            .Append(VertexLayout::Position3D)
+            .Append(VertexLayout::Normal)
+            .Append(VertexLayout::Texture2D)
+         ));
+
+         for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+         {
+            XMFLOAT3 vertices = { mesh.mVertices[i].x * m_size, mesh.mVertices[i].y * m_size, mesh.mVertices[i].z * m_size };
+            vbuf.EmplaceBack(
+               *reinterpret_cast<XMFLOAT3 *>(&vertices),
+               *reinterpret_cast<XMFLOAT3 *>(&mesh.mNormals[i]),
+               *reinterpret_cast<XMFLOAT2 *>(&mesh.mTextureCoords[0][i])
+            );
+         }
+
+         std::vector<unsigned short> indices;
+         indices.reserve((size_t)mesh.mNumFaces * 3);
+         for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+         {
+            const auto &face = mesh.mFaces[i];
+            assert(face.mNumIndices == 3);
+            indices.push_back(face.mIndices[0]);
+            indices.push_back(face.mIndices[1]);
+            indices.push_back(face.mIndices[2]);
+         }
+         size = (int)indices.size();
+
+         object->LoadVerticesBuffer(vbuf);
+         object->LoadIndicesBuffer(indices);
+
+         object->CreateShader(L"GobberNormalTexVS.cso", L"GobberNormalTexPS.cso");
+         m_material.hasNormal = true;
+
+         m_material.specularInensity = 0.18f;
+         m_material.specularPower = shininess;
+         m_material.hasNormal = true;
+
+         // Create Root Signature after constants
+         object->CreateRootSignature(false, false, false);
+         object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      }
+      else if (!diffuse && !normal && !specular)
+      {
+         using hw3dexp::VertexLayout;
+         hw3dexp::VertexBuffer vbuf(std::move(
+            VertexLayout{}
+            .Append(VertexLayout::Position3D)
+            .Append(VertexLayout::Normal)
+         ));
+
+         for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+         {
+            XMFLOAT3 vertices = { mesh.mVertices[i].x * m_size, mesh.mVertices[i].y * m_size, mesh.mVertices[i].z * m_size };
+            vbuf.EmplaceBack(
+               *reinterpret_cast<XMFLOAT3 *>(&vertices),
+               *reinterpret_cast<XMFLOAT3 *>(&mesh.mNormals[i]));
+         }
+
+         std::vector<unsigned short> indices;
+         indices.reserve((size_t)mesh.mNumFaces * 3);
+         for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+         {
+            const auto &face = mesh.mFaces[i];
+            assert(face.mNumIndices == 3);
+            indices.push_back(face.mIndices[0]);
+            indices.push_back(face.mIndices[1]);
+            indices.push_back(face.mIndices[2]);
+         }
+         size = (int)indices.size();
+
+         object->LoadVerticesBuffer(vbuf);
+         object->LoadIndicesBuffer(indices);
+
+         object->CreateShader(L"GobberNormalVS.cso", L"GobberNormalPS.cso");
+         m_material.hasNormal = true;
+
+         m_material.materialColor = { 0.65f, 0.65f, 0.65f };
+         m_material.specularInensity = 0.18f;
+         m_material.specularPower = shininess;
+         m_material.hasNormal = false;
+
+         // Create Root Signature after constants
+         object->CreateRootSignature(false, false, false);
+         object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
       }
       else
       {
-         object->CreateShader(L"ModelVSNormal.cso", L"ModelPSNormal.cso");
-         // copy at FirstCommand
-         m_material.specularInensity = 0.8f;
-         m_material.specularPower = shininess;
+         throw std::runtime_error("ERROR in file");
       }
-      m_material.hasNormal = normal;
-
-      //XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
-      //object->CreateConstant(position);
-
-      // Create Root Signature after constants
-      object->CreateRootSignature(false, false, false);
-
-      object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      object->setSize(size);
 
       object->SetLightView(lightView);
    }
+   else
+   {
+      size = object->getSize();
+   }
 
    bindablePtrs.push_back(std::move(object));
-   return std::make_unique<DrawMesh>(gfx, index, std::move(bindablePtrs), (UINT)indices.size(), m_materialIndex);
+   return std::make_unique<DrawMesh>(gfx, index, std::move(bindablePtrs), (UINT)size, m_materialIndex);
 }
 
 void DrawGobber::Draw(Graphics &gfx) const
