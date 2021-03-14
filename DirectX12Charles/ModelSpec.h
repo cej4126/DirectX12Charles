@@ -15,7 +15,15 @@ public:
    std::string GetUID() const noexcept override;
 
    void CreateTexture(const Surface &surface, int slot);
-   void CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag);
+   enum class Model_Type
+   {
+      MODEL_DIFF_NORMAL_SPEC,
+      MODEL_DIFF_NORMAL,
+      MODEL_DIFF,
+      MODEL_NONE
+   };
+
+   void CreateRootSignature(Model_Type type);
    void CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath);
    void SetLightView(ID3D12Resource *mylightView);
    void CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType);

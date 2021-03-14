@@ -19,7 +19,7 @@ public:
    {
       return 0;
    };
-   virtual void getMaterialData(Graphics::MaterialType &myMaterial) noexcept {};
+   virtual void getMaterialData(Graphics::MaterialType &myMaterial) const noexcept {};
 
 
 protected:

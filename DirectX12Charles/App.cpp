@@ -55,29 +55,28 @@ App::App()
    //   light->getLightView(), MaterialCount);
    //wall->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f ));
 
-   //gobber = std::make_unique<DrawGobber>(wnd.Gfx(), objectCount, 5.0f,
-   //   "..\\..\\DirectX12Charles\\models\\gobber\\GoblinX.obj",
-   //   light->getLightView(), MaterialCount);
-   //gobber->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
+   gobber = std::make_unique<DrawGobber>(wnd.Gfx(), objectCount, 5.0f,
+      "..\\..\\DirectX12Charles\\models\\gobber\\GoblinX.obj",
+      light->getLightView(), MaterialCount);
+   gobber->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
 
    //drawItems.push_back(std::make_unique<DrawNormal>(wnd.Gfx(), objectCount, Shape::Plane, 3.0f,
    //   "..\\..\\DirectX12Charles\\Images\\brickwall.jpg", "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg", light->getLightView(), MaterialCount));
 
+   //for (auto i = 0; i < MaxBoxX12Count; i++)
+   //{
+   //   float range = rangedist(rng);
 
-   for (auto i = 0; i < MaxBoxX12Count; i++)
-   {
-      float range = rangedist(rng);
-
-      Shape::shapeType type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
-      drawItems.push_back(std::make_unique<DrawLighted>(wnd.Gfx(), objectCount, type, range, light->getLightView(), MaterialCount));
-      //drawItems.push_back(std::make_unique<DrawAssimp>(wnd.Gfx(), objectCount, Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
-      //drawItems.push_back(std::make_unique<DrawColorBlended>(wnd.Gfx(), objectCount, type, range));
-      //drawItems.push_back(std::make_unique<DrawColorIndex>(wnd.Gfx(), objectCount, type, range));
-      //drawItems.push_back(std::make_unique<DrawTextureCube>(wnd.Gfx(), objectCount, range));
-      //drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
-      //drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
-      //drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
-   }
+   //   Shape::shapeType type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
+   //   drawItems.push_back(std::make_unique<DrawLighted>(wnd.Gfx(), objectCount, type, range, light->getLightView(), MaterialCount));
+   //   drawItems.push_back(std::make_unique<DrawAssimp>(wnd.Gfx(), objectCount, Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
+   //   drawItems.push_back(std::make_unique<DrawColorBlended>(wnd.Gfx(), objectCount, type, range));
+   //   drawItems.push_back(std::make_unique<DrawColorIndex>(wnd.Gfx(), objectCount, type, range));
+   //   drawItems.push_back(std::make_unique<DrawTextureCube>(wnd.Gfx(), objectCount, range));
+   //   drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
+   //   drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
+   //   drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
+   //}
 
    wnd.Gfx().CreateMatrixConstant(objectCount);
    wnd.Gfx().CreateMaterialConstant(MaterialCount);

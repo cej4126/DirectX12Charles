@@ -29,8 +29,7 @@ DrawNormal::DrawNormal(Graphics &gfx, int &index, Shape::shapeType type, float s
       tag += normalfilename.substr(namePos + 1);
    }
 
-   std::shared_ptr<Bind::Bindable> object = NormalObject::Resolve(gfx, tag);
-   //std::shared_ptr<Bind::Bindable> object = ModelObject::Resolve(gfx, tag);
+   std::shared_ptr<NormalObject> object = NormalObject::Resolve(gfx, tag);
    if (!object->isInitialized())
    {
       object->setInitialized();

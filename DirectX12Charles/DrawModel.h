@@ -5,7 +5,7 @@
 #include "Vertex.h"
 #include "DrawFunction.h"
 #include "imgui/imgui.h"
-#include "ModelSpec.h"
+//#include "ModelObject.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -39,7 +39,7 @@ private:
    std::vector<std::unique_ptr<DrawMesh>> MeshPtrs;
 
    int m_materialIndex = -1;
-   Graphics::MaterialType m_material;
+   std::vector<Graphics::MaterialType> m_material;
 
    std::vector<std::shared_ptr<Bind::Bindable>> bindablePtrs;
 

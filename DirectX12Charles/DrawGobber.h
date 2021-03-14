@@ -39,7 +39,7 @@ private:
    std::vector<std::unique_ptr<DrawMesh>> MeshPtrs;
 
    int m_materialIndex = -1;
-   Graphics::MaterialType m_material;
+   std::vector<Graphics::MaterialType> m_material;
 
    std::vector<std::shared_ptr<Bind::Bindable>> bindablePtrs;
 

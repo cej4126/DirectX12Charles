@@ -41,7 +41,7 @@ public:
       float specularInensity = 0.6f;
       float specularPower = 30.0f;
       int hasNormal;
-      float pad;
+      int hasGloss;
    };
 
    TransformMatrix matrixBuffer;

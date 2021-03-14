@@ -21,8 +21,8 @@ public:
 		myMaterial.materialColor = { 0.0f, 0.0f, 0.0f };	
 		myMaterial.specularInensity = m_material.specularInensity;
 		myMaterial.specularPower = m_material.specularPower;
-		myMaterial.hasNormal = 0;;
-		myMaterial.pad = 0.0f;
+		myMaterial.hasNormal = 0;
+		myMaterial.hasGloss = 0;
 	}
 	void SyncMaterial() noexcept;
 	void SpawnControlWindow(const std::string &name) noexcept;

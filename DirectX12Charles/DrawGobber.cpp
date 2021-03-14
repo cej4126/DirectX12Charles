@@ -2,6 +2,7 @@
 #include "imgui/imgui.h"
 #include <unordered_map>
 #include <sstream>
+#include "ModelSpec.h"
 
 DrawGobber::DrawGobber(Graphics &gfx, int &index, float size, const std::string fileName, ID3D12Resource *lightView, int &MaterialIndex)
    :
@@ -26,7 +27,7 @@ DrawGobber::DrawGobber(Graphics &gfx, int &index, float size, const std::string 
    {
       MeshPtrs.push_back(ParseMesh(index, *pScene->mMeshes[i], pScene->mMaterials));
       ++index;
-      MaterialIndex = m_materialIndex;
+      ++MaterialIndex;
    }
 
    int nextId = 0;
@@ -46,6 +47,14 @@ std::unique_ptr<DrawNode> DrawGobber::ParseNode(int &nextId, const aiNode &node)
    for (size_t i = 0; i < node.mNumMeshes; i++)
    {
       const auto MeshIndex = node.mMeshes[i];
+
+      //test
+      //if (MeshIndex == 0)
+      ////if ((MeshIndex == 0) || (MeshIndex == 1) || (MeshIndex == 2))
+      //{
+      //   curMeshPtrs.push_back(MeshPtrs.at(MeshIndex).get());
+      //}
+
       curMeshPtrs.push_back(MeshPtrs.at(MeshIndex).get());
    }
 
@@ -61,7 +70,10 @@ void DrawGobber::FirstCommand()
 {
    if (m_materialIndex != -1)
    {
-      gfx.CopyMaterialConstant(m_materialIndex, m_material);
+      for (int i = 0; i < m_material.size(); ++i)
+      {
+         gfx.CopyMaterialConstant(m_materialIndex + i, m_material.at(i));
+      }
    }
 }
 
@@ -73,30 +85,34 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
    std::string path = filename.substr(0, pos) + std::string("\\");
    pos = path.find_last_of("/\\");
    std::string tag = "gobber";
+   tag += index;
    tag += path.substr(pos + 1);
    aiString diffuseName;
    aiString specularName;
    aiString normalName;
+   Graphics::MaterialType material;
 
    bool diffuse = false;
    bool specular = false;
    bool normal = false;
-   auto &material = *pMaterials[mesh.mMaterialIndex];
+   bool alphaGloss = false;
+
+   auto &sceneMaterial = *pMaterials[mesh.mMaterialIndex];
    if (mesh.mMaterialIndex >= 0)
    {
-      if (material.GetTexture(aiTextureType_DIFFUSE, 0, &diffuseName) == aiReturn_SUCCESS)
+      if (sceneMaterial.GetTexture(aiTextureType_DIFFUSE, 0, &diffuseName) == aiReturn_SUCCESS)
       {
          diffuse = true;
          tag += std::string("#") + diffuseName.C_Str();
       }
 
-      if (material.GetTexture(aiTextureType_SPECULAR, 0, &specularName) == aiReturn_SUCCESS)
+      if (sceneMaterial.GetTexture(aiTextureType_SPECULAR, 0, &specularName) == aiReturn_SUCCESS)
       {
          specular = true;
          tag += std::string("#") + specularName.C_Str();
       }
 
-      if (material.GetTexture(aiTextureType_NORMALS, 0, &normalName) == aiReturn_SUCCESS)
+      if (sceneMaterial.GetTexture(aiTextureType_NORMALS, 0, &normalName) == aiReturn_SUCCESS)
       {
          normal = true;
          tag += std::string("#") + normalName.C_Str();
@@ -119,16 +135,23 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
 
       if (specular)
       {
-         object->CreateTexture(Surface::FromFile(path + specularName.C_Str()), 1);
+         //object->CreateTexture(Surface::FromFile(path + specularName.C_Str()), 1);
+         auto tex = Surface::FromFile(path + specularName.C_Str());
+         alphaGloss = tex.AlphaLoaded();
+         object->CreateTexture(tex, 1);
       }
-      else
+      
+      if (!alphaGloss)
       {
-         material.Get(AI_MATKEY_SHININESS, shininess);
+         sceneMaterial.Get(AI_MATKEY_SHININESS, shininess);
       }
 
       if (normal)
       {
-         object->CreateTexture(Surface::FromFile(path + normalName.C_Str()), 2);
+         //object->CreateTexture(Surface::FromFile(path + normalName.C_Str()), 2);
+         auto tex = Surface::FromFile(path + normalName.C_Str());
+         alphaGloss = tex.AlphaLoaded();
+         object->CreateTexture(tex, 2);
       }
 
 
@@ -172,10 +195,12 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
          object->LoadIndicesBuffer(indices);
 
          object->CreateShader(L"ModelVSNormal.cso", L"ModelPSSpecNormal.cso");
-         m_material.hasNormal = true;
+         material.hasNormal = true;
+         material.specularPower = shininess;
+         material.hasGloss = alphaGloss;
       
          // Create Root Signature after constants
-         object->CreateRootSignature(false, false, false);
+         object->CreateRootSignature(ModelSpec::Model_Type::MODEL_DIFF_NORMAL_SPEC);
          object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
       }
       else if (diffuse && normal)
@@ -218,14 +243,13 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
          object->LoadIndicesBuffer(indices);
 
          object->CreateShader(L"ModelVSNormal.cso", L"ModelPSSpecNormal.cso");
-         m_material.hasNormal = true;
-
-         m_material.specularInensity = 0.18f;
-         m_material.specularPower = shininess;
-         m_material.hasNormal = true;
+         material.specularInensity = 0.18f;
+         material.specularPower = shininess;
+         material.hasNormal = true;
+         material.hasGloss = alphaGloss;
 
          // Create Root Signature after constants
-         object->CreateRootSignature(false, false, false);
+         object->CreateRootSignature(ModelSpec::Model_Type::MODEL_DIFF_NORMAL);
          object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
       }
       else if (diffuse)
@@ -264,14 +288,13 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
          object->LoadIndicesBuffer(indices);
 
          object->CreateShader(L"GobberNormalTexVS.cso", L"GobberNormalTexPS.cso");
-         m_material.hasNormal = true;
-
-         m_material.specularInensity = 0.18f;
-         m_material.specularPower = shininess;
-         m_material.hasNormal = true;
+         material.specularInensity = 0.18f;
+         material.specularPower = shininess;
+         material.hasNormal = true;
+         material.hasGloss = alphaGloss;
 
          // Create Root Signature after constants
-         object->CreateRootSignature(false, false, false);
+         object->CreateRootSignature(ModelSpec::Model_Type::MODEL_DIFF);
          object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
       }
       else if (!diffuse && !normal && !specular)
@@ -307,15 +330,14 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
          object->LoadIndicesBuffer(indices);
 
          object->CreateShader(L"GobberNormalVS.cso", L"GobberNormalPS.cso");
-         m_material.hasNormal = true;
-
-         m_material.materialColor = { 0.65f, 0.65f, 0.65f };
-         m_material.specularInensity = 0.18f;
-         m_material.specularPower = shininess;
-         m_material.hasNormal = false;
+         material.materialColor = { 0.65f, 0.65f, 0.65f };
+         material.specularInensity = 0.18f;
+         material.specularPower = shininess;
+         material.hasNormal = false;
+         material.hasGloss = alphaGloss;
 
          // Create Root Signature after constants
-         object->CreateRootSignature(false, false, false);
+         object->CreateRootSignature(ModelSpec::Model_Type::MODEL_NONE);
          object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
       }
       else
@@ -332,6 +354,7 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
    }
 
    bindablePtrs.push_back(std::move(object));
+   m_material.push_back(material);
    return std::make_unique<DrawMesh>(gfx, index, std::move(bindablePtrs), (UINT)size, m_materialIndex);
 }
 

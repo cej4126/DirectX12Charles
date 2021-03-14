@@ -330,9 +330,6 @@
     <ClInclude Include="Object.h">
       <Filter>Header Files\Bindable</Filter>
     </ClInclude>
-    <ClInclude Include="ModelObject.h">
-      <Filter>Header Files\Bindable</Filter>
-    </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>Header Files\Bindable</Filter>
     </ClInclude>
@@ -375,9 +372,6 @@
     <ClInclude Include="DrawNormal.h">
       <Filter>Header Files\Draw</Filter>
     </ClInclude>
-    <ClInclude Include="ModelSpec.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DrawFunction.h">
       <Filter>Header Files\Draw</Filter>
     </ClInclude>
@@ -391,7 +385,10 @@
       <Filter>Header Files\Draw</Filter>
     </ClInclude>
     <ClInclude Include="DrawGobber.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelSpec.h">
+      <Filter>Header Files\Bindable</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -452,9 +449,6 @@
     <ClCompile Include="Object.cpp">
       <Filter>Source Files\Bindable</Filter>
     </ClCompile>
-    <ClCompile Include="ModelObject.cpp">
-      <Filter>Source Files\Bindable</Filter>
-    </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>Source Files\Bindable</Filter>
     </ClCompile>
@@ -494,9 +488,6 @@
     <ClCompile Include="DrawNormal.cpp">
       <Filter>Source Files\Draw</Filter>
     </ClCompile>
-    <ClCompile Include="ModelSpec.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DrawFunction.cpp">
       <Filter>Source Files\Draw</Filter>
     </ClCompile>
@@ -510,7 +501,10 @@
       <Filter>Source Files\Draw</Filter>
     </ClCompile>
     <ClCompile Include="DrawGobber.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelSpec.cpp">
+      <Filter>Source Files\Bindable</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

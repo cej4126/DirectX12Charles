@@ -50,7 +50,7 @@ DrawPictureCube::DrawPictureCube(Graphics &gfx, int &index, Shape::shapeType typ
    std::size_t pos = filename.find_last_of("/\\");
    std::string tag = "cube#" + filename.substr(pos + 1);
 
-   std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, tag);
+   std::shared_ptr<Object> object = Object::Resolve(gfx, tag);
    if (!object->isInitialized())
    {
       object->setInitialized();

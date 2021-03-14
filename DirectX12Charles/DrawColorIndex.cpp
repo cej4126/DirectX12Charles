@@ -42,8 +42,8 @@ DrawColorIndex::DrawColorIndex(Graphics &gfx, int &index, Shape::shapeType type,
    spaceYawRate = 0.0f;
 #endif
 
+   std::shared_ptr<Object> object = Object::Resolve(gfx, "ColorIndex");
 
-   std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, "ColorIndex");
    if (!object->isInitialized())
    {
       object->setInitialized();

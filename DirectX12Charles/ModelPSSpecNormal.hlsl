@@ -18,7 +18,8 @@ struct MaterialBuf
 	float3 materialColor;
 	float specularIntensity;
 	float specularPower;
-	float pad[2];
+	int hasNormal;
+	int hasGloss;
 };
 ConstantBuffer <MaterialBuf> material: register(b2);
 
@@ -60,7 +61,19 @@ float4 main(float3 viewPos : Position, float3 n : Normal, float3 tan : Tangent, 
 	// calculate specular intensity based on angle between viewing vector and reflection vector, narrow with power function
 	const float4 specularSample = spec.Sample(s1, tc);
 	const float3 specularReflectionColor = specularSample.rgb;
-	const float specularPower = pow(2.0f, specularSample.a * 13.0f);
+
+	//const float specularPower = pow(2.0f, specularSample.a * 13.0f);
+	float specularPower;
+	if (material.hasGloss)
+	{
+		specularPower = pow(2.0f, specularSample.a * 13.0f);
+	}
+	else
+	{
+	   //specularPower = 1.0f;
+		specularPower = material.specularPower;
+	}
+
 	const float3 specular = att * (light.diffuseColor * light.diffuseIntensity) * pow(max(0.0f, dot(normalize(-r), normalize(viewPos))),
 		specularPower);
 	// final color

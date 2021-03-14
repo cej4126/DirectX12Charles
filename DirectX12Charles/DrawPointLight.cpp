@@ -16,7 +16,7 @@ DrawPointLight::DrawPointLight(Graphics &gfx, int &index, float size)
    UINT indicesStart = gfx.shape.getIndiceStart(type);
    UINT indicesCount = gfx.shape.getIndiceCount(type);
 
-   std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, "PointLight");
+   std::shared_ptr<Object> object = Object::Resolve(gfx, "PointLight");
    if (!object->isInitialized())
    {
       object->setInitialized();

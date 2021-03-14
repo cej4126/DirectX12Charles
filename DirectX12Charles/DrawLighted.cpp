@@ -67,7 +67,7 @@ DrawLighted::DrawLighted(Graphics &gfx, int &index, Shape::shapeType type, float
    UINT indicesCount = gfx.shape.getIndiceCount(type);
 
    std::string tag = "Lighted";
-   std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, tag);
+   std::shared_ptr<Object> object = Object::Resolve(gfx, tag);
 
    if (!object->isInitialized())
    {

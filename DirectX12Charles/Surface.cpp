@@ -97,6 +97,8 @@ Surface Surface::FromFile(const std::string &filename)
    unsigned int pitch = 0;
    std::unique_ptr<Color[]> pBuffer = nullptr;
 
+   bool alhpaLoaded = false;
+
    {
       wchar_t wideName[512];
       mbstowcs_s(nullptr, wideName, filename.c_str(), _TRUNCATE);
@@ -121,6 +123,10 @@ Surface Surface::FromFile(const std::string &filename)
             Gdiplus::Color c;
             bitmap.GetPixel(x, y, &c);
             pBuffer[y * width + x] = c.GetValue();
+            if (c.GetAlpha() != 255)
+            {
+               alhpaLoaded = true;
+            }
          }
       }
    }

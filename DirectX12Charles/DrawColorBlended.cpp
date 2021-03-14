@@ -42,7 +42,7 @@ DrawColorBlended::DrawColorBlended(Graphics &gfx, int &index, Shape::shapeType t
 #endif
 
    std::string tag = "ColorBlendedPS";
-   std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, tag);
+   std::shared_ptr<Object> object = Object::Resolve(gfx, tag);
 
    if (!object->isInitialized())
    {

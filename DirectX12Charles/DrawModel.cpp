@@ -25,7 +25,7 @@ DrawModel::DrawModel(Graphics &gfx, int &index, float size, const std::string fi
    {
       MeshPtrs.push_back(ParseMesh(index, *pScene->mMeshes[i], pScene->mMaterials));
       ++index;
-      MaterialIndex = m_materialIndex;
+      ++MaterialIndex;
    }
 
    int nextId = 0;
@@ -60,7 +60,10 @@ void DrawModel::FirstCommand()
 {
    if (m_materialIndex != -1)
    {
-      gfx.CopyMaterialConstant(m_materialIndex, m_material);
+      for (int i = 0; i < m_material.size(); ++i)
+      {
+         gfx.CopyMaterialConstant(m_materialIndex + i, m_material.at(i));
+      }
    }
 }
 
@@ -107,26 +110,26 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
    aiString diffuseName;
    aiString specularName;
    aiString normalName;
-
+   Graphics::MaterialType material;
    bool diffuse = false;
    bool specular = false;
    bool normal = false;
-   auto &material = *pMaterials[mesh.mMaterialIndex];
+   auto &sceneMaterial = *pMaterials[mesh.mMaterialIndex];
    if (mesh.mMaterialIndex >= 0)
    {
-      if (material.GetTexture(aiTextureType_DIFFUSE, 0, &diffuseName) == aiReturn_SUCCESS)
+      if (sceneMaterial.GetTexture(aiTextureType_DIFFUSE, 0, &diffuseName) == aiReturn_SUCCESS)
       {
          diffuse = true;
          tag += std::string("#") + diffuseName.C_Str();
       }
 
-      if (material.GetTexture(aiTextureType_SPECULAR, 0, &specularName) == aiReturn_SUCCESS)
+      if (sceneMaterial.GetTexture(aiTextureType_SPECULAR, 0, &specularName) == aiReturn_SUCCESS)
       {
          specular = true;
          tag += std::string("#") + specularName.C_Str();
       }
 
-      if (material.GetTexture(aiTextureType_NORMALS, 0, &normalName) == aiReturn_SUCCESS)
+      if (sceneMaterial.GetTexture(aiTextureType_NORMALS, 0, &normalName) == aiReturn_SUCCESS)
       {
          normal = true;
          tag += std::string("#") + normalName.C_Str();
@@ -134,6 +137,7 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
    }
 
    auto object = ModelSpec::Resolve(gfx, tag);
+   //auto object = ModelObject::Resolve(gfx, tag);
 
    if (!object->isInitialized())
    {
@@ -154,7 +158,7 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
       }
       else
       {
-         material.Get(AI_MATKEY_SHININESS, shininess);
+         sceneMaterial.Get(AI_MATKEY_SHININESS, shininess);
       }
 
       if (normal)
@@ -170,16 +174,16 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
       {
          object->CreateShader(L"ModelVSNormal.cso", L"ModelPSNormal.cso");
          // copy at FirstCommand
-         m_material.specularInensity = 0.8f;
-         m_material.specularPower = shininess;
+         material.specularInensity = 0.8f;
+         material.specularPower = shininess;
       }
-      m_material.hasNormal = normal;
+      material.hasNormal = normal;
 
       //XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
       //object->CreateConstant(position);
 
       // Create Root Signature after constants
-      object->CreateRootSignature(false, false, false);
+      object->CreateRootSignature(ModelSpec::Model_Type::MODEL_DIFF_NORMAL);
 
       object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 
@@ -187,6 +191,7 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
    }
 
    bindablePtrs.push_back(std::move(object));
+   m_material.push_back(material);
    return std::make_unique<DrawMesh>(gfx, index, std::move(bindablePtrs), (UINT)indices.size(), m_materialIndex);
 }
 

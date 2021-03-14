@@ -237,7 +237,6 @@
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="DrawMesh.h" />
-    <ClInclude Include="ModelObject.h" />
     <ClInclude Include="ModelSpec.h" />
     <ClInclude Include="NormalObject.h" />
     <ClInclude Include="Object.h" />
@@ -279,7 +278,6 @@
     <ClCompile Include="imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="DrawMesh.cpp" />
-    <ClCompile Include="ModelObject.cpp" />
     <ClCompile Include="ModelSpec.cpp" />
     <ClCompile Include="NormalObject.cpp" />
     <ClCompile Include="Object.cpp" />

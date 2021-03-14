@@ -53,8 +53,7 @@ DrawTextureCube::DrawTextureCube(Graphics &gfx, int &index, float range)
       XMFLOAT2 tex;
    };
 
-
-   std::shared_ptr<Bind::Bindable> object = Object::Resolve(gfx, "TextureCube");
+   std::shared_ptr<Object> object = Object::Resolve(gfx, "TextureCube");
    if (!object->isInitialized())
    {
       object->setInitialized();
