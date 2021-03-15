@@ -31,19 +31,19 @@ Texture2D spec : register(t1);
 Texture2D nmap : register(t2);
 SamplerState s1 : register(s0);
 
-float4 main(float3 viewPos : Position, float3 n : Normal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : Texcoord) : SV_Target
+float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : Texcoord) : SV_Target
 {
 	// build the tranform (rotation) into tangent space
    const float3x3 tanToView = float3x3(
 	    normalize(tan),
 	    normalize(bitan),
-	    normalize(n));
+	    normalize(viewNormal));
 
     // unpack normal data
     const float3 normalSample = nmap.Sample(s1, tc).xyz;
-	 n = normalSample * 2.0f - 1.0f;
+	 viewNormal = normalSample * 2.0f - 1.0f;
     // bring normal from tanspace into view space
-    n = mul(n, tanToView);
+	 viewNormal = mul(viewNormal, tanToView);
 
 	// fragment to light vector data
 	const float3 vToL = light.lightPos - viewPos;
@@ -52,10 +52,10 @@ float4 main(float3 viewPos : Position, float3 n : Normal, float3 tan : Tangent, 
 	// attenuation
 	const float att = 1.0f / (light.attConst + light.attLin * distToL + light.attQuad * (distToL * distToL));
 	// diffuse intensity
-	const float3 diffuse = light.diffuseColor * light.diffuseIntensity * att * max(0.0f, dot(dirToL, n));
+	const float3 diffuse = light.diffuseColor * light.diffuseIntensity * att * max(0.0f, dot(dirToL, viewNormal));
 
 	// reflected light vector
-	const float3 w = n * dot(vToL, n);
+	const float3 w = viewNormal * dot(vToL, viewNormal);
 	const float3 r = w * 2.0f - vToL;
 
 	float3 specularReflectionColor;
