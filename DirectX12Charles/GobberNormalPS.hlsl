@@ -15,10 +15,14 @@ ConstantBuffer <CBuf> buf: register(b1);
 
 struct MaterialBuf
 {
-	float3 materialColor;
+	float4 materialColor;
 	float specularIntensity;
 	float specularPower;
-	float pad[2];
+	int hasNormal;
+	int hasGloss;
+	int hasSpecture;
+	float4 specularColor;
+	float specularWeight;
 };
 ConstantBuffer <MaterialBuf> material: register(b2);
 
@@ -37,9 +41,9 @@ float4 main(float3 viewPos : Position, float3 n : Normal) : SV_Target
 	const float3 w = n * dot(vToL, n);
 	const float3 r = w * 2.0f - vToL;
 	// calculate specular intensity based on angle between viewing vector and reflection vector, narrow with power function
-	const float3 specular = att * (buf.diffuseColor * buf.diffuseIntensity) *
-		material.specularIntensity * pow(max(0.0f, dot(normalize(-r), normalize(viewPos))), material.specularPower);
+	const float4 specular = att * (float4(buf.diffuseColor, 1.0f) * buf.diffuseIntensity) *
+		material.specularColor * pow(max(0.0f, dot(normalize(-r), normalize(viewPos))), material.specularPower);
 
 	// final color
-	return float4(saturate((diffuse + buf.ambient + specular) * material.materialColor), 1.0f);
+	return saturate(float4(diffuse + buf.ambient, 1.0f) * material.materialColor + specular);
 }

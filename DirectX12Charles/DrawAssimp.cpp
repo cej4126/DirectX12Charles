@@ -41,11 +41,11 @@ DrawAssimp::DrawAssimp(Graphics &gfx, int &index, Shape::shapeType type, float r
       float b = (float)(i & 1);
       float g = (float)((i >> 1) & 1);
       float r = (float)((i >> 2) & 1);
-      material.materialColor = XMFLOAT3(r, g, b);
+      material.materialColor = XMFLOAT4(r, g, b, 1.0f);
    }
    else
    {
-      material.materialColor = XMFLOAT3(randcolor(gen), randcolor(gen), randcolor(gen));
+      material.materialColor = XMFLOAT4(randcolor(gen), randcolor(gen), randcolor(gen), 1.0f);
    }
    ++MaterialIndex;
 

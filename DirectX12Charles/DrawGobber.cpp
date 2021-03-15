@@ -25,6 +25,12 @@ DrawGobber::DrawGobber(Graphics &gfx, int &index, float size, const std::string 
 
    for (size_t i = 0; i < pScene->mNumMeshes; i++)
    {
+      //if (i == 0)
+      //{
+      //   MeshPtrs.push_back(ParseMesh(index, *pScene->mMeshes[i], pScene->mMaterials));
+      //   ++index;
+      //   ++MaterialIndex;
+      //}
       MeshPtrs.push_back(ParseMesh(index, *pScene->mMeshes[i], pScene->mMaterials));
       ++index;
       ++MaterialIndex;
@@ -50,7 +56,6 @@ std::unique_ptr<DrawNode> DrawGobber::ParseNode(int &nextId, const aiNode &node)
 
       //test
       //if (MeshIndex == 0)
-      ////if ((MeshIndex == 0) || (MeshIndex == 1) || (MeshIndex == 2))
       //{
       //   curMeshPtrs.push_back(MeshPtrs.at(MeshIndex).get());
       //}
@@ -97,19 +102,32 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
    bool normal = false;
    bool alphaGloss = false;
 
+   XMFLOAT4 specularColor = { 0.18f, 0.18f, 0.18f, 1.0f };
+   XMFLOAT4 diffuseColor = { 0.45f, 0.45f, 0.85f, 1.0f };
+
    auto &sceneMaterial = *pMaterials[mesh.mMaterialIndex];
    if (mesh.mMaterialIndex >= 0)
    {
+
       if (sceneMaterial.GetTexture(aiTextureType_DIFFUSE, 0, &diffuseName) == aiReturn_SUCCESS)
       {
          diffuse = true;
          tag += std::string("#") + diffuseName.C_Str();
       }
+      else
+      {
+         sceneMaterial.Get(AI_MATKEY_COLOR_DIFFUSE, reinterpret_cast<aiColor3D &>(diffuseColor));
+      }
+
 
       if (sceneMaterial.GetTexture(aiTextureType_SPECULAR, 0, &specularName) == aiReturn_SUCCESS)
       {
          specular = true;
          tag += std::string("#") + specularName.C_Str();
+      }
+      else
+      {
+         sceneMaterial.Get(AI_MATKEY_COLOR_SPECULAR, reinterpret_cast<aiColor3D &>(diffuseColor));
       }
 
       if (sceneMaterial.GetTexture(aiTextureType_NORMALS, 0, &normalName) == aiReturn_SUCCESS)
@@ -196,8 +214,12 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
 
          object->CreateShader(L"ModelVSNormal.cso", L"ModelPSSpecNormal.cso");
          material.hasNormal = true;
+         material.hasSpecular = true;
          material.specularPower = shininess;
          material.hasGloss = alphaGloss;
+         material.specularColor = { 0.75f,0.75f,0.75f, 1.0f };
+         material.specularWeight = 0.671f;
+
       
          // Create Root Signature after constants
          object->CreateRootSignature(ModelSpec::Model_Type::MODEL_DIFF_NORMAL_SPEC);
@@ -243,10 +265,13 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
          object->LoadIndicesBuffer(indices);
 
          object->CreateShader(L"ModelVSNormal.cso", L"ModelPSSpecNormal.cso");
-         material.specularInensity = 0.18f;
+         material.specularInensity = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
          material.specularPower = shininess;
          material.hasNormal = true;
          material.hasGloss = alphaGloss;
+         material.specularColor = XMFLOAT4(0.75f, 0.75f, 0.75f, 1.0f);
+         material.specularWeight = 0.671f;
+         material.hasSpecular = true;
 
          // Create Root Signature after constants
          object->CreateRootSignature(ModelSpec::Model_Type::MODEL_DIFF_NORMAL);
@@ -288,7 +313,7 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
          object->LoadIndicesBuffer(indices);
 
          object->CreateShader(L"GobberNormalTexVS.cso", L"GobberNormalTexPS.cso");
-         material.specularInensity = 0.18f;
+         material.specularInensity = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
          material.specularPower = shininess;
          material.hasNormal = true;
          material.hasGloss = alphaGloss;
@@ -330,8 +355,9 @@ std::unique_ptr<DrawMesh> DrawGobber::ParseMesh(int index, const aiMesh &mesh, c
          object->LoadIndicesBuffer(indices);
 
          object->CreateShader(L"GobberNormalVS.cso", L"GobberNormalPS.cso");
-         material.materialColor = { 0.65f, 0.65f, 0.65f };
-         material.specularInensity = 0.18f;
+         material.materialColor = diffuseColor;
+         material.specularColor = specularColor;
+         material.specularInensity = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
          material.specularPower = shininess;
          material.hasNormal = false;
          material.hasGloss = alphaGloss;

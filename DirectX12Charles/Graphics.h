@@ -37,11 +37,14 @@ public:
 
    struct MaterialType
    {
-      XMFLOAT3 materialColor;
+      XMFLOAT4 materialColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
       float specularInensity = 0.6f;
       float specularPower = 30.0f;
-      int hasNormal;
-      int hasGloss;
+      int hasNormal = false;
+      int hasGloss = false;
+      int hasSpecular = false;
+      XMFLOAT4 specularColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+      float specularWeight = 1.0f;
    };
 
    TransformMatrix matrixBuffer;

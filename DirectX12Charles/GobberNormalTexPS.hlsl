@@ -15,7 +15,7 @@ ConstantBuffer <CBuf> buf: register(b1);
 
 struct MaterialBuf
 {
-	float3 materialColor;
+	float4 materialColor;
 	float specularIntensity;
 	float specularPower;
 	float pad[2];

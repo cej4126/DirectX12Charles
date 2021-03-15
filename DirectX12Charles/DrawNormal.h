@@ -18,7 +18,7 @@ public:
 	int getMaterialIndex() const noexcept { return m_materialIndex; }
 	void getMaterialData(Graphics::MaterialType &myMaterial) const noexcept
 	{
-		myMaterial.materialColor = { 0.0f, 0.0f, 0.0f };	
+		myMaterial.materialColor = { 0.0f, 0.0f, 0.0f, 1.0f };	
 		myMaterial.specularInensity = m_material.specularInensity;
 		myMaterial.specularPower = m_material.specularPower;
 		myMaterial.hasNormal = 0;
