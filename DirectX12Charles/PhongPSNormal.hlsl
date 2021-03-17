@@ -1,6 +1,6 @@
 struct LightBuf
 {
-   float3 lightPos;
+   float3 viewLightPos;
    float pad1;
    float3 ambient;
    float pad3;
@@ -36,6 +36,9 @@ SamplerState s1 : register(s0);
 
 float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float2 tc : Texcoord) : SV_Target
 {
+   // renormalize interpolated normal
+   viewNormal = normalize(viewNormal);
+
    if (material.hasNormal)
    {
       const float3 normalSample = nmap.Sample(s1, tc).xyz;
@@ -46,7 +49,7 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float2 tc : T
    }
 
    // fragment to light vector data
-   const float3 vToL = light.lightPos - viewPos;
+   const float3 vToL = light.viewLightPos - viewPos;
    const float distToL = length(vToL);
    const float3 dirToL = vToL / distToL;
    // attenuation

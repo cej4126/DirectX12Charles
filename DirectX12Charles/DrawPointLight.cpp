@@ -89,9 +89,9 @@ void DrawPointLight::CreateLightControl() noexcept
    if (ImGui::Begin("Light"))
    {
       ImGui::Text("Position");
-      ImGui::SliderFloat("X", &gfx.lightData.position.x, -30.0f, 30.0f, "%0.1f");
-      ImGui::SliderFloat("Y", &gfx.lightData.position.y, -30.0f, 30.0f, "%0.1f");
-      ImGui::SliderFloat("Z", &gfx.lightData.position.z, -30.0f, 30.0f, "%0.1f");
+      ImGui::SliderFloat("X", &gfx.lightData.viewLightPos.x, -30.0f, 30.0f, "%0.1f");
+      ImGui::SliderFloat("Y", &gfx.lightData.viewLightPos.y, -30.0f, 30.0f, "%0.1f");
+      ImGui::SliderFloat("Z", &gfx.lightData.viewLightPos.z, -30.0f, 30.0f, "%0.1f");
 
       ImGui::Text("Intensity/Color");
       //ImGui::SliderFloat("Intensity", &gfx.lightData.diffuseIntensity, 0.01f, 2.0f, "%.2f", 2);
@@ -135,5 +135,5 @@ void DrawPointLight::Update(float dt) noexcept
 
 XMMATRIX DrawPointLight::GetTransformXM() const noexcept
 {
-   return XMMatrixTranslation(gfx.lightData.position.x, gfx.lightData.position.y, gfx.lightData.position.z);
+   return XMMatrixTranslation(gfx.lightData.viewLightPos.x, gfx.lightData.viewLightPos.y, gfx.lightData.viewLightPos.z);
 }

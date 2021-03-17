@@ -23,7 +23,7 @@ public:
 
    struct lightDataType
    {
-      XMFLOAT3 position;
+      XMFLOAT3 viewLightPos;
       float pad1;
       XMFLOAT3 ambient;
       float pad3;

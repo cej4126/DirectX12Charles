@@ -1,6 +1,6 @@
 struct CBuf
 {
-	float3 lightPos;
+	float3 viewLightPos;
 	float pad1;
 	float3 ambient;
 	float pad3;
@@ -26,8 +26,11 @@ SamplerState s1 : register(s0);
 
 float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float2 tc : Texcoord) : SV_Target
 {
+	// renormalize interpolated normal
+   viewNormal = normalize(viewNormal);
+
 	// fragment to light vector data
-	const float3 vToL = buf.lightPos - viewPos;
+	const float3 vToL = buf.viewLightPos - viewPos;
 	const float distToL = length(vToL);
 	const float3 dirToL = vToL / distToL;
 	// attenuation

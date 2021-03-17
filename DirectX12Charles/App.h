@@ -46,8 +46,10 @@ private:
    int objectIndex = 1;
    DrawLighted *currentObject = nullptr;
 
-   std::unique_ptr<class DrawModel > nano = nullptr;
-   std::unique_ptr<class DrawModel > wall = nullptr;
+   //std::unique_ptr<class DrawModel > nano = nullptr;
+   //std::unique_ptr<class DrawModel > wall = nullptr;
+   std::unique_ptr<class DrawGobber > nano = nullptr;
+   std::unique_ptr<class DrawGobber > wall = nullptr;
    std::unique_ptr<class DrawGobber > gobber = nullptr;
 };
 

@@ -1,6 +1,6 @@
 struct LightBuf
 {
-   float3 lightPos;
+   float3 viewLightPos;
    float pad1;
    float3 ambient;
    float pad3;
@@ -43,15 +43,17 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 tan : 
          normalize(bitan),
          normalize(viewNormal));
 
+      // unpack the normal from map into tangent space        
       const float3 normalSample = nmap.Sample(s1, tc).xyz;
-      viewNormal = normalSample * 2.0f - 1.0f;
-      viewNormal.y = -viewNormal.y;
-      viewNormal.z = normalSample.z;
-      viewNormal = mul(viewNormal, tanToView);
+      float3 tanNormal;
+      tanNormal = normalSample * 2.0f - 1.0f;
+      tanNormal.y = -tanNormal.y;
+      // bring normal from tanspace into view space
+      viewNormal = normalize(mul(tanNormal, tanToView));
    }
 
    // fragment to light vector data
-   const float3 vToL = light.lightPos - viewPos;
+   const float3 vToL = light.viewLightPos - viewPos;
    const float distToL = length(vToL);
    const float3 dirToL = vToL / distToL;
    // attenuation

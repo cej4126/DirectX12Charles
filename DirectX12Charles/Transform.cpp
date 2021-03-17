@@ -45,9 +45,9 @@ void Transform::Bind(Graphics &gfx) noexcept
    if (lightBufferActive)
    {
       auto dataCopy = gfx.lightData;
-      const auto pos = XMLoadFloat3(&dataCopy.position);
+      const auto pos = XMLoadFloat3(&dataCopy.viewLightPos);
       XMMATRIX cam = gfx.GetCamera();
-      XMStoreFloat3(&dataCopy.position, XMVector3Transform(pos, cam));
+      XMStoreFloat3(&dataCopy.viewLightPos, XMVector3Transform(pos, cam));
       memcpy(lightBufferGPUAddress, &dataCopy, sizeof(dataCopy));
    }
 }

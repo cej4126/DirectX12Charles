@@ -1,6 +1,6 @@
 struct CBuf
 {
-	float3 lightPos;
+	float3 viewLightPos;
 	float pad1;
 	float3 ambient;
 	float pad3;
@@ -24,8 +24,11 @@ ConstantBuffer <MaterialBuf> material: register(b2);
 
 float4 main(float3 viewPos : Position, float3 viewNormal : Normal) : SV_Target
 {
+	// renormalize interpolated normal
+   viewNormal = normalize(viewNormal);
+
 	// fragment to light vector data
-	const float3 vToL = buf.lightPos - viewPos;
+	const float3 vToL = buf.viewLightPos - viewPos;
 	const float distToL = length(vToL);
 	const float3 dirToL = vToL / distToL;
 	// attenuation
@@ -41,5 +44,5 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal) : SV_Target
 		material.specularIntensity * pow(max(0.0f, dot(normalize(-r), normalize(viewPos))), material.specularPower);
 
 	// final color
-	return float4(saturate((diffuse + buf.ambient + specular) * material.materialColor), 1.0f);
+	return float4(saturate(diffuse + buf.ambient + specular), 1.0f) * material.materialColor;
 }

@@ -466,6 +466,8 @@
     <None Include="models\nano_hierarchy.gltf">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </None>
+    <None Include="PointLight.hlsli" />
+    <None Include="ShaderOps.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <Object Include="models\nanosuit.obj">

@@ -626,6 +626,12 @@
     <None Include="models\nano_hierarchy.gltf">
       <Filter>models</Filter>
     </None>
+    <None Include="PointLight.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="ShaderOps.hlsli">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Object Include="models\nanosuit.obj">
