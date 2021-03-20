@@ -20,6 +20,7 @@ public:
    DrawNode(int id, const std::string &name, std::vector<DrawMesh * > MeshPtrs, const DirectX::XMMATRIX &transform) noexcept;
    void Draw(Graphics &gfx, FXMMATRIX accumulatedTrans);
    void SetAppliedTransform(FXMMATRIX transform) noexcept;
+   const XMFLOAT4X4 &GetAppliedTransform() const noexcept;
    int GetId() const noexcept;
    void ShowTree(DrawNode *&pSelectedNode) const noexcept;
 

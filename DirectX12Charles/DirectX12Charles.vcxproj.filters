@@ -565,6 +565,9 @@
     <FxCompile Include="ModelNormalSpecPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="ModelSpecPS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Images\test.png">

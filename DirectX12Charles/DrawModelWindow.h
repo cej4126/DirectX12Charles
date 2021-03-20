@@ -12,6 +12,9 @@ public:
    DrawNode *GetSelectedNode() const noexcept;
 
 private:
+   XMFLOAT3 ExtractEulerAngles(const XMFLOAT4X4 &mat);
+   XMFLOAT3 ExtractTranslation(const XMFLOAT4X4 &matrix);
+
    static constexpr float PI = 3.14159265f;
    DrawNode *pSelectedNode;
    struct TransformParameters

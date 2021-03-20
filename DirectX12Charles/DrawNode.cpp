@@ -69,6 +69,11 @@ void DrawNode::SetAppliedTransform(FXMMATRIX transform) noexcept
    XMStoreFloat4x4(&appliedTransform, transform);
 }
 
+const XMFLOAT4X4 &DrawNode::GetAppliedTransform() const noexcept
+{
+   return appliedTransform;
+}
+
 int DrawNode::GetId() const noexcept
 {
    return id;

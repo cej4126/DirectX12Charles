@@ -52,10 +52,17 @@ void Camera::Reset() noexcept
 
 float Camera::wrap_angle(float theta)
 {
-   const float modded = fmod(theta, 2.0f * PI);
-   return (modded > PI) ?
-      (modded - 2.0f * PI) :
-      modded;
+   constexpr float twoPi = 2.0f * PI;
+   const float mod = fmod(theta, twoPi);
+   if (mod > PI)
+   {
+      return mod - twoPi;
+   }
+   else if (mod < PI)
+   {
+      return mod + twoPi;
+   }
+   return mod;
 }
 
 void Camera::Rotate(float dx, float dy) noexcept

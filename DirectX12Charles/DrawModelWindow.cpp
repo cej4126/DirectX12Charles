@@ -4,6 +4,30 @@
 #include "DrawModelWindow.h"
 #include "DrawNode.h"
 
+XMFLOAT3 DrawModelWindow::ExtractEulerAngles(const XMFLOAT4X4 &mat)
+{
+   DirectX::XMFLOAT3 euler;
+
+   euler.x = asinf(-mat._32);                  // Pitch
+   if (cosf(euler.x) > 0.0001)                // Not at poles
+   {
+      euler.y = atan2f(mat._31, mat._33);      // Yaw
+      euler.z = atan2f(mat._12, mat._22);      // Roll
+   }
+   else
+   {
+      euler.y = 0.0f;                           // Yaw
+      euler.z = atan2f(-mat._21, mat._11);     // Roll
+   }
+
+   return euler;
+}
+
+XMFLOAT3 DrawModelWindow::ExtractTranslation(const XMFLOAT4X4 &matrix)
+{
+   return { matrix._41,matrix._42,matrix._43 };
+}
+
 void DrawModelWindow::Show(const char *windowName, const DrawNode &root) noexcept
 {
    windowName = windowName ? windowName : "Model";
@@ -19,6 +43,18 @@ void DrawModelWindow::Show(const char *windowName, const DrawNode &root) noexcep
       ImGui::NextColumn();
       if (pSelectedNode != nullptr)
       {
+         const auto id = pSelectedNode->GetId();
+         auto i = transforms.find(id);
+         if (i == transforms.end())
+         {
+            const auto &applied = pSelectedNode->GetAppliedTransform();
+            const auto angle = ExtractEulerAngles(applied);
+            const auto translation = ExtractTranslation(applied);
+
+            TransformParameters tp = { angle.z, angle.x, angle.y, translation.x, translation.y, translation.z };
+            std::tie(i, std::ignore) = transforms.insert({ id, tp });
+         }
+
          auto &tranform = transforms[pSelectedNode->GetId()];
          ImGui::Text("Orientation");
          ImGui::SliderAngle("Roll", &tranform.roll, -180.0f, 180.0f);

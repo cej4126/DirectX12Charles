@@ -277,6 +277,53 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
          object->CreateRootSignature(ModelSpec::Model_Type::MODEL_DIFF_NORMAL);
          object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
       }
+      else if (diffuse && !normal && specular)
+      {
+      using hw3dexp::VertexLayout;
+      hw3dexp::VertexBuffer vbuf(std::move(
+         VertexLayout{}
+         .Append(VertexLayout::Position3D)
+         .Append(VertexLayout::Normal)
+         .Append(VertexLayout::Texture2D)
+      ));
+
+      for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+      {
+         XMFLOAT3 vertices = { mesh.mVertices[i].x * m_size, mesh.mVertices[i].y * m_size, mesh.mVertices[i].z * m_size };
+         vbuf.EmplaceBack(
+            *reinterpret_cast<XMFLOAT3 *>(&vertices),
+            *reinterpret_cast<XMFLOAT3 *>(&mesh.mNormals[i]),
+            *reinterpret_cast<XMFLOAT2 *>(&mesh.mTextureCoords[0][i])
+         );
+      }
+
+      std::vector<unsigned short> indices;
+      indices.reserve((size_t)mesh.mNumFaces * 3);
+      for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+      {
+         const auto &face = mesh.mFaces[i];
+         assert(face.mNumIndices == 3);
+         indices.push_back(face.mIndices[0]);
+         indices.push_back(face.mIndices[1]);
+         indices.push_back(face.mIndices[2]);
+      }
+      size = (int)indices.size();
+
+      object->LoadVerticesBuffer(vbuf);
+      object->LoadIndicesBuffer(indices);
+
+      object->CreateShader(L"ModelVS.cso", L"ModelSpecPS.cso");
+      material.hasNormal = true;
+      material.hasSpecular = true;
+      material.specularPower = 2.0f;
+      material.hasGloss = alphaGloss;
+      material.specularColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+      material.specularWeight = 1.0f;
+
+      // Create Root Signature after constants
+      object->CreateRootSignature(ModelSpec::Model_Type::MODEL_DIFF_NORMAL_SPEC);
+      object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+      }
       else if (diffuse)
       {
          using hw3dexp::VertexLayout;
