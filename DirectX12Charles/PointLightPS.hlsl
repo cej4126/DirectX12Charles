@@ -1,10 +1,10 @@
-struct CBuf
+struct ColorType
 {
    float4 color;
 };
-ConstantBuffer <CBuf> buf: register(b1);
+ConstantBuffer <ColorType> color: register(b1);
 
 float4 main() : SV_Target
 {
-   return buf.color;
+   return color.color;
 }

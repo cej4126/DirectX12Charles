@@ -1,4 +1,4 @@
-struct LightBuf
+struct PointLightType
 {
 	float3 viewLightPos;
 	float pad1;

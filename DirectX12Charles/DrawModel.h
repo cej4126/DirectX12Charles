@@ -5,7 +5,7 @@
 #include "Vertex.h"
 #include "DrawFunction.h"
 #include "imgui/imgui.h"
-//#include "ModelObject.h"
+#include "ModelSpec.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>

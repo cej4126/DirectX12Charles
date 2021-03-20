@@ -1,8 +1,4 @@
-struct TransformType
-{
-   matrix modelViewProj;
-   matrix modelView;
-};
+#include "Transform.hlsli"
 ConstantBuffer<TransformType> transform : register(b0);
 
 struct VS_OUTPUT

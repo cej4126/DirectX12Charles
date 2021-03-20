@@ -40,6 +40,9 @@
     <Filter Include="Source Files\Draw">
       <UniqueIdentifier>{8bdaf441-1a42-4437-8194-85948ee5187d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\include">
+      <UniqueIdentifier>{9502a63e-e53c-4912-a595-43efe77f7d61}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -384,9 +387,6 @@
     <ClInclude Include="DrawNode.h">
       <Filter>Header Files\Draw</Filter>
     </ClInclude>
-    <ClInclude Include="DrawGobber.h">
-      <Filter>Header Files\Draw</Filter>
-    </ClInclude>
     <ClInclude Include="ModelSpec.h">
       <Filter>Header Files\Bindable</Filter>
     </ClInclude>
@@ -500,9 +500,6 @@
     <ClCompile Include="DrawNode.cpp">
       <Filter>Source Files\Draw</Filter>
     </ClCompile>
-    <ClCompile Include="DrawGobber.cpp">
-      <Filter>Source Files\Draw</Filter>
-    </ClCompile>
     <ClCompile Include="ModelSpec.cpp">
       <Filter>Source Files\Bindable</Filter>
     </ClCompile>
@@ -541,31 +538,31 @@
     <FxCompile Include="ModelPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="ModelPSSpecNormal.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
     <FxCompile Include="ModelVS.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="ModelPSNormal.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="PhongPSNormal.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="ModelVSNormal.hlsl">
+    <FxCompile Include="ModelNormalDiffusePS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="GobberNormalTexVS.hlsl">
+    <FxCompile Include="ModelNormalDiffuseVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="GobberNormalTexPS.hlsl">
+    <FxCompile Include="ModelNormalTexVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="GobberNormalPS.hlsl">
+    <FxCompile Include="ModelNormalTexPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="GobberNormalVS.hlsl">
+    <FxCompile Include="ModelNormalPS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="ModelNormalVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="ModelNormalSpecPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>
@@ -626,11 +623,20 @@
     <None Include="models\nano_hierarchy.gltf">
       <Filter>models</Filter>
     </None>
+    <None Include="Material.hlsli">
+      <Filter>Shader\include</Filter>
+    </None>
+    <None Include="LightVectorData.hlsli">
+      <Filter>Shader\include</Filter>
+    </None>
     <None Include="PointLight.hlsli">
-      <Filter>Shader</Filter>
+      <Filter>Shader\include</Filter>
     </None>
     <None Include="ShaderOps.hlsli">
-      <Filter>Shader</Filter>
+      <Filter>Shader\include</Filter>
+    </None>
+    <None Include="Transform.hlsli">
+      <Filter>Shader\include</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
