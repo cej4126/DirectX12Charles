@@ -25,7 +25,7 @@ public:
    void SetPosition(FXMMATRIX tf);
 
 private:
-   std::unique_ptr<DrawMesh> ParseMesh(int index, const aiMesh &mesh, const aiMaterial *const *pMaterials);
+   std::unique_ptr<DrawMesh> ParseMesh(int index, const aiMesh &mesh, const aiMaterial *const *pMaterials, int &materialIndex);
    std::unique_ptr<DrawNode> ParseNode(int &nextId, const aiNode &node) noexcept;
 
    Graphics &gfx;
@@ -37,6 +37,8 @@ private:
 
    std::unique_ptr<DrawNode> pRoot;
    std::vector<std::unique_ptr<DrawMesh>> MeshPtrs;
+
+   std::vector<Surface> surfaces;
 
    int m_materialIndex = -1;
    std::vector<Graphics::MaterialType> m_material;

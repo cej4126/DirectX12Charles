@@ -9,6 +9,9 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 
+#include "test.h"
+testFunction test;
+
 GDIPlusManager gdipm;
 
 App::App()
@@ -24,7 +27,7 @@ App::App()
 
    dwriteitem = std::make_unique<dwritedraw>(wnd.Gfx());
 
-   int MaxBoxX12Count = 10;
+   int MaxBoxX12Count = 1;
    int MaterialCount = 0;
    int objectCount = 0;
 
@@ -46,26 +49,31 @@ App::App()
    //   light->getLightView(), MaterialCount);
    //cube->SetPos(XMFLOAT3(-15.0f, 5.0f, 30.0f));
 
+   //drawItems.push_back(std::make_unique<DrawNormal>(wnd.Gfx(), objectCount, Shape::Plane, 3.0f,
+   //   "..\\..\\DirectX12Charles\\Images\\brickwall.jpg", "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg", light->getLightView(), MaterialCount));
+
    //nano = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 1.0f,
    //   "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj",
    //   light->getLightView(), MaterialCount);
 
-   //wall = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 5.0f,
-   //   "..\\..\\DirectX12Charles\\models\\brick_wall\\brick_wall.obj",
-   //   light->getLightView(), MaterialCount);
-   //wall->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f ));
-
-   gobber = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 5.0f,
-      "..\\..\\DirectX12Charles\\models\\gobber\\GoblinX.obj",
+   wall = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 5.0f,
+      "..\\..\\DirectX12Charles\\models\\brick_wall\\brick_wall.obj",
       light->getLightView(), MaterialCount);
-   gobber->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
+   wall->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f ));
 
-   //drawItems.push_back(std::make_unique<DrawNormal>(wnd.Gfx(), objectCount, Shape::Plane, 3.0f,
-   //   "..\\..\\DirectX12Charles\\Images\\brickwall.jpg", "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg", light->getLightView(), MaterialCount));
+   //gobber = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 5.0f,
+   //   "..\\..\\DirectX12Charles\\models\\gobber\\GoblinX.obj",
+   //   light->getLightView(), MaterialCount);
+   //gobber->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
 
-   //for (auto i = 0; i < MaxBoxX12Count; i++)
-   //{
-   //   float range = rangedist(rng);
+   //sponza = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 1.0f,
+   //   "..\\..\\DirectX12Charles\\models\\sponza\\sponza.obj",
+   //   light->getLightView(), MaterialCount);
+   //sponza->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
+
+   for (auto i = 0; i < MaxBoxX12Count; i++)
+   {
+      float range = rangedist(rng);
 
    //   Shape::shapeType type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
    //   drawItems.push_back(std::make_unique<DrawLighted>(wnd.Gfx(), objectCount, type, range, light->getLightView(), MaterialCount));
@@ -76,7 +84,7 @@ App::App()
    //   drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
    //   drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
    //   drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
-   //}
+   }
 
    wnd.Gfx().CreateMatrixConstant(objectCount);
    wnd.Gfx().CreateMaterialConstant(MaterialCount);
@@ -108,6 +116,10 @@ App::App()
    if (gobber != nullptr)
    {
       gobber->FirstCommand();
+   }
+   if (sponza != nullptr)
+   {
+      sponza->FirstCommand();
    }
 
    wnd.Gfx().RunCommandList();
@@ -181,6 +193,10 @@ void App::DoFrame()
    if (gobber != nullptr)
    {
       gobber->Draw(wnd.Gfx());
+   }
+   if (sponza != nullptr)
+   {
+      sponza->Draw(wnd.Gfx());
    }
 
    for (auto &b : drawItems)
@@ -276,6 +292,10 @@ void App::DoFrame()
    if (gobber != nullptr)
    {
       gobber->ShowWindow("Model Gobber");
+   }
+   if (sponza != nullptr)
+   {
+      sponza->ShowWindow("Model Sponza");
    }
 
    ImGui::Render();

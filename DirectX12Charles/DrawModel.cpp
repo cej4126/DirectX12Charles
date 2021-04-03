@@ -4,6 +4,9 @@
 #include <sstream>
 #include "ModelSpec.h"
 
+#include "test.h"
+
+
 DrawModel::DrawModel(Graphics &gfx, int &index, float size, const std::string fileName, ID3D12Resource *lightView, int &MaterialIndex)
    :
    gfx(gfx),
@@ -25,16 +28,10 @@ DrawModel::DrawModel(Graphics &gfx, int &index, float size, const std::string fi
 
    for (size_t i = 0; i < pScene->mNumMeshes; i++)
    {
-      //if (i == 0)
-      //{
-      //   MeshPtrs.push_back(ParseMesh(index, *pScene->mMeshes[i], pScene->mMaterials));
-      //   ++index;
-      //   ++MaterialIndex;
-      //}
-      MeshPtrs.push_back(ParseMesh(index, *pScene->mMeshes[i], pScene->mMaterials));
+      MeshPtrs.push_back(ParseMesh(index, *pScene->mMeshes[i], pScene->mMaterials, MaterialIndex));
       ++index;
-      ++MaterialIndex;
    }
+   test.addTestData(0, 0, "");
 
    int nextId = 0;
    pRoot = ParseNode(nextId, *pScene->mRootNode);
@@ -53,13 +50,6 @@ std::unique_ptr<DrawNode> DrawModel::ParseNode(int &nextId, const aiNode &node) 
    for (size_t i = 0; i < node.mNumMeshes; i++)
    {
       const auto MeshIndex = node.mMeshes[i];
-
-      //test
-      //if (MeshIndex == 0)
-      //{
-      //   curMeshPtrs.push_back(MeshPtrs.at(MeshIndex).get());
-      //}
-
       curMeshPtrs.push_back(MeshPtrs.at(MeshIndex).get());
    }
 
@@ -82,15 +72,15 @@ void DrawModel::FirstCommand()
    }
 }
 
-std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, const aiMaterial *const *pMaterials)
+std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, const aiMaterial *const *pMaterials, int &materialIndex)
 {
 
    // create the tag and path
    std::size_t pos = filename.find_last_of("/\\");
    std::string path = filename.substr(0, pos) + std::string("\\");
    pos = path.find_last_of("/\\");
-   std::string tag = "gobber";
-   tag += index;
+   std::string tag = "model";
+   //tag += index;
    tag += path.substr(pos + 1);
    aiString diffuseName;
    aiString specularName;
@@ -148,15 +138,15 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
       float shininess = 35.0f;
       if (diffuse)
       {
-         object->CreateTexture(Surface::FromFile(path + diffuseName.C_Str()), 0);
+         Surface surface = Surface::FromFile(path + diffuseName.C_Str());
+         object->CreateTexture(surface, 0);
       }
 
       if (specular)
       {
-         //object->CreateTexture(Surface::FromFile(path + specularName.C_Str()), 1);
-         auto tex = Surface::FromFile(path + specularName.C_Str());
-         alphaGloss = tex.AlphaLoaded();
-         object->CreateTexture(tex, 1);
+         Surface surface = Surface::FromFile(path + specularName.C_Str());
+         object->CreateTexture(surface, 1);
+         alphaGloss = surface.AlphaLoaded();
       }
 
       if (!alphaGloss)
@@ -166,10 +156,9 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
 
       if (normal)
       {
-         //object->CreateTexture(Surface::FromFile(path + normalName.C_Str()), 2);
-         auto tex = Surface::FromFile(path + normalName.C_Str());
-         alphaGloss = tex.AlphaLoaded();
-         object->CreateTexture(tex, 2);
+         Surface surface = Surface::FromFile(path + normalName.C_Str());
+         object->CreateTexture(surface, 2);
+         alphaGloss = surface.AlphaLoaded();
       }
 
 
@@ -279,50 +268,50 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
       }
       else if (diffuse && !normal && specular)
       {
-      using hw3dexp::VertexLayout;
-      hw3dexp::VertexBuffer vbuf(std::move(
-         VertexLayout{}
-         .Append(VertexLayout::Position3D)
-         .Append(VertexLayout::Normal)
-         .Append(VertexLayout::Texture2D)
-      ));
+         using hw3dexp::VertexLayout;
+         hw3dexp::VertexBuffer vbuf(std::move(
+            VertexLayout{}
+            .Append(VertexLayout::Position3D)
+            .Append(VertexLayout::Normal)
+            .Append(VertexLayout::Texture2D)
+         ));
 
-      for (unsigned int i = 0; i < mesh.mNumVertices; i++)
-      {
-         XMFLOAT3 vertices = { mesh.mVertices[i].x * m_size, mesh.mVertices[i].y * m_size, mesh.mVertices[i].z * m_size };
-         vbuf.EmplaceBack(
-            *reinterpret_cast<XMFLOAT3 *>(&vertices),
-            *reinterpret_cast<XMFLOAT3 *>(&mesh.mNormals[i]),
-            *reinterpret_cast<XMFLOAT2 *>(&mesh.mTextureCoords[0][i])
-         );
-      }
+         for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+         {
+            XMFLOAT3 vertices = { mesh.mVertices[i].x * m_size, mesh.mVertices[i].y * m_size, mesh.mVertices[i].z * m_size };
+            vbuf.EmplaceBack(
+               *reinterpret_cast<XMFLOAT3 *>(&vertices),
+               *reinterpret_cast<XMFLOAT3 *>(&mesh.mNormals[i]),
+               *reinterpret_cast<XMFLOAT2 *>(&mesh.mTextureCoords[0][i])
+            );
+         }
 
-      std::vector<unsigned short> indices;
-      indices.reserve((size_t)mesh.mNumFaces * 3);
-      for (unsigned int i = 0; i < mesh.mNumFaces; i++)
-      {
-         const auto &face = mesh.mFaces[i];
-         assert(face.mNumIndices == 3);
-         indices.push_back(face.mIndices[0]);
-         indices.push_back(face.mIndices[1]);
-         indices.push_back(face.mIndices[2]);
-      }
-      size = (int)indices.size();
+         std::vector<unsigned short> indices;
+         indices.reserve((size_t)mesh.mNumFaces * 3);
+         for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+         {
+            const auto &face = mesh.mFaces[i];
+            assert(face.mNumIndices == 3);
+            indices.push_back(face.mIndices[0]);
+            indices.push_back(face.mIndices[1]);
+            indices.push_back(face.mIndices[2]);
+         }
+         size = (int)indices.size();
 
-      object->LoadVerticesBuffer(vbuf);
-      object->LoadIndicesBuffer(indices);
+         object->LoadVerticesBuffer(vbuf);
+         object->LoadIndicesBuffer(indices);
 
-      object->CreateShader(L"ModelVS.cso", L"ModelSpecPS.cso");
-      material.hasNormal = true;
-      material.hasSpecular = true;
-      material.specularPower = 2.0f;
-      material.hasGloss = alphaGloss;
-      material.specularColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-      material.specularWeight = 1.0f;
+         object->CreateShader(L"ModelVS.cso", L"ModelSpecPS.cso");
+         material.hasNormal = true;
+         material.hasSpecular = true;
+         material.specularPower = 2.0f;
+         material.hasGloss = alphaGloss;
+         material.specularColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+         material.specularWeight = 1.0f;
 
-      // Create Root Signature after constants
-      object->CreateRootSignature(ModelSpec::Model_Type::MODEL_DIFF_NORMAL_SPEC);
-      object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+         // Create Root Signature after constants
+         object->CreateRootSignature(ModelSpec::Model_Type::MODEL_DIFF_NORMAL_SPEC);
+         object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
       }
       else if (diffuse)
       {
@@ -420,6 +409,9 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
       object->setSize(size);
 
       object->SetLightView(lightView);
+
+      m_material.push_back(material);
+      ++materialIndex;
    }
    else
    {
@@ -427,8 +419,7 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
    }
 
    bindablePtrs.push_back(std::move(object));
-   m_material.push_back(material);
-   return std::make_unique<DrawMesh>(gfx, index, std::move(bindablePtrs), (UINT)size, m_materialIndex);
+   return std::make_unique<DrawMesh>(gfx, index, std::move(bindablePtrs), (UINT)size, materialIndex);
 }
 
 void DrawModel::Draw(Graphics &gfx) const

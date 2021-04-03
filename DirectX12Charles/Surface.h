@@ -21,15 +21,15 @@ public:
       {}
       constexpr Color(unsigned char a, unsigned char r, unsigned char g, unsigned char b) noexcept
          :
-         dword(b | (g << 8u) | (r << 16u) | (a << 24u) )
+         dword((a << 24u) | (r << 16u) | (g << 8u) | b )
       {}
       constexpr Color(unsigned char r, unsigned char g, unsigned char b) noexcept
          :
-         dword(b | (g << 8u) | (r << 16u))
+         dword((r << 16u) | (g << 8u) | b)
       {}
       constexpr Color(Color color, unsigned char a) noexcept
          :
-         Color(color.dword | (a << 24u))
+         Color((a << 24u) | color.dword)
       {}
       Color &operator = (Color color) noexcept
       {
@@ -71,7 +71,6 @@ public:
    };
 
 public:
-   Surface(unsigned int width, unsigned int height, unsigned int pitch) noexcept;
    Surface(unsigned int width, unsigned int height) noexcept;
    Surface(Surface &&source) noexcept;
    Surface(Surface &) = delete;
@@ -86,16 +85,18 @@ public:
    unsigned int GetHeight() const noexcept;
    Color *GetBufferPtr() noexcept;
    const Color *GetBufferPtr() const noexcept;
+   const Color *GetBufferPtrConst() const noexcept;
    static Surface FromFile(const std::string &filename);
    void Save(const std::string &filename) const;
    void Copy(const Surface &src) noexcept;
 
-   bool AlphaLoaded() { return alhpaLoaded; }
+   bool AlphaLoaded() const noexcept;
+
 private:
-   Surface(unsigned int width, unsigned int height, std::unique_ptr<Color[]> pBufferParam) noexcept;
+   Surface(unsigned int width, unsigned int height, std::unique_ptr<Color[]> pBufferParam, bool alphaLoaded = false) noexcept;
    std::unique_ptr<Color[]> pBuffer;
    unsigned int width;
    unsigned int height;
-   bool alhpaLoaded = false;
+   bool alphaLoaded = false;
 };
 

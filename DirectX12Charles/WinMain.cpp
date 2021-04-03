@@ -13,7 +13,8 @@ int CALLBACK WinMain(
    }
    catch (...)
    {
-      MessageBox(nullptr, L"Any Enception", L"Exception", MB_OK | MB_ICONEXCLAMATION);
+      //MessageBox(nullptr, L"Any Enception", L"Exception", MB_OK | MB_ICONEXCLAMATION);
+      MessageBox(nullptr, "Any Enception", "Exception", MB_OK | MB_ICONEXCLAMATION);
    }
    return -1;
 }

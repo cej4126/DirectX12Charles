@@ -33,7 +33,9 @@ private:
    static LRESULT CALLBACK HandleMsgInit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
    static LRESULT CALLBACK HandleMsgMain(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
    LRESULT HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-   LPCTSTR WindowName = L"Charles";
+   //LPCTSTR WindowName = L"Charles";
+   //LPCTSTR WindowName = L"Charles";
+   static constexpr const char *WindowName = "Charles";
    int width;
    int height;
    HWND hWnd;

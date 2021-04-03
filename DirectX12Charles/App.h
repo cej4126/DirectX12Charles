@@ -48,5 +48,6 @@ private:
    std::unique_ptr<class DrawModel > nano = nullptr;
    std::unique_ptr<class DrawModel > wall = nullptr;
    std::unique_ptr<class DrawModel > gobber = nullptr;
+   std::unique_ptr<class DrawModel > sponza = nullptr;
 };
 

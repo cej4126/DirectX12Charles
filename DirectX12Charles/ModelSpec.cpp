@@ -346,7 +346,10 @@ void ModelSpec::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
 }
 
 void ModelSpec::CreateTexture(const Surface &surface, int slot)
+//void ModelSpec::CreateTexture(std::string &path, int slot)
 {
+   //const auto surface = Surface::FromFile(path );
+
    textureActive = true;
    if (slot == 1)
    {

@@ -15,6 +15,7 @@ public:
    std::string GetUID() const noexcept override;
 
    void CreateTexture(const Surface &surface, int slot);
+   //void CreateTexture(std::string &path, int slot);
    enum class Model_Type
    {
       MODEL_DIFF_NORMAL_SPEC,
