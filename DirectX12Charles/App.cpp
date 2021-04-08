@@ -56,20 +56,20 @@ App::App()
    //   "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj",
    //   light->getLightView(), MaterialCount);
 
-   wall = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 5.0f,
-      "..\\..\\DirectX12Charles\\models\\brick_wall\\brick_wall.obj",
-      light->getLightView(), MaterialCount);
-   wall->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f ));
+   //wall = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 5.0f,
+   //   "..\\..\\DirectX12Charles\\models\\brick_wall\\brick_wall.obj",
+   //   light->getLightView(), MaterialCount);
+   //wall->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f ));
 
    //gobber = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 5.0f,
    //   "..\\..\\DirectX12Charles\\models\\gobber\\GoblinX.obj",
    //   light->getLightView(), MaterialCount);
    //gobber->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
 
-   //sponza = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 1.0f,
-   //   "..\\..\\DirectX12Charles\\models\\sponza\\sponza.obj",
-   //   light->getLightView(), MaterialCount);
-   //sponza->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
+   sponza = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 1.0f,
+      "..\\..\\DirectX12Charles\\models\\sponza\\sponza.obj",
+      light->getLightView(), MaterialCount);
+   sponza->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
 
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {

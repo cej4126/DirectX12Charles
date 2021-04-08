@@ -130,6 +130,7 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
    auto object = ModelSpec::Resolve(gfx, tag);
 
    int size = 0;
+   int thisMaterialIndex = materialIndex;
 
    if (!object->isInitialized())
    {
@@ -419,7 +420,7 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
    }
 
    bindablePtrs.push_back(std::move(object));
-   return std::make_unique<DrawMesh>(gfx, index, std::move(bindablePtrs), (UINT)size, materialIndex);
+   return std::make_unique<DrawMesh>(gfx, index, std::move(bindablePtrs), (UINT)size, thisMaterialIndex);
 }
 
 void DrawModel::Draw(Graphics &gfx) const
