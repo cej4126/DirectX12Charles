@@ -66,10 +66,10 @@ App::App()
    //   light->getLightView(), MaterialCount);
    //gobber->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
 
-   sponza = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 1.0f,
+   sponza = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 1.0f / 20.0f,
       "..\\..\\DirectX12Charles\\models\\sponza\\sponza.obj",
       light->getLightView(), MaterialCount);
-   sponza->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
+   sponza->SetPosition(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
 
    for (auto i = 0; i < MaxBoxX12Count; i++)
    {

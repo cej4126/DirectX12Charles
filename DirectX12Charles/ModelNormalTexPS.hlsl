@@ -27,16 +27,12 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 viewTa
    const LightVectorData lv = CalculateLightVectorData(light.viewLightPos, viewPos);
    // attenuation
    const float att = Attenuate(light.attConst, light.attLin, light.attQuad, lv.distToL);
-
    // diffuse intensity
    const float3 diffuse = Diffuse(light.diffuseColor, light.diffuseIntensity, att, lv.dirToL, viewNormal);
-
-   // reflected light vector
-   const float3 w = viewNormal * dot(lv.vToL, viewNormal);
-   const float3 r = w * 2.0f - lv.vToL;
-   // calculate specular intensity based on angle between viewing vector and reflection vector, narrow with power function
-   const float3 specular = att * (light.diffuseColor * light.diffuseIntensity) *
-         material.specularIntensity * pow(max(0.0f, dot(normalize(-r), normalize(viewPos))), material.specularPower);
+   // specular
+   const float3 specular = Speculate(
+      light.diffuseColor, light.diffuseIntensity, viewNormal,
+      lv.vToL, viewPos, att, material.specularPower);
 
    // final color
    return float4(saturate((diffuse + light.ambient) * tex.Sample(s1, tc).rgb + specular), 1.0f);

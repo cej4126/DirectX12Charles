@@ -6,6 +6,7 @@
 
 #include "test.h"
 
+//#define DEBUG_MODEL
 
 DrawModel::DrawModel(Graphics &gfx, int &index, float size, const std::string fileName, ID3D12Resource *lightView, int &MaterialIndex)
    :
@@ -28,8 +29,16 @@ DrawModel::DrawModel(Graphics &gfx, int &index, float size, const std::string fi
 
    for (size_t i = 0; i < pScene->mNumMeshes; i++)
    {
+#ifdef DEBUG_MODEL
+      if (i < 6)
+      {
+         MeshPtrs.push_back(ParseMesh(index, *pScene->mMeshes[i], pScene->mMaterials, MaterialIndex));
+         ++index;
+      }
+#else
       MeshPtrs.push_back(ParseMesh(index, *pScene->mMeshes[i], pScene->mMaterials, MaterialIndex));
       ++index;
+#endif
    }
    test.addTestData(0, 0, "");
 
@@ -56,7 +65,14 @@ std::unique_ptr<DrawNode> DrawModel::ParseNode(int &nextId, const aiNode &node) 
    auto pNode = std::make_unique<DrawNode>(nextId++, node.mName.C_Str(), std::move(curMeshPtrs), transform);
    for (size_t i = 0; i < node.mNumChildren; i++)
    {
+#ifdef DEBUG_MODEL
+      if (i < 6)
+      {
+         pNode->AddChild(ParseNode(nextId, *node.mChildren[i]));
+      }
+#else
       pNode->AddChild(ParseNode(nextId, *node.mChildren[i]));
+#endif
    }
    return pNode;
 }
@@ -79,9 +95,10 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
    std::size_t pos = filename.find_last_of("/\\");
    std::string path = filename.substr(0, pos) + std::string("\\");
    pos = path.find_last_of("/\\");
-   std::string tag = "model";
+   std::string tag = "model%";
    //tag += index;
-   tag += path.substr(pos + 1);
+   //tag += path.substr(pos + 1);
+   tag += mesh.mName.C_Str();
    aiString diffuseName;
    aiString specularName;
    aiString normalName;
