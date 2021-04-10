@@ -6,6 +6,7 @@
 #include "DrawFunction.h"
 #include "imgui/imgui.h"
 #include "ModelSpec.h"
+#include "Texture.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>

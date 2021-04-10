@@ -21,17 +21,6 @@ namespace Bind
       int getIndex() { return m_index; }
       void setIndex(int index) { m_index = index; }
 
-      //virtual void CreateTexture(const Surface &surface, int slot) {}
-      //virtual void CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag) {}
-      //virtual void CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath) {}
-      //virtual void SetLightView(ID3D12Resource *mylightView) {};
-      //virtual void CreatePipelineState(const std::vector<D3D12_INPUT_ELEMENT_DESC> &inputElementDescs, D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType) {}
-
-      //virtual void LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices) {}
-      //virtual void LoadIndicesBuffer(const std::vector<unsigned short> &indices) {};
-      //virtual void CreateConstant(const XMFLOAT3 &colorBuffer, int size) {};
-      //virtual void FirstCommand() {};
-
    private:
       bool initialized = false;
       int m_index = -1;

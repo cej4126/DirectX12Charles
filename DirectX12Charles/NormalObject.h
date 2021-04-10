@@ -51,10 +51,6 @@ private:
    Microsoft::WRL::ComPtr <ID3D12Resource> colorBufferUploadHeaps;
    UINT8 *colorBufferGPUAddress;
 
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer[NUMBER_OF_VIEW];
-   Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >textureDescriptorHeap;
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap[NUMBER_OF_VIEW];
-
    Microsoft::WRL::ComPtr < ID3D12Resource > normalBuffer;
    Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >normalDescriptorHeap;
    Microsoft::WRL::ComPtr < ID3D12Resource > normalBufferUploadHeap;

@@ -14,8 +14,8 @@ public:
    static std::string GenerateUID(const std::string &tag);
    std::string GetUID() const noexcept override;
 
-   void CreateTexture(std::string path, int slot, bool alphaGloss = false);
-   bool getAlphaGloss() { return m_alphaGloss; }
+   //void CreateTexture(std::string path, int slot, bool alphaGloss = false);
+   //bool getAlphaGloss() { return m_alphaGloss; }
 
    enum class Model_Type
    {
@@ -62,12 +62,12 @@ private:
    UINT8 *colorBufferGPUAddress = 0;
    int m_size;
 
-   bool textureActive = false;
-   bool m_alphaGloss = false;
-   bool specularActive = false;
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer[NUMBER_OF_VIEW];
-   Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >mainDescriptorHeap;
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap[NUMBER_OF_VIEW];
+   //bool textureActive = false;
+   //bool m_alphaGloss = false;
+   //bool specularActive = false;
+   //Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer[NUMBER_OF_VIEW];
+   //Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >mainDescriptorHeap;
+   //Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap[NUMBER_OF_VIEW];
 
    Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
    D3D12_INPUT_LAYOUT_DESC inputLayoutDesc;

@@ -91,7 +91,7 @@ DrawPictureCube::DrawPictureCube(Graphics &gfx, int &index, Shape::shapeType typ
    if (!texture->isInitialized())
    {
       texture->setInitialized();
-      texture->CreateTexture(filename, 0);
+      texture->CreateTexture(filename, 0, 1);
    }
    AddBind(std::move(texture));
 

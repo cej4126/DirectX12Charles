@@ -91,7 +91,7 @@ DrawTextureCube::DrawTextureCube(Graphics &gfx, int &index, float range)
    {
       texture->setInitialized();
       std::string filename = "..\\..\\DirectX12Charles\\Images\\cube.png";
-      texture->CreateTexture(filename, 0);
+      texture->CreateTexture(filename, 0, 1);
    }
    AddBind(std::move(texture));
 

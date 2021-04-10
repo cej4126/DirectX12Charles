@@ -62,10 +62,8 @@ DrawNormal::DrawNormal(Graphics &gfx, int &index, Shape::shapeType type, float s
       object->LoadVerticesBuffer(vbuf);
       object->LoadIndicesBuffer(model.indices);
 
-      object->CreateTexture(Surface::FromFile(texturefilename), 0);
       if (specular)
       {
-         object->CreateTexture(Surface::FromFile(normalfilename), 1);
          object->CreateShader(L"ModelVS.cso", L"PhongPSNormal.cso");
       }
       else
@@ -87,6 +85,19 @@ DrawNormal::DrawNormal(Graphics &gfx, int &index, Shape::shapeType type, float s
 
    }
    AddBind(std::move(object));
+
+
+   std::shared_ptr<Texture> texture = Texture::Resolve(gfx, tag);
+   if (!texture->isInitialized())
+   {
+      texture->setInitialized();
+      texture->CreateTexture(texturefilename, 0, 3);
+      if (specular)
+      {
+         texture->CreateTexture(normalfilename, 1, 3);
+      }
+   }
+   AddBind(std::move(texture));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this, NormalObject::VIEW_CB, NormalObject::VIEW_PS_CB);
    UINT start = gfx.shape.getIndiceStart(type);

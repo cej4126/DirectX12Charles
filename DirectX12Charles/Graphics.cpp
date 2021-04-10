@@ -343,7 +343,8 @@ void Graphics::CreateMaterialConstant(UINT count)
    constantHeapDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
    constantHeapDesc.SampleDesc.Count = 1;
    constantHeapDesc.SampleDesc.Quality = 0;
-   constantHeapDesc.Width = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+   //constantHeapDesc.Width = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+   constantHeapDesc.Width = 3 * D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
    constantHeapDesc.MipLevels = 1;
 
    ThrowIfFailed(device->CreateCommittedResource(

@@ -30,7 +30,7 @@ DrawModel::DrawModel(Graphics &gfx, int &index, float size, const std::string fi
    for (size_t i = 0; i < pScene->mNumMeshes; i++)
    {
 #ifdef DEBUG_MODEL
-      if (i < 6)
+      if (i < 1)
       {
          MeshPtrs.push_back(ParseMesh(index, *pScene->mMeshes[i], pScene->mMaterials, MaterialIndex));
          ++index;
@@ -66,7 +66,7 @@ std::unique_ptr<DrawNode> DrawModel::ParseNode(int &nextId, const aiNode &node) 
    for (size_t i = 0; i < node.mNumChildren; i++)
    {
 #ifdef DEBUG_MODEL
-      if (i < 6)
+      if (i < 1)
       {
          pNode->AddChild(ParseNode(nextId, *node.mChildren[i]));
       }
@@ -95,10 +95,12 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
    std::size_t pos = filename.find_last_of("/\\");
    std::string path = filename.substr(0, pos) + std::string("\\");
    pos = path.find_last_of("/\\");
-   std::string tag = "model%";
+   //std::string tag = "model%";
    //tag += index;
    //tag += path.substr(pos + 1);
-   tag += mesh.mName.C_Str();
+   std::string tag = mesh.mName.C_Str();
+   tag += "%";
+   std::string tagTexture = "model%";
    aiString diffuseName;
    aiString specularName;
    aiString normalName;
@@ -119,7 +121,7 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
       if (sceneMaterial.GetTexture(aiTextureType_DIFFUSE, 0, &diffuseName) == aiReturn_SUCCESS)
       {
          diffuse = true;
-         tag += std::string("#") + diffuseName.C_Str();
+         tagTexture += std::string("#") + diffuseName.C_Str();
       }
       else
       {
@@ -130,7 +132,7 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
       if (sceneMaterial.GetTexture(aiTextureType_SPECULAR, 0, &specularName) == aiReturn_SUCCESS)
       {
          specular = true;
-         tag += std::string("#") + specularName.C_Str();
+         tagTexture += std::string("#") + specularName.C_Str();
       }
       else
       {
@@ -140,9 +142,46 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
       if (sceneMaterial.GetTexture(aiTextureType_NORMALS, 0, &normalName) == aiReturn_SUCCESS)
       {
          normal = true;
-         tag += std::string("#") + normalName.C_Str();
+         tagTexture += std::string("#") + normalName.C_Str();
       }
    }
+
+   float shininess = 35.0f;
+   std::shared_ptr<Texture> texture = nullptr;
+   if (diffuse || specular || normal)
+   {
+      texture = Texture::Resolve(gfx, tagTexture);
+      if (!texture->isInitialized())
+      {
+         texture->setInitialized();
+         if (diffuse)
+         {
+            std::string filename = path + diffuseName.C_Str();
+            texture->CreateTexture(filename, 0, 3);
+         }
+
+         if (specular)
+         {
+            std::string filename = path + specularName.C_Str();
+            texture->CreateTexture(filename, 1, 3);
+            alphaGloss = texture->getAlphaGloss();
+         }
+
+         if (!alphaGloss)
+         {
+            sceneMaterial.Get(AI_MATKEY_SHININESS, shininess);
+         }
+
+         if (normal)
+         {
+            std::string filename = path + normalName.C_Str();
+            texture->CreateTexture(filename, 2, 3);
+            alphaGloss = texture->getAlphaGloss();
+         }
+      }
+   }
+   // Add bind after object because if alphaGloss in object
+   //AddBind(std::move(texture));
 
    auto object = ModelSpec::Resolve(gfx, tag);
 
@@ -152,33 +191,6 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
    if (!object->isInitialized())
    {
       object->setInitialized();
-
-      float shininess = 35.0f;
-      if (diffuse)
-      {
-         std::string filename = path + diffuseName.C_Str();
-         object->CreateTexture(filename, 0);
-      }
-
-      if (specular)
-      {
-         std::string filename = path + diffuseName.C_Str();
-         object->CreateTexture(filename, 1, true);
-         alphaGloss = object->getAlphaGloss();
-      }
-
-      if (!alphaGloss)
-      {
-         sceneMaterial.Get(AI_MATKEY_SHININESS, shininess);
-      }
-
-      if (normal)
-      {
-         std::string filename = path + normalName.C_Str();
-         object->CreateTexture(filename, 2, true);
-         alphaGloss = object->getAlphaGloss();
-      }
-
 
       if (diffuse && normal && specular)
       {
@@ -437,6 +449,10 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
    }
 
    bindablePtrs.push_back(std::move(object));
+   if (diffuse || specular || normal)
+   {
+      bindablePtrs.push_back(std::move(texture));
+   }
    return std::make_unique<DrawMesh>(gfx, index, std::move(bindablePtrs), (UINT)size, thisMaterialIndex);
 }
 
