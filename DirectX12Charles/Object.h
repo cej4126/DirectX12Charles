@@ -14,7 +14,7 @@ public:
    static std::string GenerateUID(const std::string &path);
    std::string GetUID() const noexcept override;
 
-   void CreateTexture(const Surface &surface, int slot = 0);
+   void Bind(Graphics &gfx) noexcept override;
    void CreateRootSignature(bool constantFlag, bool materialFlag, bool textureFlag);
    void CreateShader(const std::wstring &vertexPath, const std::wstring &pixelPath);
    void SetLightView(ID3D12Resource *mylightView);
@@ -26,14 +26,6 @@ public:
 
    void CreateConstant(const XMFLOAT3 &colorBuffer, int size);
 
-   void setIndices(int index, UINT start, UINT count)
-   {
-      indicesStart = start;
-      indicesCount = count;
-   }
-
-   void Bind(Graphics &gfx) noexcept override;
-
 private:
    Graphics &gfx;
    ID3D12Device *device;
@@ -44,11 +36,6 @@ private:
    UINT8 *colorBufferGPUAddress;
 
    std::string tag;
-
-   bool textureActive = false;
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer;
-   Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >mainDescriptorHeap;
-   Microsoft::WRL::ComPtr < ID3D12Resource > textureBufferUploadHeap;
 
    Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature;
    D3D12_INPUT_LAYOUT_DESC inputLayoutDesc;
@@ -66,8 +53,5 @@ private:
 
    bool lightActive = false;
    ID3D12Resource *lightView = nullptr;
-
-   UINT indicesStart = 0;
-   UINT indicesCount = 0;
 };
 

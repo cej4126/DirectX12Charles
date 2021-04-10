@@ -14,8 +14,9 @@ public:
    static std::string GenerateUID(const std::string &tag);
    std::string GetUID() const noexcept override;
 
-   void CreateTexture(const Surface &surface, int slot);
-   //void CreateTexture(std::string &path, int slot);
+   void CreateTexture(std::string path, int slot, bool alphaGloss = false);
+   bool getAlphaGloss() { return m_alphaGloss; }
+
    enum class Model_Type
    {
       MODEL_DIFF_NORMAL_SPEC,
@@ -62,6 +63,7 @@ private:
    int m_size;
 
    bool textureActive = false;
+   bool m_alphaGloss = false;
    bool specularActive = false;
    Microsoft::WRL::ComPtr < ID3D12Resource > textureBuffer[NUMBER_OF_VIEW];
    Microsoft::WRL::ComPtr < ID3D12DescriptorHeap >mainDescriptorHeap;

@@ -345,15 +345,13 @@ void ModelSpec::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
    indexBufferView.SizeInBytes = indicesBufferSize;
 }
 
-void ModelSpec::CreateTexture(const Surface &surface, int slot)
-//void ModelSpec::CreateTexture(std::string &path, int slot)
+void ModelSpec::CreateTexture(std::string path, int slot, bool alphaGloss)
 {
-   //const auto surface = Surface::FromFile(path );
+   const auto surface = Surface::FromFile(path);
 
-   textureActive = true;
-   if (slot == 1)
+   if (alphaGloss)
    {
-      specularActive = true;
+      m_alphaGloss = surface.AlphaLoaded();
    }
    //const UINT indicesBufferSize = (UINT)(sizeof(unsigned short) * indices.size());
 

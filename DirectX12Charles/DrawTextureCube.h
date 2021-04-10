@@ -2,8 +2,9 @@
 #include "stdafx.h"
 #include "Graphics.h"
 #include "Object.h"
-#include "DrawFunction.h"
+#include "Texture.h"
 #include "Transform.h"
+#include "DrawFunction.h"
 
 class DrawTextureCube : public DrawFunction
 {

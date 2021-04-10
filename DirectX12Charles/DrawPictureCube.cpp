@@ -77,8 +77,6 @@ DrawPictureCube::DrawPictureCube(Graphics &gfx, int &index, Shape::shapeType typ
             *reinterpret_cast<XMFLOAT2 *>(&model.vertices[i].tex));
       }
 
-      object->CreateTexture(Surface::FromFile(filename), 0);
-
       object->LoadVerticesBuffer(vbuf);
       object->LoadIndicesBuffer(model.indices);
       object->CreateShader(L"TextureVS.cso", L"TexturePS.cso");
@@ -88,6 +86,14 @@ DrawPictureCube::DrawPictureCube(Graphics &gfx, int &index, Shape::shapeType typ
       object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
    }
    AddBind(std::move(object));
+
+   std::shared_ptr<Texture> texture = Texture::Resolve(gfx, tag);
+   if (!texture->isInitialized())
+   {
+      texture->setInitialized();
+      texture->CreateTexture(filename, 0);
+   }
+   AddBind(std::move(texture));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
    UINT start = gfx.shape.getIndiceStart(type);

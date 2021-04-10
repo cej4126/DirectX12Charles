@@ -76,8 +76,6 @@ DrawTextureCube::DrawTextureCube(Graphics &gfx, int &index, float range)
             *reinterpret_cast<XMFLOAT2 *>(&model.vertices[i].tex));
       }
 
-      object->CreateTexture(Surface::FromFile("..\\..\\DirectX12Charles\\Images\\cube.png"), 0);
-
       object->LoadVerticesBuffer(vbuf);
       object->LoadIndicesBuffer(model.indices);
       object->CreateShader(L"TextureVS.cso", L"TexturePS.cso");
@@ -87,6 +85,15 @@ DrawTextureCube::DrawTextureCube(Graphics &gfx, int &index, float range)
       object->CreatePipelineState(vbuf.GetLayout().GetD3DLayout(), D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
    }
    AddBind(std::move(object));
+
+   std::shared_ptr<Texture> texture = Texture::Resolve(gfx, "cube.png");
+   if (!texture->isInitialized())
+   {
+      texture->setInitialized();
+      std::string filename = "..\\..\\DirectX12Charles\\Images\\cube.png";
+      texture->CreateTexture(filename, 0);
+   }
+   AddBind(std::move(texture));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this, 0, -1);
    UINT start = gfx.shape.getIndiceStart(type);

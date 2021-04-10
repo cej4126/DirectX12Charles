@@ -156,15 +156,15 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
       float shininess = 35.0f;
       if (diffuse)
       {
-         Surface surface = Surface::FromFile(path + diffuseName.C_Str());
-         object->CreateTexture(surface, 0);
+         std::string filename = path + diffuseName.C_Str();
+         object->CreateTexture(filename, 0);
       }
 
       if (specular)
       {
-         Surface surface = Surface::FromFile(path + specularName.C_Str());
-         object->CreateTexture(surface, 1);
-         alphaGloss = surface.AlphaLoaded();
+         std::string filename = path + diffuseName.C_Str();
+         object->CreateTexture(filename, 1, true);
+         alphaGloss = object->getAlphaGloss();
       }
 
       if (!alphaGloss)
@@ -174,9 +174,9 @@ std::unique_ptr<DrawMesh> DrawModel::ParseMesh(int index, const aiMesh &mesh, co
 
       if (normal)
       {
-         Surface surface = Surface::FromFile(path + normalName.C_Str());
-         object->CreateTexture(surface, 2);
-         alphaGloss = surface.AlphaLoaded();
+         std::string filename = path + normalName.C_Str();
+         object->CreateTexture(filename, 2, true);
+         alphaGloss = object->getAlphaGloss();
       }
 
 
