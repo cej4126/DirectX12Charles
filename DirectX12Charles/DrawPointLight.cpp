@@ -119,14 +119,25 @@ void DrawPointLight::ResetLightData() noexcept
 {
    gfx.lightData =
    {
-      XMFLOAT3(1.5f, 14.0f, -4.5f), 0.0f,
-      XMFLOAT3(0.4f, 0.4f, 0.4f), 0.0f,
+      XMFLOAT3(2.0f, 9.0f, -17.0f), 0.0f,
+      XMFLOAT3(0.2f, 0.2f, 0.2f), 0.0f,
       XMFLOAT3(1.0f, 1.0f, 1.0f), 0.0f,
       1.0f,
       1.0f,
       0.045f,
       0.0075f
    };
+
+   //gfx.lightData =
+   //{
+   //   XMFLOAT3(1.5f, 14.0f, -4.5f), 0.0f,
+   //   XMFLOAT3(0.4f, 0.4f, 0.4f), 0.0f,
+   //   XMFLOAT3(1.0f, 1.0f, 1.0f), 0.0f,
+   //   1.0f,
+   //   1.0f,
+   //   0.045f,
+   //   0.0075f
+   //};
 }
 
 void DrawPointLight::Update(float dt) noexcept

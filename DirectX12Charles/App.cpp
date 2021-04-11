@@ -28,6 +28,7 @@ App::App()
    dwriteitem = std::make_unique<dwritedraw>(wnd.Gfx());
 
    int MaxBoxX12Count = 1;
+   //int MaxBoxX12Count = 20;
    int MaterialCount = 0;
    int objectCount = 0;
 
@@ -64,7 +65,7 @@ App::App()
    //gobber = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 5.0f,
    //   "..\\..\\DirectX12Charles\\models\\gobber\\GoblinX.obj",
    //   light->getLightView(), MaterialCount);
-   ////gobber->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
+   //gobber->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
    //gobber->SetPosition(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
 
    sponza = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 1.0f / 20.0f,
@@ -124,7 +125,7 @@ App::App()
    }
 
    wnd.Gfx().RunCommandList();
-   wnd.Gfx().SetProjection(XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 80.0f));
+   wnd.Gfx().SetProjection(XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 400.0f));
 }
 
 int App::Go()
