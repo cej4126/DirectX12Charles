@@ -75,9 +75,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <ExecutablePath>$(VC_ExecutablePath_x64);$(CommonExecutablePath)</ExecutablePath>
-    <IncludePath>$(ProjectDir)assimp;$(ProjectDir)assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)assimp;$(ProjectDir)assimp\include;$(ProjectDir)dxtex\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)assimp\bin\x64-Release\lib;$(LibraryPath)</LibraryPath>
-    <LibraryWPath>F:\MyPrograms\DirectX12_Programs\DirectX12Charles\DirectX12Charles\assimp\bin\x64-Release\bin;$(LibraryWPath)</LibraryWPath>
+    <LibraryWPath>F:\MyPrograms\DirectX12_Programs\DirectX12Charles\DirectX12Charles\assimp\bin\x64-Release\bin;F:\MyPrograms\DirectX12Charles\DirectX12Charles\dxtex\bin;$(LibraryWPath)</LibraryWPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -230,7 +230,14 @@
     <ClInclude Include="DrawModel.h" />
     <ClInclude Include="DrawModelWindow.h" />
     <ClInclude Include="DrawNode.h" />
-    <ClInclude Include="GDIPlusManager.h" />
+    <ClInclude Include="dxtex\include\BC.h" />
+    <ClInclude Include="dxtex\include\BCDirectCompute.h" />
+    <ClInclude Include="dxtex\include\d3dx12.h" />
+    <ClInclude Include="dxtex\include\DDS.h" />
+    <ClInclude Include="dxtex\include\DirectXTex.h" />
+    <ClInclude Include="dxtex\include\DirectXTexP.h" />
+    <ClInclude Include="dxtex\include\filters.h" />
+    <ClInclude Include="dxtex\include\scoped.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_dx11.h" />
@@ -260,7 +267,6 @@
     <ClInclude Include="ShapeData.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Surface.h" />
-    <ClInclude Include="test.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vertex.h" />
@@ -274,7 +280,6 @@
     <ClCompile Include="DrawModel.cpp" />
     <ClCompile Include="DrawModelWindow.cpp" />
     <ClCompile Include="DrawNode.cpp" />
-    <ClCompile Include="GDIPlusManager.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
@@ -469,6 +474,8 @@
     <None Include="assimp\include\assimp\quaternion.inl" />
     <None Include="assimp\include\assimp\vector2.inl" />
     <None Include="assimp\include\assimp\vector3.inl" />
+    <None Include="dxtex\bin\DirectXTex.pdb" />
+    <None Include="dxtex\include\DirectXTex.inl" />
     <None Include="Material.hlsli" />
     <None Include="LightVectorData.hlsli" />
     <None Include="models\boxy.gltf">
@@ -491,6 +498,9 @@
     <Object Include="models\suzanne.obj">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </Object>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="dxtex\bin\DirectXTex.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

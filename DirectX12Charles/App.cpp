@@ -1,18 +1,11 @@
 #include "App.h"
 #include "Shape.h"
 #include "Surface.h"
-#include "GDIPlusManager.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_dx11.h"
 #include "imgui/imgui_impl_win32.h"
-
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
-
-#include "test.h"
-testFunction test;
-
-GDIPlusManager gdipm;
 
 App::App()
    :
@@ -62,16 +55,16 @@ App::App()
    //   light->getLightView(), MaterialCount);
    //wall->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f ));
 
-   //gobber = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 5.0f,
-   //   "..\\..\\DirectX12Charles\\models\\gobber\\GoblinX.obj",
-   //   light->getLightView(), MaterialCount);
-   //gobber->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
-   //gobber->SetPosition(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
-
-   sponza = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 1.0f / 20.0f,
-      "..\\..\\DirectX12Charles\\models\\sponza\\sponza.obj",
+   gobber = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 5.0f,
+      "..\\..\\DirectX12Charles\\models\\gobber\\GoblinX.obj",
       light->getLightView(), MaterialCount);
-   sponza->SetPosition(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
+   //gobber->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
+   gobber->SetPosition(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
+
+   //sponza = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 1.0f / 20.0f,
+   //   "..\\..\\DirectX12Charles\\models\\sponza\\sponza.obj",
+   //   light->getLightView(), MaterialCount);
+   //sponza->SetPosition(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
 
    //for (auto i = 0; i < MaxBoxX12Count; i++)
    //{

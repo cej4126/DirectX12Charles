@@ -4,8 +4,6 @@
 #include <sstream>
 #include "ModelSpec.h"
 
-#include "test.h"
-
 //#define DEBUG_MODEL
 
 DrawModel::DrawModel(Graphics &gfx, int &index, float size, const std::string fileName, ID3D12Resource *lightView, int &MaterialIndex)
@@ -40,7 +38,6 @@ DrawModel::DrawModel(Graphics &gfx, int &index, float size, const std::string fi
       ++index;
 #endif
    }
-   test.addTestData(0, 0, "");
 
    int nextId = 0;
    pRoot = ParseNode(nextId, *pScene->mRootNode);

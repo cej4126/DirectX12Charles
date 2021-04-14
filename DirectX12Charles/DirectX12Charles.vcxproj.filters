@@ -43,6 +43,9 @@
     <Filter Include="Shader\include">
       <UniqueIdentifier>{9502a63e-e53c-4912-a595-43efe77f7d61}</UniqueIdentifier>
     </Filter>
+    <Filter Include="dxtex">
+      <UniqueIdentifier>{aba08d4a-fb45-4ac7-a9ab-1bd7f3eb5133}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -67,9 +70,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Surface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GDIPlusManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
@@ -390,11 +390,32 @@
     <ClInclude Include="ModelSpec.h">
       <Filter>Header Files\Bindable</Filter>
     </ClInclude>
-    <ClInclude Include="test.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Texture.h">
       <Filter>Header Files\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\BC.h">
+      <Filter>dxtex</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\BCDirectCompute.h">
+      <Filter>dxtex</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\d3dx12.h">
+      <Filter>dxtex</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\DDS.h">
+      <Filter>dxtex</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\DirectXTex.h">
+      <Filter>dxtex</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\DirectXTexP.h">
+      <Filter>dxtex</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\filters.h">
+      <Filter>dxtex</Filter>
+    </ClInclude>
+    <ClInclude Include="dxtex\include\scoped.h">
+      <Filter>dxtex</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -420,9 +441,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Surface.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GDIPlusManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
@@ -650,6 +668,12 @@
     <None Include="Transform.hlsli">
       <Filter>Shader\include</Filter>
     </None>
+    <None Include="dxtex\bin\DirectXTex.pdb">
+      <Filter>dxtex</Filter>
+    </None>
+    <None Include="dxtex\include\DirectXTex.inl">
+      <Filter>dxtex</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Object Include="models\nanosuit.obj">
@@ -658,5 +682,10 @@
     <Object Include="models\suzanne.obj">
       <Filter>models</Filter>
     </Object>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="dxtex\bin\DirectXTex.lib">
+      <Filter>dxtex</Filter>
+    </Library>
   </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "DirectXTex.h"
 
 class Surface
 {
@@ -71,12 +72,12 @@ public:
    };
 
 public:
-   Surface(unsigned int width, unsigned int height) noexcept;
-   Surface(Surface &&source) noexcept;
+   Surface(unsigned int width, unsigned int height);
+   Surface(Surface &&source) noexcept = default;
    Surface(Surface &) = delete;
-   Surface &operator=(Surface && source) noexcept;
+   Surface &operator=(Surface && source) noexcept = default;
    Surface &operator=(const Surface &) = delete;
-   ~Surface();
+   ~Surface() = default;
 
    void Clear(Color fillValue) noexcept;
    void PutPixel(unsigned int x, unsigned int y, Color c) noexcept;
@@ -88,15 +89,13 @@ public:
    const Color *GetBufferPtrConst() const noexcept;
    static Surface FromFile(const std::string &filename);
    void Save(const std::string &filename) const;
-   void Copy(const Surface &src) noexcept;
 
    bool AlphaLoaded() const noexcept;
 
 private:
-   Surface(unsigned int width, unsigned int height, std::unique_ptr<Color[]> pBufferParam, bool alphaLoaded = false) noexcept;
-   std::unique_ptr<Color[]> pBuffer;
-   unsigned int width;
-   unsigned int height;
-   bool alphaLoaded = false;
+   Surface(DirectX::ScratchImage scratch) noexcept;
+private:
+   static constexpr DXGI_FORMAT format = DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM;
+   DirectX::ScratchImage scratch;
 };
 
