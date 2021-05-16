@@ -66,20 +66,20 @@ App::App()
    //   light->getLightView(), MaterialCount);
    //sponza->SetPosition(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
 
-   //for (auto i = 0; i < MaxBoxX12Count; i++)
-   //{
-   //   float range = rangedist(rng);
+   for (auto i = 0; i < MaxBoxX12Count; i++)
+   {
+      float range = rangedist(rng);
 
-   //   Shape::shapeType type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
-   //   drawItems.push_back(std::make_unique<DrawLighted>(wnd.Gfx(), objectCount, type, range, light->getLightView(), MaterialCount));
-   //   drawItems.push_back(std::make_unique<DrawAssimp>(wnd.Gfx(), objectCount, Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
-   //   drawItems.push_back(std::make_unique<DrawColorBlended>(wnd.Gfx(), objectCount, type, range));
-   //   drawItems.push_back(std::make_unique<DrawColorIndex>(wnd.Gfx(), objectCount, type, range));
-   //   drawItems.push_back(std::make_unique<DrawTextureCube>(wnd.Gfx(), objectCount, range));
-   //   drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
-   //   drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
-   //   drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
-   //}
+      Shape::shapeType type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
+      //drawItems.push_back(std::make_unique<DrawLighted>(wnd.Gfx(), objectCount, type, range, light->getLightView(), MaterialCount));
+      //drawItems.push_back(std::make_unique<DrawAssimp>(wnd.Gfx(), objectCount, Shape::TextureSuzanne, range, light->getLightView(), MaterialCount));
+      //drawItems.push_back(std::make_unique<DrawColorBlended>(wnd.Gfx(), objectCount, type, range));
+      //drawItems.push_back(std::make_unique<DrawColorIndex>(wnd.Gfx(), objectCount, type, range));
+      //drawItems.push_back(std::make_unique<DrawTextureCube>(wnd.Gfx(), objectCount, range));
+      drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
+      drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
+      drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
+   }
 
    wnd.Gfx().CreateMatrixConstant(objectCount);
    wnd.Gfx().CreateMaterialConstant(MaterialCount);
@@ -167,7 +167,10 @@ void App::DoFrame()
    int index = 0;
 
    auto &lightObject = light;
-   lightObject->Draw(wnd.Gfx());
+   if (light != nullptr)
+   {
+      lightObject->Draw(wnd.Gfx());
+   }
 
    if (plane != nullptr)
    {
@@ -231,23 +234,23 @@ void App::DoFrame()
       {
          cam.Translate({ 0.0f, 0.0f, dt });
       }
-      else if (wnd.input.KeyIsPressed('A'))
-      {
-         cam.Translate({ -dt, 0.0f, 0.0f });
-      }
       else if (wnd.input.KeyIsPressed('S'))
       {
          cam.Translate({ 0.0f, 0.0f, -dt });
+      }
+      else if (wnd.input.KeyIsPressed('A'))
+      {
+         cam.Translate({ -dt, 0.0f, 0.0f });
       }
       else if (wnd.input.KeyIsPressed('D'))
       {
          cam.Translate({ dt, 0.0f, 0.0f });
       }
-      else if (wnd.input.KeyIsPressed('R'))
+      else if (wnd.input.KeyIsPressed('Q'))
       {
          cam.Translate({ 0.0f, dt, 0.0f });
       }
-      else if (wnd.input.KeyIsPressed('F'))
+      else if (wnd.input.KeyIsPressed('E'))
       {
          cam.Translate({ 0.0f, -dt, 0.0f });
       }
@@ -264,7 +267,10 @@ void App::DoFrame()
    SpawnSimulation();
 
    cam.CreateControlWindow();
-   lightObject->CreateLightControl();
+   if (light != nullptr)
+   {
+      lightObject->CreateLightControl();
+   }
 
    SpawnObjectControl();
 

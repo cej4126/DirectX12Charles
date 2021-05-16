@@ -1,3 +1,4 @@
+
 #pragma once
 #include "stdafx.h"
 #include "Bindable.h"
@@ -8,8 +9,8 @@ namespace Bind
    class BindableCodex
    {
    public:
-      template<class T, typename...Params>
-      static std::shared_ptr<T> Resolve(Graphics &gfx, Params&&...p) noexcept
+      template<class T, typename ...Params>
+      static std::shared_ptr<T> Resolve(Graphics &gfx, Params&& ... p) noexcept
       {
          return Get().Resolve_<T>(gfx, std::forward<Params>(p) ...);
       }
@@ -22,7 +23,7 @@ namespace Bind
          const auto i = binds.find(key);
          if (i == binds.end())
          {
-            auto bind = std::make_shared<T>(gfx, std::forward<Params>( p )...);
+            auto bind = std::make_shared<T>(gfx, std::forward<Params>(p)...);
             binds[key] = bind;
             return bind;
          }
@@ -39,6 +40,6 @@ namespace Bind
       }
    private:
       std::unordered_map<std::string, std::shared_ptr<Bindable>> binds;
-	};
+   };
 }
 

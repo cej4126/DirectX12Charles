@@ -6,6 +6,7 @@
 
 Shape::Shape()
 {
+   //for (int i = TextureCube; i < TextureCube+1; i++)
    for (int i = 0; i < ShapeCount; i++)
    {
       switch (i)
@@ -225,7 +226,7 @@ void Shape::CreatePlane(int divisions_x, int divisions_y)
                bottomLeft,
                XMVectorSet(float(x) * divisionSize_x, y_pos, 0.0f, 0.0f)
             );
-            vertices.emplace_back(v, x / (nVertices_x -1.0f), y / (nVertices_y - 1.0f));
+            vertices.emplace_back(v, x / (nVertices_x - 1.0f), y / (nVertices_y - 1.0f));
          }
       }
    }
@@ -483,43 +484,43 @@ void Shape::CreateTextureCube()
    vertices.emplace_back(-side, -side, side, u2, v1); // 23
 #else
    // Y
-// |
-//-Z - X
-// Front                X      Y      Z
-   vertices.emplace_back(-side, side, -side, 0.0f, 0.0f); //  0
-   vertices.emplace_back(side, side, -side, 1.0f, 0.0f); //  1
-   vertices.emplace_back(side, -side, -side, 1.0f, 1.0f); //  2
+   // |
+   //-Z - X
+   // Front                X      Y      Z
+   vertices.emplace_back(-side,  side, -side, 0.0f, 0.0f); //  0
+   vertices.emplace_back( side,  side, -side, 1.0f, 0.0f); //  1
+   vertices.emplace_back( side, -side, -side, 1.0f, 1.0f); //  2
    vertices.emplace_back(-side, -side, -side, 0.0f, 1.0f); //  3
 
    // Top
-   vertices.emplace_back(-side, side, side, 0.0f, 0.0f); //  4
-   vertices.emplace_back(side, side, side, 1.0f, 0.0f); //  5
-   vertices.emplace_back(side, side, -side, 1.0f, 1.0f); //  6
-   vertices.emplace_back(-side, side, -side, 0.0f, 1.0f); //  7
+   vertices.emplace_back(-side,  side,  side, 0.0f, 0.0f); //  4
+   vertices.emplace_back( side,  side,  side, 1.0f, 0.0f); //  5
+   vertices.emplace_back( side,  side, -side, 1.0f, 1.0f); //  6
+   vertices.emplace_back(-side,  side, -side, 0.0f, 1.0f); //  7
 
    // Back
-   vertices.emplace_back(side, side, side, 0.0f, 0.0f); //  8
-   vertices.emplace_back(-side, side, side, 1.0f, 0.0f); //  9
-   vertices.emplace_back(-side, -side, side, 1.0f, 1.0f); // 10
-   vertices.emplace_back(side, -side, side, 0.0f, 1.0f); // 11
+   vertices.emplace_back( side,  side,  side, 0.0f, 0.0f); //  8
+   vertices.emplace_back(-side,  side,  side, 1.0f, 0.0f); //  9
+   vertices.emplace_back(-side, -side,  side, 1.0f, 1.0f); // 10
+   vertices.emplace_back( side, -side,  side, 0.0f, 1.0f); // 11
 
    // Bottom
    vertices.emplace_back(-side, -side, -side, 0.0f, 0.0f); // 12
-   vertices.emplace_back(side, -side, -side, 1.0f, 0.0f); // 13
-   vertices.emplace_back(side, -side, side, 1.0f, 1.0f); // 14
-   vertices.emplace_back(-side, -side, side, 0.0f, 1.0f); // 15
+   vertices.emplace_back( side, -side, -side, 1.0f, 0.0f); // 13
+   vertices.emplace_back( side, -side,  side, 1.0f, 1.0f); // 14
+   vertices.emplace_back(-side, -side,  side, 0.0f, 1.0f); // 15
 
    // Right
-   vertices.emplace_back(side, side, -side, 0.0f, 0.0f); // 16
-   vertices.emplace_back(side, side, side, 1.0f, 0.0f); // 17
-   vertices.emplace_back(side, -side, side, 1.0f, 1.0f); // 18
-   vertices.emplace_back(side, -side, -side, 0.0f, 1.0f); // 19
+   vertices.emplace_back( side,  side, -side, 0.0f, 0.0f); // 16
+   vertices.emplace_back( side,  side,  side, 1.0f, 0.0f); // 17
+   vertices.emplace_back( side, -side,  side, 1.0f, 1.0f); // 18
+   vertices.emplace_back( side, -side, -side, 0.0f, 1.0f); // 19
 
    // Left
-   vertices.emplace_back(-side, side, side, 0.0f, 0.0f); // 20
-   vertices.emplace_back(-side, side, -side, 1.0f, 0.0f); // 21
+   vertices.emplace_back(-side,  side,  side, 0.0f, 0.0f); // 20
+   vertices.emplace_back(-side,  side, -side, 1.0f, 0.0f); // 21
    vertices.emplace_back(-side, -side, -side, 1.0f, 1.0f); // 22
-   vertices.emplace_back(-side, -side, side, 0.0f, 1.0f); // 23
+   vertices.emplace_back(-side, -side,  side, 0.0f, 1.0f); // 23
 #endif
    const unsigned short cubeindices[]
    {
@@ -766,7 +767,7 @@ void Shape::CreateTextureCone(int longDiv)
    {
       int startVerticeStart = verticeCount;
       vertices.emplace_back();
-      auto v1 = XMVector3Transform(arm1, XMMatrixRotationZ(longitudeAngle * iLong ));
+      auto v1 = XMVector3Transform(arm1, XMMatrixRotationZ(longitudeAngle * iLong));
       XMStoreFloat3(&vertices.back().pos, v1);
 
       vertices.emplace_back();

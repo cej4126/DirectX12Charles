@@ -7,8 +7,6 @@
 class Transform : public Bind::Bindable
 {
 public:
-
-public:
    Transform(Graphics &gfx, const DrawFunction &parent, int rootVS = 0, int rootPS = -1);
    void Bind(Graphics &gfx) noexcept override;
 
@@ -72,7 +70,7 @@ public:
 
 private:
    // Vetrix Constant Buffer
-   Microsoft::WRL::ComPtr<ID3D11Buffer> pTransformConstantBuffer;
+   //Microsoft::WRL::ComPtr<ID3D11Buffer> pTransformConstantBuffer;
    const DrawFunction &parentTransform;
    UINT indicesStart = 0;
    UINT indicesCount = 0;

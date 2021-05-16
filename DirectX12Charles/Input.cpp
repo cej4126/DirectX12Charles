@@ -11,23 +11,23 @@ std::optional<Input::RawDelta> Input::ReadRawDelta() noexcept
    return d;
 }
 
-std::optional<Input::MouseEvent> Input::Read() noexcept
-{
-   if (mouseBuffer.size() > 0u)
-   {
-      Input::MouseEvent e = mouseBuffer.front();
-      mouseBuffer.pop();
-      return e;
-   }
-   return {};
-}
+//std::optional<Input::MouseEvent> Input::Read() noexcept
+//{
+//   if (mouseBuffer.size() > 0u)
+//   {
+//      Input::MouseEvent e = mouseBuffer.front();
+//      mouseBuffer.pop();
+//      return e;
+//   }
+//   return {};
+//}
 
-void Input::Flush() noexcept
-{
-   mouseBuffer = std::queue<MouseEvent>();
-   keyBuffer = std::queue<KeyEvent>();
-   charBuffer = std::queue<char>();
-}
+//void Input::Flush() noexcept
+//{
+//   mouseBuffer = std::queue<MouseEvent>();
+//   keyBuffer = std::queue<KeyEvent>();
+//   charBuffer = std::queue<char>();
+//}
 
 void Input::OnKeyPressed(unsigned char keycode) noexcept
 {
@@ -60,16 +60,16 @@ std::optional<Input::KeyEvent> Input::ReadKey() noexcept
    return {};
 }
 
-std::optional<char> Input::ReadChar() noexcept
-{
-   if (charBuffer.size() > 0u)
-   {
-      unsigned char charcode = charBuffer.front();
-      charBuffer.pop();
-      return charcode;
-   }
-   return {};
-}
+//std::optional<char> Input::ReadChar() noexcept
+//{
+//   if (charBuffer.size() > 0u)
+//   {
+//      unsigned char charcode = charBuffer.front();
+//      charBuffer.pop();
+//      return charcode;
+//   }
+//   return {};
+//}
 
 void Input::OnMouseMove(int newx, int newy) noexcept
 {

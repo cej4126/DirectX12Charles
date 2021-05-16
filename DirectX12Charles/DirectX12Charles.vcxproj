@@ -77,7 +77,7 @@
     <ExecutablePath>$(VC_ExecutablePath_x64);$(CommonExecutablePath)</ExecutablePath>
     <IncludePath>$(ProjectDir)assimp;$(ProjectDir)assimp\include;$(ProjectDir)dxtex\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)assimp\bin\x64-Release\lib;$(LibraryPath)</LibraryPath>
-    <LibraryWPath>F:\MyPrograms\DirectX12_Programs\DirectX12Charles\DirectX12Charles\assimp\bin\x64-Release\bin;F:\MyPrograms\DirectX12Charles\DirectX12Charles\dxtex\bin;$(LibraryWPath)</LibraryWPath>
+    <LibraryWPath>F:\MyPrograms\DirectX12_Programs\DirectX12Charles\DirectX12Charles\assimp\bin\x64-Release\bin;$(ProjectDir)dxtex\bin;$(LibraryWPath)</LibraryWPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>

@@ -111,6 +111,7 @@ void Window::DisableCursor() noexcept
    DisableImGuiMouse();
    ConfineCursor();
 }
+
 Graphics &Window::Gfx()
 {
    if (!pGfx)

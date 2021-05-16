@@ -22,7 +22,7 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 #endif
 
 
-   LoadDrive();
+   LoadDevice();
    LoadBase();
    LoadBaseX11();
    LoadBase2D();
@@ -30,7 +30,7 @@ Graphics::Graphics(HWND hWnd, int width, int height)
    // Setup Dear ImGui context
    IMGUI_CHECKVERSION();
    ImGui::CreateContext();
-   ImGuiIO &io = ImGui::GetIO(); (void)io;
+   ImGuiIO &io = ImGui::GetIO(); //(void)io;
    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
    // Setup Dear ImGui style
    ImGui::StyleColorsDark();
@@ -45,7 +45,7 @@ Graphics::~Graphics()
    ImGui_ImplDX11_Shutdown();
 }
 
-void Graphics::LoadDrive()
+void Graphics::LoadDevice()
 {
    UINT dxgiFactoryFlags = 0;
 #if defined(_DEBUG) 
@@ -84,7 +84,8 @@ void Graphics::LoadDrive()
    }
 
    // device
-   hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
+   //hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
+   hr = D3D12CreateDevice(adapterTemp.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
    ThrowIfFailed(hr);
 
    // Create Command Queue

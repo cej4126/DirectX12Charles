@@ -19,5 +19,5 @@ private:
    float pitch;
    float yaw;
    static constexpr float travelSpeed = 12.0f;
-   static constexpr float rotationSpeed = 0.004f;
+   static constexpr float rotationSpeed = 0.001f;
 };

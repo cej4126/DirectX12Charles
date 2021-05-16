@@ -56,11 +56,11 @@ DrawPictureCube::DrawPictureCube(Graphics &gfx, int &index, Shape::shapeType typ
       object->setInitialized();
 
       // Define the vertex input layout.
-      using hw3dexp::VertexLayout;
+      //using hw3dexp::VertexLayout;
       hw3dexp::VertexBuffer vbuf(std::move(
-         VertexLayout{}
-         .Append(VertexLayout::Position3D)
-         .Append(VertexLayout::Texture2D)
+         hw3dexp::VertexLayout{}
+         .Append(hw3dexp::VertexLayout::Position3D)
+         .Append(hw3dexp::VertexLayout::Texture2D)
       ));
 
       struct Vertex

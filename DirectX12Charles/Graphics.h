@@ -94,7 +94,7 @@ public:
 
 private:
    void WaitForPreviousFrame();
-   void LoadDrive();
+   void LoadDevice();
    void LoadBase();
    void CreateFence();
 

@@ -40,12 +40,12 @@ public:
          y(parent.y)
       {}
 
-      MouseType GetType() const noexcept { return type; }
-      std::pair <int, int> GetPos() const noexcept { return { x, y }; }
-      int GetPosX() { return x; }
-      int GetPosY() { return y; }
-      bool isLeftPressed() const noexcept { return leftIsPressed; }
-      bool isRightPressed() const noexcept { return rightIsPressed; }
+      //MouseType GetType() const noexcept { return type; }
+      //std::pair <int, int> GetPos() const noexcept { return { x, y }; }
+      //int GetPosX() { return x; }
+      //int GetPosY() { return y; }
+      //bool isLeftPressed() const noexcept { return leftIsPressed; }
+      //bool isRightPressed() const noexcept { return rightIsPressed; }
 
    private:
       MouseType type;
@@ -93,7 +93,7 @@ public:
    bool IsInWindow() { return isInWindow; }
    bool LeftIsPressed() const noexcept { return leftIsPressed; }
    bool RightIsPressed() const noexcept { return rightIsPressed; }
-   std::optional<Input::MouseEvent> Read() noexcept;
+   //std::optional<Input::MouseEvent> Read() noexcept;
    bool IsEmpty() const noexcept { return mouseBuffer.empty(); }
    void EnableRaw() noexcept { rawEnabled = true; }
    void DisableRaw() noexcept { rawEnabled = false; }
@@ -103,14 +103,14 @@ public:
    bool KeyIsPressed(unsigned char keycode) const noexcept { return keyStates[keycode]; }
    std::optional<KeyEvent> ReadKey() noexcept;
    bool KeyIsEmpty() const noexcept { return charBuffer.empty(); }
-   std::optional<char> ReadChar() noexcept;
+   //std::optional<char> ReadChar() noexcept;
    bool CharIsEmpty() const noexcept { return charBuffer.empty(); }
    // autorepeat control
    void EnableAutorepeat() noexcept { autorepeatEnabled = true; }
    void DisableAutorepeat() noexcept { autorepeatEnabled = false; }
    bool AutorepeatIsEnabled() const noexcept { return autorepeatEnabled; }
 
-   void Flush() noexcept;
+   //void Flush() noexcept;
 private:
    // Key
    void OnKeyPressed(unsigned char keycode) noexcept;
