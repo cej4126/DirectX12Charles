@@ -35,13 +35,13 @@ App::App()
    //   light->getLightView(), MaterialCount);
    //plane->SetPos(XMFLOAT3(15.0f, 5.0f, 20.0f));
 
-   //cube = std::make_unique<DrawNormal>(wnd.Gfx(),
-   //   objectCount,
-   //   Shape::TextureCube, 12.0f,
-   //   "..\\..\\DirectX12Charles\\Images\\brickwall.jpg",
-   //   "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg",
-   //   light->getLightView(), MaterialCount);
-   //cube->SetPos(XMFLOAT3(-15.0f, 5.0f, 30.0f));
+   cube = std::make_unique<DrawNormal>(wnd.Gfx(),
+      objectCount,
+      Shape::TextureCube, 1.0f,
+      "..\\..\\DirectX12Charles\\Images\\brickwall.jpg",
+      "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg",
+      light->getLightView(), MaterialCount);
+   //cube->SetPos(XMFLOAT3(-5.0f, 7.0f, 0.0f));
 
    //drawItems.push_back(std::make_unique<DrawNormal>(wnd.Gfx(), objectCount, Shape::Plane, 3.0f,
    //   "..\\..\\DirectX12Charles\\Images\\brickwall.jpg", "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg", light->getLightView(), MaterialCount));
@@ -55,11 +55,10 @@ App::App()
    //   light->getLightView(), MaterialCount);
    //wall->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f ));
 
-   gobber = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 5.0f,
-      "..\\..\\DirectX12Charles\\models\\gobber\\GoblinX.obj",
-      light->getLightView(), MaterialCount);
+   //gobber = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 5.0f,
+   //   "..\\..\\DirectX12Charles\\models\\gobber\\GoblinX.obj",
+   //   light->getLightView(), MaterialCount);
    //gobber->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
-   gobber->SetPosition(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
 
    //sponza = std::make_unique<DrawModel>(wnd.Gfx(), objectCount, 1.0f / 20.0f,
    //   "..\\..\\DirectX12Charles\\models\\sponza\\sponza.obj",
@@ -77,8 +76,8 @@ App::App()
       //drawItems.push_back(std::make_unique<DrawColorIndex>(wnd.Gfx(), objectCount, type, range));
       //drawItems.push_back(std::make_unique<DrawTextureCube>(wnd.Gfx(), objectCount, range));
       drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
-      drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
-      drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
+      //drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
+      //drawItems.push_back(std::make_unique<DrawPictureCube>(wnd.Gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
    }
 
    wnd.Gfx().CreateMatrixConstant(objectCount);

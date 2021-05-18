@@ -12,8 +12,6 @@ Graphics::Graphics(HWND hWnd, int width, int height)
    height(height),
    hWnd(hWnd)
 {
-   aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-
    // debug 3d
 #if defined(_DEBUG) 
    ComPtr <ID3D12Debug> m_debugInterface;

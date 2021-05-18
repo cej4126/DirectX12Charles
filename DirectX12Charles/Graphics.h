@@ -121,7 +121,6 @@ protected:
 
    int width;
    int height;
-   float aspectRatio;
    HWND hWnd;
 
    XMMATRIX projection;
