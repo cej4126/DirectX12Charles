@@ -43,24 +43,24 @@ App::App()
       m_light->getLightView(), MaterialCount);
    //m_cube->SetPos(XMFLOAT3(-5.0f, 7.0f, 0.0f));
 
-   //m_drawItems.push_back(std::make_unique<DrawNormal>(m_window.gfx(), m_objectCount, Shape::Plane, 3.0f,
+   //m_drawItems.push_back(std::make_unique<DrawNormal>(m_window.gfx(), objectCount, Shape::Plane, 3.0f,
    //   "..\\..\\DirectX12Charles\\Images\\brickwall.jpg", "..\\..\\DirectX12Charles\\Images\\brickwall_normal.jpg", m_light->getLightView(), MaterialCount));
 
-   //m_nano = std::make_unique<DrawModel>(m_window.gfx(), m_objectCount, 1.0f,
+   //m_nano = std::make_unique<DrawModel>(m_window.gfx(), objectCount, 1.0f,
    //   "..\\..\\DirectX12Charles\\Models\\nano_textured\\nanosuit.obj",
    //   m_light->getLightView(), MaterialCount);
 
-   //m_wall = std::make_unique<DrawModel>(m_window.gfx(), m_objectCount, 5.0f,
+   //m_wall = std::make_unique<DrawModel>(m_window.gfx(), objectCount, 5.0f,
    //   "..\\..\\DirectX12Charles\\models\\brick_wall\\brick_wall.obj",
    //   m_light->getLightView(), MaterialCount);
    //m_wall->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f ));
 
-   //m_gobber = std::make_unique<DrawModel>(m_window.gfx(), m_objectCount, 5.0f,
+   //m_gobber = std::make_unique<DrawModel>(m_window.gfx(), objectCount, 5.0f,
    //   "..\\..\\DirectX12Charles\\models\\gobber\\GoblinX.obj",
    //   m_light->getLightView(), MaterialCount);
    //m_gobber->SetPosition(XMMatrixTranslation(-4.0f, 7.0f, 0.0f));
 
-   //m_sponza = std::make_unique<DrawModel>(m_window.gfx(), m_objectCount, 1.0f / 20.0f,
+   //m_sponza = std::make_unique<DrawModel>(m_window.gfx(), objectCount, 1.0f / 20.0f,
    //   "..\\..\\DirectX12Charles\\models\\sponza\\sponza.obj",
    //   m_light->getLightView(), MaterialCount);
    //m_sponza->SetPosition(XMMatrixTranslation(0.0f, 0.0f, 0.0f));
@@ -70,14 +70,14 @@ App::App()
       float range = rangedist(rng);
 
       Shape::shapeType type = static_cast<Shape::shapeType>(Shape::TextureCube + (i % 4));
-      //m_drawItems.push_back(std::make_unique<DrawLighted>(m_window.gfx(), m_objectCount, type, range, m_light->getLightView(), MaterialCount));
-      //m_drawItems.push_back(std::make_unique<DrawAssimp>(m_window.gfx(), m_objectCount, Shape::TextureSuzanne, range, m_light->getLightView(), MaterialCount));
-      //m_drawItems.push_back(std::make_unique<DrawColorBlended>(m_window.gfx(), m_objectCount, type, range));
-      //m_drawItems.push_back(std::make_unique<DrawColorIndex>(m_window.gfx(), m_objectCount, type, range));
-      //m_drawItems.push_back(std::make_unique<DrawTextureCube>(m_window.gfx(), m_objectCount, range));
+      //m_drawItems.push_back(std::make_unique<DrawLighted>(m_window.gfx(), objectCount, type, range, m_light->getLightView(), MaterialCount));
+      //m_drawItems.push_back(std::make_unique<DrawAssimp>(m_window.gfx(), objectCount, Shape::TextureSuzanne, range, m_light->getLightView(), MaterialCount));
+      //m_drawItems.push_back(std::make_unique<DrawColorBlended>(m_window.gfx(), objectCount, type, range));
+      //m_drawItems.push_back(std::make_unique<DrawColorIndex>(m_window.gfx(), objectCount, type, range));
+      //m_drawItems.push_back(std::make_unique<DrawTextureCube>(m_window.gfx(), objectCount, range));
       m_drawItems.push_back(std::make_unique<DrawPictureCube>(m_window.gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\280893.jpg"));
-      //m_drawItems.push_back(std::make_unique<DrawPictureCube>(m_window.gfx(), m_objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
-      //m_drawItems.push_back(std::make_unique<DrawPictureCube>(m_window.gfx(), m_objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
+      //m_drawItems.push_back(std::make_unique<DrawPictureCube>(m_window.gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\cobalt-city.jpg"));
+      //m_drawItems.push_back(std::make_unique<DrawPictureCube>(m_window.gfx(), objectCount, Shape::TextureCube, range, "..\\..\\DirectX12Charles\\Images\\picture3.jpg"));
    }
 
    m_window.gfx().createMatrixConstant(objectCount);
@@ -157,7 +157,7 @@ float App::timePeek()
 void App::doFrame()
 {
    auto dt = timeMark() * m_speedFactor;
-   m_window.gfx().setCamera(m_camera.GetMatrix());
+   m_window.gfx().setCamera(m_camera.getMatrix());
 
    m_window.gfx().onRenderBegin();
 
@@ -202,7 +202,7 @@ void App::doFrame()
       b->Draw(m_window.gfx());
    }
 
-   m_dwriteitem->Draw();
+   m_dwriteitem->draw();
 
    while (auto e = m_window.m_input.ReadKey())
    {
@@ -215,12 +215,12 @@ void App::doFrame()
                if (m_window.cursorEnabled())
                {
                   m_window.disableCursor();
-                  m_window.m_input.EnableRaw();
+                  m_window.m_input.enableRaw();
                }
                else
                {
                   m_window.enableCursor();
-                  m_window.m_input.DisableRaw();
+                  m_window.m_input.disableRaw();
                }
                break;
          }
@@ -229,43 +229,43 @@ void App::doFrame()
 
    if (!m_window.cursorEnabled())
    {
-      if (m_window.m_input.KeyIsPressed('W'))
+      if (m_window.m_input.keyIsPressed('W'))
       {
-         m_camera.Translate({ 0.0f, 0.0f, dt });
+         m_camera.translate({ 0.0f, 0.0f, dt });
       }
-      else if (m_window.m_input.KeyIsPressed('S'))
+      else if (m_window.m_input.keyIsPressed('S'))
       {
-         m_camera.Translate({ 0.0f, 0.0f, -dt });
+         m_camera.translate({ 0.0f, 0.0f, -dt });
       }
-      else if (m_window.m_input.KeyIsPressed('A'))
+      else if (m_window.m_input.keyIsPressed('A'))
       {
-         m_camera.Translate({ -dt, 0.0f, 0.0f });
+         m_camera.translate({ -dt, 0.0f, 0.0f });
       }
-      else if (m_window.m_input.KeyIsPressed('D'))
+      else if (m_window.m_input.keyIsPressed('D'))
       {
-         m_camera.Translate({ dt, 0.0f, 0.0f });
+         m_camera.translate({ dt, 0.0f, 0.0f });
       }
-      else if (m_window.m_input.KeyIsPressed('Q'))
+      else if (m_window.m_input.keyIsPressed('Q'))
       {
-         m_camera.Translate({ 0.0f, dt, 0.0f });
+         m_camera.translate({ 0.0f, dt, 0.0f });
       }
-      else if (m_window.m_input.KeyIsPressed('E'))
+      else if (m_window.m_input.keyIsPressed('E'))
       {
-         m_camera.Translate({ 0.0f, -dt, 0.0f });
+         m_camera.translate({ 0.0f, -dt, 0.0f });
       }
 
-      while (const auto delta = m_window.m_input.ReadRawDelta())
+      while (const auto delta = m_window.m_input.readRawDelta())
       {
          if (!m_window.cursorEnabled())
          {
-            m_camera.Rotate((float)delta->x, (float)delta->y);
+            m_camera.rotate((float)delta->x, (float)delta->y);
          }
       }
    }
 
    spawnSimulation();
 
-   m_camera.CreateControlWindow();
+   m_camera.createControlWindow();
    if (m_light != nullptr)
    {
       lightObject->CreateLightControl();

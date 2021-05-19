@@ -2,17 +2,17 @@
 
 dwritedraw::dwritedraw(Graphics &gfx)
    :
-   gfx(gfx),
-   width(0),
-   height(0)
+   m_gfx(gfx),
+   m_width(0),
+   m_height(0)
 {
-   width = static_cast<float>(gfx.getWidth());
-   height = static_cast<float>(gfx.getHeight());
+   m_width = static_cast<float>(gfx.getWidth());
+   m_height = static_cast<float>(gfx.getHeight());
 
    // DWrite
    ThrowIfFailed(gfx.get2dContext()->CreateSolidColorBrush(
       D2D1::ColorF(D2D1::ColorF::White),
-      &x11d2dtextBrush));
+      &m_x11d2dtextBrush));
    ThrowIfFailed(gfx.get2dWriteFactory()->CreateTextFormat(
       L"Arial",
       NULL,
@@ -21,33 +21,33 @@ dwritedraw::dwritedraw(Graphics &gfx)
       DWRITE_FONT_STRETCH_NORMAL,
       25,
       L"en-us",
-      &x11d2dtextFormat
+      &m_x11d2dtextFormat
    ));
 
 }
 
-void dwritedraw::Draw()
+void dwritedraw::draw()
 {
    //D2D1_SIZE_F rtSize = x11d2dRenderTargets[frameIndex]->GetSize();
-   D2D1_RECT_F textRect = D2D1::RectF(20, 20, width, height);
+   D2D1_RECT_F textRect = D2D1::RectF(20, 20, m_width, m_height);
    static const WCHAR textx12[] = L"DirectX12 ESC Mouse Move";
 
    //// Render text directly to the back buffer.
    //gfx.Get2dContext()->SetTarget(x11d2dRenderTargets[frameIndex].Get());
-   gfx.get2dContext()->BeginDraw();
+   m_gfx.get2dContext()->BeginDraw();
 
-   gfx.get2dContext()->DrawRectangle(D2D1::RectF(5.0f, 5.0f, width - 5.0f, height - 5.0f), x11d2dtextBrush.Get());
+   m_gfx.get2dContext()->DrawRectangle(D2D1::RectF(5.0f, 5.0f, m_width - 5.0f, m_height - 5.0f), m_x11d2dtextBrush.Get());
    //gfx.Get2dContext()->DrawLine(D2D1::Point2F(width / 2.0f, 5.0f), D2D1::Point2F(width / 2.0f, height - 5.0f), x11d2dtextBrush.Get());
 
-   gfx.get2dContext()->SetTransform(D2D1::Matrix3x2F::Identity());
-   gfx.get2dContext()->DrawText(
+   m_gfx.get2dContext()->SetTransform(D2D1::Matrix3x2F::Identity());
+   m_gfx.get2dContext()->DrawText(
       textx12,
       _countof(textx12) - 1,
-      x11d2dtextFormat.Get(),
+      m_x11d2dtextFormat.Get(),
       &textRect,
-      x11d2dtextBrush.Get()
+      m_x11d2dtextBrush.Get()
    );
 
 
-   ThrowIfFailed(gfx.get2dContext()->EndDraw());
+   ThrowIfFailed(m_gfx.get2dContext()->EndDraw());
 }

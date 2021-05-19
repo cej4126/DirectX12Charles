@@ -59,16 +59,16 @@ DrawColorIndex::DrawColorIndex(Graphics &gfx, int &index, Shape::shapeType type,
       {
          XMFLOAT3 pos;
       };
-      auto model = gfx.m_shape.GetShapeData<Vertex>();
+      auto model = gfx.m_shape.getShapeData<Vertex>();
 
-      for (int i = 0; i < model.vertices.size(); i++)
+      for (int i = 0; i < model.m_vertices.size(); i++)
       {
          vbuf.EmplaceBack(
-            *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].pos));
+            *reinterpret_cast<XMFLOAT3 *>(&model.m_vertices[i].pos));
       }
 
       object->LoadVerticesBuffer(vbuf);
-      object->LoadIndicesBuffer(model.indices);
+      object->LoadIndicesBuffer(model.m_indices);
       object->CreateShader(L"ColorIndexVS.cso", L"ColorIndexPS.cso");
 
       struct ConstantBufferColor

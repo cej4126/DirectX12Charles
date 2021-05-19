@@ -6,15 +6,15 @@ class dwritedraw
 {
 public:
    dwritedraw(Graphics &gfx);
-   void Draw();
+   void draw();
 
 private:
-   Graphics &gfx;
-   float width;
-   float height;
+   Graphics &m_gfx;
+   float m_width;
+   float m_height;
 
-   Microsoft::WRL::ComPtr<IDWriteTextFormat> x11d2dtextFormat;
-   Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> x11d2dtextBrush;
+   Microsoft::WRL::ComPtr<IDWriteTextFormat> m_x11d2dtextFormat;
+   Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_x11d2dtextBrush;
 
 };
 

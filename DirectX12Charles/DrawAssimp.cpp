@@ -83,20 +83,20 @@ DrawAssimp::DrawAssimp(Graphics &gfx, int &index, Shape::shapeType type, float r
    {
       object->setInitialized();
 
-      auto model = gfx.m_shapeAssimp.GetShapeNormalData<Vertex>();
+      auto model = gfx.m_shapeAssimp.getShapeNormalData<Vertex>();
       std::vector <unsigned short> indices(indicesCount);
       for (UINT i = 0; i < indicesCount; i++)
       {
          int index = indicesStart + i;
-         indices[i] = model.indices[index] - verticesStart;
+         indices[i] = model.m_indices[index] - verticesStart;
       }
 
       float scale = 1.0f;
       for (unsigned int i = 0; i < verticesCount; i++)
       {
          vbuf.EmplaceBack(
-            model.vertices[verticesStart + i].pos,
-            model.vertices[verticesStart + i].normal);
+            model.m_vertices[verticesStart + i].pos,
+            model.m_vertices[verticesStart + i].normal);
       }
 
       object->LoadVerticesBuffer(vbuf);

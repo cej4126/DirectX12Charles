@@ -32,7 +32,7 @@ DrawPointLight::DrawPointLight(Graphics &gfx, int &index, float size)
          XMFLOAT3 pos;
       };
 
-      auto model = gfx.m_shape.GetShapeData<Vertex>();
+      auto model = gfx.m_shape.getShapeData<Vertex>();
 
       std::vector< Vertex > vertices(verticesCount);
 
@@ -40,7 +40,7 @@ DrawPointLight::DrawPointLight(Graphics &gfx, int &index, float size)
       for (UINT i = 0; i < verticesCount; i++)
       {
          int index = verticesStart + i;
-         vertices[i] = model.vertices[index];
+         vertices[i] = model.m_vertices[index];
 
          XMVECTOR pos = DirectX::XMLoadFloat3(&vertices[i].pos);
          XMStoreFloat3(
@@ -56,7 +56,7 @@ DrawPointLight::DrawPointLight(Graphics &gfx, int &index, float size)
       for (UINT i = 0; i < indicesCount; i++)
       {
          int index = indicesStart + i;
-         indices[i] = model.indices[index] - verticesStart;
+         indices[i] = model.m_indices[index] - verticesStart;
       }
 
       object->LoadVerticesBuffer(vbuf);

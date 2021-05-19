@@ -33,11 +33,11 @@ public:
    public:
       MouseEvent(MouseType type, const Input &parent) noexcept
          :
-         type(type),
-         leftIsPressed(parent.leftIsPressed),
-         rightIsPressed(parent.rightIsPressed),
-         x(parent.x),
-         y(parent.y)
+         m_type(type),
+         m_leftIsPressed(parent.m_leftIsPressed),
+         m_rightIsPressed(parent.m_rightIsPressed),
+         m_x(parent.m_x),
+         m_y(parent.m_y)
       {}
 
       //MouseType GetType() const noexcept { return type; }
@@ -48,11 +48,11 @@ public:
       //bool isRightPressed() const noexcept { return rightIsPressed; }
 
    private:
-      MouseType type;
-      bool leftIsPressed;
-      bool rightIsPressed;
-      int x;
-      int y;
+      MouseType m_type;
+      bool m_leftIsPressed;
+      bool m_rightIsPressed;
+      int m_x;
+      int m_y;
    };
 
    class KeyEvent
@@ -66,18 +66,18 @@ public:
    public:
       KeyEvent(KeyType type, unsigned char code) noexcept
          :
-         type(type),
-         code(code)
+         m_type(type),
+         m_code(code)
       {}
 
-      KeyType GetType() const noexcept { return type; }
-      int isPress() { return type == KeyType::KeyPress; }
-      int isRelease() { return type == KeyType::KeyRelease; }
-      int GetCode() { return code; }
+      KeyType GetType() const noexcept { return m_type; }
+      int isPress() { return m_type == KeyType::KeyPress; }
+      int isRelease() { return m_type == KeyType::KeyRelease; }
+      int GetCode() { return m_code; }
 
    private:
-      KeyType type;
-      unsigned char code;
+      KeyType m_type;
+      unsigned char m_code;
    };
 
 public:
@@ -86,71 +86,71 @@ public:
    Input &operator=(const Input &) = delete;
 
    // Mouse Functions
-   std::pair <int, int> GetPos() const noexcept { return { x, y }; }
-   std::optional<RawDelta> ReadRawDelta() noexcept;
-   int GetPosX() { return x; }
-   int GetPosY() { return y; }
-   bool IsInWindow() { return isInWindow; }
-   bool LeftIsPressed() const noexcept { return leftIsPressed; }
-   bool RightIsPressed() const noexcept { return rightIsPressed; }
+   std::pair <int, int> getPos() const noexcept { return { m_x, m_y }; }
+   std::optional<RawDelta> readRawDelta() noexcept;
+   int getPosX() { return m_x; }
+   int getPosY() { return m_y; }
+   bool isInWindow() { return m_isInWindow; }
+   bool leftIsPressed() const noexcept { return m_leftIsPressed; }
+   bool rightIsPressed() const noexcept { return m_rightIsPressed; }
    //std::optional<Input::MouseEvent> Read() noexcept;
-   bool IsEmpty() const noexcept { return mouseBuffer.empty(); }
-   void EnableRaw() noexcept { rawEnabled = true; }
-   void DisableRaw() noexcept { rawEnabled = false; }
-   bool RawEnabled() const noexcept { return rawEnabled; }
+   bool isEmpty() const noexcept { return m_mouseBuffer.empty(); }
+   void enableRaw() noexcept { m_rawEnabled = true; }
+   void disableRaw() noexcept { m_rawEnabled = false; }
+   bool rawEnabled() const noexcept { return m_rawEnabled; }
 
    // Key functions
-   bool KeyIsPressed(unsigned char keycode) const noexcept { return keyStates[keycode]; }
+   bool keyIsPressed(unsigned char keycode) const noexcept { return m_keyStates[keycode]; }
    std::optional<KeyEvent> ReadKey() noexcept;
-   bool KeyIsEmpty() const noexcept { return charBuffer.empty(); }
+   bool keyIsEmpty() const noexcept { return m_charBuffer.empty(); }
    //std::optional<char> ReadChar() noexcept;
-   bool CharIsEmpty() const noexcept { return charBuffer.empty(); }
+   bool charIsEmpty() const noexcept { return m_charBuffer.empty(); }
    // autorepeat control
-   void EnableAutorepeat() noexcept { autorepeatEnabled = true; }
-   void DisableAutorepeat() noexcept { autorepeatEnabled = false; }
-   bool AutorepeatIsEnabled() const noexcept { return autorepeatEnabled; }
+   void enableAutorepeat() noexcept { m_autorepeatEnabled = true; }
+   void disableAutorepeat() noexcept { m_autorepeatEnabled = false; }
+   bool autorepeatIsEnabled() const noexcept { return m_autorepeatEnabled; }
 
    //void Flush() noexcept;
 private:
    // Key
-   void OnKeyPressed(unsigned char keycode) noexcept;
-   void OnKeyReleased(unsigned char keycode) noexcept;
-   void OnChar(char character) noexcept;
-   void ClearState() noexcept { keyStates.reset(); }
+   void onKeyPressed(unsigned char keycode) noexcept;
+   void onKeyReleased(unsigned char keycode) noexcept;
+   void onChar(char character) noexcept;
+   void clearState() noexcept { m_keyStates.reset(); }
    template<typename T>
-   static void TrimBuffer(std::queue<T> &buffer) noexcept;
+   static void trimBuffer(std::queue<T> &buffer) noexcept;
 
    // Mouse
-   void OnMouseMove(int x, int y) noexcept;
-   void OnMouseLeave() noexcept;
-   void OnMouseEnter() noexcept;
-   void OnRawDelta(int dx, int dy) noexcept;
-   void OnLeftPressed(int x, int y) noexcept;
-   void OnLeftReleased(int x, int y) noexcept;
-   void OnRightPressed(int x, int y) noexcept;
-   void OnRightReleased(int x, int y) noexcept;
-   void OnWheelUp(int x, int y) noexcept;
-   void OnWheelDown(int x, int y) noexcept;
-   void TrimBuffer() noexcept;
-   void TrimRawInputBuffer() noexcept;
-   void OnWheelDelta(int x, int y, int delta) noexcept;
+   void onMouseMove(int x, int y) noexcept;
+   void onMouseLeave() noexcept;
+   void onMouseEnter() noexcept;
+   void onRawDelta(int dx, int dy) noexcept;
+   void onLeftPressed(int x, int y) noexcept;
+   void onLeftReleased(int x, int y) noexcept;
+   void onRightPressed(int x, int y) noexcept;
+   void onRightReleased(int x, int y) noexcept;
+   void onWheelUp(int x, int y) noexcept;
+   void onWheelDown(int x, int y) noexcept;
+   void trimBuffer() noexcept;
+   void trimRawInputBuffer() noexcept;
+   void onWheelDelta(int x, int y, int delta) noexcept;
 
 
 private:
-   static constexpr unsigned int bufferSize = 16u;
-   int x;
-   int y;
-   bool leftIsPressed = false;
-   bool rightIsPressed = false;
-   bool isInWindow = false;
-   int wheelDeltaCarry = 0;
-   std::queue <MouseEvent> mouseBuffer;
+   static constexpr unsigned int Buffer_Size = 16u;
+   int m_x;
+   int m_y;
+   bool m_leftIsPressed = false;
+   bool m_rightIsPressed = false;
+   bool m_isInWindow = false;
+   int m_wheelDeltaCarry = 0;
+   std::queue <MouseEvent> m_mouseBuffer;
 
-   static constexpr unsigned int nKeys = 256u;
-   bool autorepeatEnabled = false;
-   bool rawEnabled = false;
-   std::bitset<nKeys> keyStates;
-   std::queue<KeyEvent> keyBuffer;
-   std::queue<char> charBuffer;
-   std::queue<RawDelta> rawDeltaBuffer;
+   static constexpr unsigned int N_Keys = 256u;
+   bool m_autorepeatEnabled = false;
+   bool m_rawEnabled = false;
+   std::bitset<N_Keys> m_keyStates;
+   std::queue<KeyEvent> m_keyBuffer;
+   std::queue<char> m_charBuffer;
+   std::queue<RawDelta> m_rawDeltaBuffer;
 };

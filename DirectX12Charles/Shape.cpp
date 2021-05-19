@@ -12,54 +12,54 @@ Shape::Shape()
       switch (i)
       {
          case Cube:
-            CreateCube();
+            createCube();
             break;
          case Cone:
-            CreateCone(24);
+            createCone(24);
             break;
          case Prism:
-            CratePrism();
+            createPrism();
             break;
          case Cylinder:
-            CreateCylinder(24);
+            createCylinder(24);
             break;
          case Sphere:
-            CreateSphere(12, 24);
+            createSphere(12, 24);
             break;
          case Plane:
-            CreatePlane(1, 1);
+            createPlane(1, 1);
             break;
          case TextureCube:
-            CreateTextureCube();
+            createTextureCube();
             break;
          case TextureCylinder:
-            CreateTextureCylinder(8);
+            createTextureCylinder(8);
             break;
          case TextureSuzanne:
-            CreateTextureSuzanne();
+            createTextureSuzanne();
             break;
          case TextureCone:
-            CreateTextureCone(24);
+            createTextureCone(24);
             break;
          case TexturePrism:
-            CreateTexturePrism();
+            createTexturePrism();
             break;
          case PictureCube:
-            CreatePictureCube();
+            createPictureCube();
             break;
       }
    }
 }
 
-void Shape::SetNormals()
+void Shape::setNormals()
 {
    using namespace DirectX;
-   assert(indices.size() % 3 == 0 && indices.size() > 0);
-   for (size_t i = 0; i < indices.size(); i += 3)
+   assert(m_indices.size() % 3 == 0 && m_indices.size() > 0);
+   for (size_t i = 0; i < m_indices.size(); i += 3)
    {
-      auto &v0 = vertices[indices[i]];
-      auto &v1 = vertices[indices[i + 1]];
-      auto &v2 = vertices[indices[i + 2]];
+      auto &v0 = m_vertices[m_indices[i]];
+      auto &v1 = m_vertices[m_indices[i + 1]];
+      auto &v2 = m_vertices[m_indices[i + 2]];
       const auto p0 = XMLoadFloat3(&v0.pos);
       const auto p1 = XMLoadFloat3(&v1.pos);
       const auto p2 = XMLoadFloat3(&v2.pos);
@@ -72,21 +72,21 @@ void Shape::SetNormals()
    }
 }
 
-void Shape::CreateCube()
+void Shape::createCube()
 {
    shapeType type = Cube;
-   UINT startIndices = (UINT)indices.size();
-   UINT startVertices = (UINT)vertices.size();
+   UINT startIndices = (UINT)m_indices.size();
+   UINT startVertices = (UINT)m_vertices.size();
    constexpr float side = 1.0f;
 
-   vertices.emplace_back(-side, -side, -side); // 0
-   vertices.emplace_back(side, -side, -side); // 1
-   vertices.emplace_back(-side, side, -side); // 2
-   vertices.emplace_back(side, side, -side); // 3
-   vertices.emplace_back(-side, -side, side); // 4
-   vertices.emplace_back(side, -side, side); // 5
-   vertices.emplace_back(-side, side, side); // 6
-   vertices.emplace_back(side, side, side); // 7
+   m_vertices.emplace_back(-side, -side, -side); // 0
+   m_vertices.emplace_back(side, -side, -side); // 1
+   m_vertices.emplace_back(-side, side, -side); // 2
+   m_vertices.emplace_back(side, side, -side); // 3
+   m_vertices.emplace_back(-side, -side, side); // 4
+   m_vertices.emplace_back(side, -side, side); // 5
+   m_vertices.emplace_back(-side, side, side); // 6
+   m_vertices.emplace_back(side, side, side); // 7
 
    const unsigned short cubeindices[]
    {
@@ -99,20 +99,20 @@ void Shape::CreateCube()
    };
    for (int i = 0; i < _countof(cubeindices); i++)
    {
-      indices.push_back(cubeindices[i] + startVertices);
+      m_indices.push_back(cubeindices[i] + startVertices);
    }
 
-   shapedata[type].indiceStart = startIndices;
-   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
-   shapedata[type].verticesStart = startVertices;
-   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
+   m_shapedata[type].indiceStart = startIndices;
+   m_shapedata[type].indiceCount = (UINT)m_indices.size() - startIndices;
+   m_shapedata[type].verticesStart = startVertices;
+   m_shapedata[type].verticesCount = (UINT)m_vertices.size() - startVertices;
 }
 
-void Shape::CreateCone(int longDiv)
+void Shape::createCone(int longDiv)
 {
    shapeType type = Cone;
-   UINT startIndices = (UINT)indices.size();
-   UINT startVertices = (UINT)vertices.size();
+   UINT startIndices = (UINT)m_indices.size();
+   UINT startVertices = (UINT)m_vertices.size();
 
    assert(longDiv >= 3);
 
@@ -122,60 +122,60 @@ void Shape::CreateCone(int longDiv)
    // base vertices
    for (int iLong = 0; iLong < longDiv; iLong++)
    {
-      vertices.emplace_back();
+      m_vertices.emplace_back();
       auto v = XMVector3Transform(
          base,
          XMMatrixRotationZ(longitudeAngle * iLong)
       );
-      XMStoreFloat3(&vertices.back().pos, v);
+      XMStoreFloat3(&m_vertices.back().pos, v);
    }
    // the center
-   vertices.emplace_back();
-   vertices.back().pos = { 0.0f,0.0f,-1.0f };
-   const auto iCenter = (unsigned short)(vertices.size() - startVertices - 1);
+   m_vertices.emplace_back();
+   m_vertices.back().pos = { 0.0f,0.0f,-1.0f };
+   const auto iCenter = (unsigned short)(m_vertices.size() - startVertices - 1);
    // the tip :darkness:
-   vertices.emplace_back();
-   vertices.back().pos = { 0.0f,0.0f,1.0f };
-   const auto iTip = (unsigned short)(vertices.size() - startVertices - 1);
+   m_vertices.emplace_back();
+   m_vertices.back().pos = { 0.0f,0.0f,1.0f };
+   const auto iTip = (unsigned short)(m_vertices.size() - startVertices - 1);
 
    // base indices
    for (unsigned short iLong = 0; iLong < longDiv; iLong++)
    {
-      indices.push_back(iCenter + startVertices);
-      indices.push_back(((iLong + 1) % longDiv) + startVertices);
-      indices.push_back(iLong + startVertices);
+      m_indices.push_back(iCenter + startVertices);
+      m_indices.push_back(((iLong + 1) % longDiv) + startVertices);
+      m_indices.push_back(iLong + startVertices);
    }
 
    // cone indices
    for (unsigned short iLong = 0; iLong < longDiv; iLong++)
    {
-      indices.push_back(iLong + startVertices);
-      indices.push_back(((iLong + 1) % longDiv) + startVertices);
-      indices.push_back(iTip + startVertices);
+      m_indices.push_back(iLong + startVertices);
+      m_indices.push_back(((iLong + 1) % longDiv) + startVertices);
+      m_indices.push_back(iTip + startVertices);
    }
 
-   shapedata[type].indiceStart = startIndices;
-   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
-   shapedata[type].verticesStart = startVertices;
-   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
+   m_shapedata[type].indiceStart = startIndices;
+   m_shapedata[type].indiceCount = (UINT)m_indices.size() - startIndices;
+   m_shapedata[type].verticesStart = startVertices;
+   m_shapedata[type].verticesCount = (UINT)m_vertices.size() - startVertices;
 }
 
-void Shape::CratePrism()
+void Shape::createPrism()
 {
    shapeType type = Prism;
-   UINT startIndices = (UINT)indices.size();
-   UINT startVertices = (UINT)vertices.size();
+   UINT startIndices = (UINT)m_indices.size();
+   UINT startVertices = (UINT)m_vertices.size();
 
    constexpr float edge = 2.0f;
    const float halfhight = (float)sqrt(2.0) * edge / 2.0f / 2.0f;
    constexpr float side = edge / 2.0f;
 
-   vertices.emplace_back(-side, -halfhight, side); // 0
-   vertices.emplace_back(0.0f, halfhight, side); // 1
-   vertices.emplace_back(side, -halfhight, side); // 2
-   vertices.emplace_back(-side, -halfhight, -side); // 3
-   vertices.emplace_back(0.0f, halfhight, -side); // 4
-   vertices.emplace_back(side, -halfhight, -side); // 5
+   m_vertices.emplace_back(-side, -halfhight, side); // 0
+   m_vertices.emplace_back(0.0f, halfhight, side); // 1
+   m_vertices.emplace_back(side, -halfhight, side); // 2
+   m_vertices.emplace_back(-side, -halfhight, -side); // 3
+   m_vertices.emplace_back(0.0f, halfhight, -side); // 4
+   m_vertices.emplace_back(side, -halfhight, -side); // 5
 
    const unsigned short prismindices[]
    {
@@ -188,20 +188,20 @@ void Shape::CratePrism()
 
    for (int i = 0; i < _countof(prismindices); i++)
    {
-      indices.push_back(prismindices[i] + startVertices);
+      m_indices.push_back(prismindices[i] + startVertices);
    }
 
-   shapedata[type].indiceStart = startIndices;
-   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
-   shapedata[type].verticesStart = startVertices;
-   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
+   m_shapedata[type].indiceStart = startIndices;
+   m_shapedata[type].indiceCount = (UINT)m_indices.size() - startIndices;
+   m_shapedata[type].verticesStart = startVertices;
+   m_shapedata[type].verticesCount = (UINT)m_vertices.size() - startVertices;
 }
 
-void Shape::CreatePlane(int divisions_x, int divisions_y)
+void Shape::createPlane(int divisions_x, int divisions_y)
 {
    shapeType type = Plane;
-   UINT startIndices = (UINT)indices.size();
-   UINT startVertices = (UINT)vertices.size();
+   UINT startIndices = (UINT)m_indices.size();
+   UINT startVertices = (UINT)m_vertices.size();
 
    assert(divisions_x >= 1);
    assert(divisions_y >= 1);
@@ -226,12 +226,12 @@ void Shape::CreatePlane(int divisions_x, int divisions_y)
                bottomLeft,
                XMVectorSet(float(x) * divisionSize_x, y_pos, 0.0f, 0.0f)
             );
-            vertices.emplace_back(v, x / (nVertices_x - 1.0f), y / (nVertices_y - 1.0f));
+            m_vertices.emplace_back(v, x / (nVertices_x - 1.0f), y / (nVertices_y - 1.0f));
          }
       }
    }
 
-   indices.reserve((UINT)(sqrt(divisions_x * divisions_y) * 6));
+   m_indices.reserve((UINT)(sqrt(divisions_x * divisions_y) * 6));
    {
       const auto vxy2i = [nVertices_x](size_t x, size_t y)
       {
@@ -243,28 +243,28 @@ void Shape::CreatePlane(int divisions_x, int divisions_y)
          {
             const std::array<unsigned short, 4> indexArray =
             { vxy2i(x,y), vxy2i(x + 1,y), vxy2i(x,y + 1), vxy2i(x + 1,y + 1) };
-            indices.push_back(indexArray[0] + startVertices);
-            indices.push_back(indexArray[2] + startVertices);
-            indices.push_back(indexArray[1] + startVertices);
-            indices.push_back(indexArray[1] + startVertices);
-            indices.push_back(indexArray[2] + startVertices);
-            indices.push_back(indexArray[3] + startVertices);
+            m_indices.push_back(indexArray[0] + startVertices);
+            m_indices.push_back(indexArray[2] + startVertices);
+            m_indices.push_back(indexArray[1] + startVertices);
+            m_indices.push_back(indexArray[1] + startVertices);
+            m_indices.push_back(indexArray[2] + startVertices);
+            m_indices.push_back(indexArray[3] + startVertices);
          }
       }
    }
 
-   shapedata[type].indiceStart = startIndices;
-   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
-   shapedata[type].verticesStart = startVertices;
-   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
+   m_shapedata[type].indiceStart = startIndices;
+   m_shapedata[type].indiceCount = (UINT)m_indices.size() - startIndices;
+   m_shapedata[type].verticesStart = startVertices;
+   m_shapedata[type].verticesCount = (UINT)m_vertices.size() - startVertices;
 }
 
-void Shape::CreateCylinder(int longDiv)
+void Shape::createCylinder(int longDiv)
 {
    float size = 3.0f;
    shapeType type = Cylinder;
-   UINT startIndices = (UINT)indices.size();
-   UINT startVertices = (UINT)vertices.size();
+   UINT startIndices = (UINT)m_indices.size();
+   UINT startVertices = (UINT)m_vertices.size();
 
    assert(longDiv >= 3);
    const auto base = XMVectorSet(size, 0.0f, -size, 0.0f);
@@ -272,35 +272,35 @@ void Shape::CreateCylinder(int longDiv)
    const float longitudeAngle = 2.0f * (float)M_PI / longDiv;
 
    // near center
-   vertices.emplace_back();
-   vertices.back().pos = { 0.0f, 0.0f, -size };
-   const auto iCenterNear = (unsigned short)(vertices.size() - startVertices - 1);
+   m_vertices.emplace_back();
+   m_vertices.back().pos = { 0.0f, 0.0f, -size };
+   const auto iCenterNear = (unsigned short)(m_vertices.size() - startVertices - 1);
    // far center
-   vertices.emplace_back();
-   vertices.back().pos = { 0.0f, 0.0f, size };
-   const auto iCenterFar = (unsigned short)(vertices.size() - startVertices - 1);
+   m_vertices.emplace_back();
+   m_vertices.back().pos = { 0.0f, 0.0f, size };
+   const auto iCenterFar = (unsigned short)(m_vertices.size() - startVertices - 1);
 
    // base vertices
    for (int iLong = 0; iLong < longDiv; iLong++)
    {
       // near base
       {
-         vertices.emplace_back();
+         m_vertices.emplace_back();
          auto v = XMVector3Transform(
             base,
             XMMatrixRotationZ(longitudeAngle * iLong)
          );
-         XMStoreFloat3(&vertices.back().pos, v);
+         XMStoreFloat3(&m_vertices.back().pos, v);
       }
       // far base
       {
-         vertices.emplace_back();
+         m_vertices.emplace_back();
          auto v = XMVector3Transform(
             base,
             XMMatrixRotationZ(longitudeAngle * iLong)
          );
          v = XMVectorAdd(v, offset);
-         XMStoreFloat3(&vertices.back().pos, v);
+         XMStoreFloat3(&m_vertices.back().pos, v);
       }
    }
 
@@ -309,12 +309,12 @@ void Shape::CreateCylinder(int longDiv)
    {
       const auto i = iLong * 2;
       const auto mod = longDiv * 2;
-      indices.push_back(i + 2 + startVertices);
-      indices.push_back(((i + 2) % mod + 2) + startVertices);
-      indices.push_back(i + 1 + 2 + startVertices);
-      indices.push_back(((i + 2) % mod + 2) + startVertices);
-      indices.push_back(((i + 3) % mod + 2) + startVertices);
-      indices.push_back(i + 1 + 2 + startVertices);
+      m_indices.push_back(i + 2 + startVertices);
+      m_indices.push_back(((i + 2) % mod + 2) + startVertices);
+      m_indices.push_back(i + 1 + 2 + startVertices);
+      m_indices.push_back(((i + 2) % mod + 2) + startVertices);
+      m_indices.push_back(((i + 3) % mod + 2) + startVertices);
+      m_indices.push_back(i + 1 + 2 + startVertices);
    }
 
    // base indices
@@ -322,25 +322,25 @@ void Shape::CreateCylinder(int longDiv)
    {
       const auto i = iLong * 2;
       const auto mod = longDiv * 2;
-      indices.push_back(i + 2 + startVertices);
-      indices.push_back(iCenterNear + startVertices);
-      indices.push_back(((i + 2) % mod + 2) + startVertices);
-      indices.push_back(iCenterFar + startVertices);
-      indices.push_back(i + 1 + 2 + startVertices);
-      indices.push_back(((i + 3) % mod + 2) + startVertices);
+      m_indices.push_back(i + 2 + startVertices);
+      m_indices.push_back(iCenterNear + startVertices);
+      m_indices.push_back(((i + 2) % mod + 2) + startVertices);
+      m_indices.push_back(iCenterFar + startVertices);
+      m_indices.push_back(i + 1 + 2 + startVertices);
+      m_indices.push_back(((i + 3) % mod + 2) + startVertices);
    }
 
-   shapedata[type].indiceStart = startIndices;
-   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
-   shapedata[type].verticesStart = startVertices;
-   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
+   m_shapedata[type].indiceStart = startIndices;
+   m_shapedata[type].indiceCount = (UINT)m_indices.size() - startIndices;
+   m_shapedata[type].verticesStart = startVertices;
+   m_shapedata[type].verticesCount = (UINT)m_vertices.size() - startVertices;
 }
 
-void Shape::CreateSphere(int latDiv, int longDiv)
+void Shape::createSphere(int latDiv, int longDiv)
 {
    shapeType type = Sphere;
-   UINT startIndices = (UINT)indices.size();
-   UINT startVertices = (UINT)vertices.size();
+   UINT startIndices = (UINT)m_indices.size();
+   UINT startVertices = (UINT)m_vertices.size();
 
    assert(latDiv >= 3);
    assert(longDiv >= 3);
@@ -358,22 +358,22 @@ void Shape::CreateSphere(int latDiv, int longDiv)
       );
       for (int iLong = 0; iLong < longDiv; iLong++)
       {
-         vertices.emplace_back();
+         m_vertices.emplace_back();
          auto v = XMVector3Transform(
             latBase,
             XMMatrixRotationZ(longitudeAngle * iLong)
          );
-         XMStoreFloat3(&vertices.back().pos, v);
+         XMStoreFloat3(&m_vertices.back().pos, v);
       }
    }
 
    // add the cap vertices
-   const auto iNorthPole = (unsigned short)vertices.size() - startVertices;
-   vertices.emplace_back();
-   XMStoreFloat3(&vertices.back().pos, base);
-   const auto iSouthPole = (unsigned short)vertices.size() - startVertices;
-   vertices.emplace_back();
-   XMStoreFloat3(&vertices.back().pos, XMVectorNegate(base));
+   const auto iNorthPole = (unsigned short)m_vertices.size() - startVertices;
+   m_vertices.emplace_back();
+   XMStoreFloat3(&m_vertices.back().pos, base);
+   const auto iSouthPole = (unsigned short)m_vertices.size() - startVertices;
+   m_vertices.emplace_back();
+   XMStoreFloat3(&m_vertices.back().pos, XMVectorNegate(base));
 
    const auto calcIdx = [latDiv, longDiv](unsigned short iLat, unsigned short iLong)
    {
@@ -383,55 +383,55 @@ void Shape::CreateSphere(int latDiv, int longDiv)
    {
       for (unsigned short iLong = 0; iLong < longDiv - 1; iLong++)
       {
-         indices.push_back(calcIdx(iLat, iLong) + startVertices);
-         indices.push_back(calcIdx(iLat + 1, iLong) + startVertices);
-         indices.push_back(calcIdx(iLat, iLong + 1) + startVertices);
-         indices.push_back(calcIdx(iLat, iLong + 1) + startVertices);
-         indices.push_back(calcIdx(iLat + 1, iLong) + startVertices);
-         indices.push_back(calcIdx(iLat + 1, iLong + 1) + startVertices);
+         m_indices.push_back(calcIdx(iLat, iLong) + startVertices);
+         m_indices.push_back(calcIdx(iLat + 1, iLong) + startVertices);
+         m_indices.push_back(calcIdx(iLat, iLong + 1) + startVertices);
+         m_indices.push_back(calcIdx(iLat, iLong + 1) + startVertices);
+         m_indices.push_back(calcIdx(iLat + 1, iLong) + startVertices);
+         m_indices.push_back(calcIdx(iLat + 1, iLong + 1) + startVertices);
       }
       // wrap band
-      indices.push_back(calcIdx(iLat, longDiv - 1) + startVertices);
-      indices.push_back(calcIdx(iLat + 1, longDiv - 1) + startVertices);
-      indices.push_back(calcIdx(iLat, 0) + startVertices);
-      indices.push_back(calcIdx(iLat, 0) + startVertices);
-      indices.push_back(calcIdx(iLat + 1, longDiv - 1) + startVertices);
-      indices.push_back(calcIdx(iLat + 1, 0) + startVertices);
+      m_indices.push_back(calcIdx(iLat, longDiv - 1) + startVertices);
+      m_indices.push_back(calcIdx(iLat + 1, longDiv - 1) + startVertices);
+      m_indices.push_back(calcIdx(iLat, 0) + startVertices);
+      m_indices.push_back(calcIdx(iLat, 0) + startVertices);
+      m_indices.push_back(calcIdx(iLat + 1, longDiv - 1) + startVertices);
+      m_indices.push_back(calcIdx(iLat + 1, 0) + startVertices);
    }
 
    // cap fans
    for (unsigned short iLong = 0; iLong < longDiv - 1; iLong++)
    {
       // north
-      indices.push_back(iNorthPole + startVertices);
-      indices.push_back(calcIdx(0, iLong) + startVertices);
-      indices.push_back(calcIdx(0, iLong + 1) + startVertices);
+      m_indices.push_back(iNorthPole + startVertices);
+      m_indices.push_back(calcIdx(0, iLong) + startVertices);
+      m_indices.push_back(calcIdx(0, iLong + 1) + startVertices);
       // south
-      indices.push_back(calcIdx(latDiv - 2, iLong + 1) + startVertices);
-      indices.push_back(calcIdx(latDiv - 2, iLong) + startVertices);
-      indices.push_back(iSouthPole + startVertices);
+      m_indices.push_back(calcIdx(latDiv - 2, iLong + 1) + startVertices);
+      m_indices.push_back(calcIdx(latDiv - 2, iLong) + startVertices);
+      m_indices.push_back(iSouthPole + startVertices);
    }
    // wrap triangles
    // north
-   indices.push_back(iNorthPole + startVertices);
-   indices.push_back(calcIdx(0, longDiv - 1) + startVertices);
-   indices.push_back(calcIdx(0, 0) + startVertices);
+   m_indices.push_back(iNorthPole + startVertices);
+   m_indices.push_back(calcIdx(0, longDiv - 1) + startVertices);
+   m_indices.push_back(calcIdx(0, 0) + startVertices);
    // south
-   indices.push_back(calcIdx(latDiv - 2, 0) + startVertices);
-   indices.push_back(calcIdx(latDiv - 2, longDiv - 1) + startVertices);
-   indices.push_back(iSouthPole + startVertices);
+   m_indices.push_back(calcIdx(latDiv - 2, 0) + startVertices);
+   m_indices.push_back(calcIdx(latDiv - 2, longDiv - 1) + startVertices);
+   m_indices.push_back(iSouthPole + startVertices);
 
-   shapedata[type].indiceStart = startIndices;
-   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
-   shapedata[type].verticesStart = startVertices;
-   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
+   m_shapedata[type].indiceStart = startIndices;
+   m_shapedata[type].indiceCount = (UINT)m_indices.size() - startIndices;
+   m_shapedata[type].verticesStart = startVertices;
+   m_shapedata[type].verticesCount = (UINT)m_vertices.size() - startVertices;
 }
 
-void Shape::CreateTextureCube()
+void Shape::createTextureCube()
 {
    shapeType type = TextureCube;
-   UINT startIndices = (UINT)indices.size();
-   UINT startVertices = (UINT)vertices.size();
+   UINT startIndices = (UINT)m_indices.size();
+   UINT startVertices = (UINT)m_vertices.size();
    constexpr float side = 1.0f;
 
 #ifdef PART_TEXTURE
@@ -448,79 +448,79 @@ void Shape::CreateTextureCube()
    // |
    //-Z - X
    // Front                X      Y      Z
-   vertices.emplace_back(-side, side, -side, u3, v2); //  0
-   vertices.emplace_back(side, side, -side, u3, v3); //  1
-   vertices.emplace_back(side, -side, -side, u2, v3); //  2
-   vertices.emplace_back(-side, -side, -side, u2, v2); //  3
+   m_vertices.emplace_back(-side, side, -side, u3, v2); //  0
+   m_vertices.emplace_back(side, side, -side, u3, v3); //  1
+   m_vertices.emplace_back(side, -side, -side, u2, v3); //  2
+   m_vertices.emplace_back(-side, -side, -side, u2, v2); //  3
 
    // Top
-   vertices.emplace_back(-side, side, side, u4, v2); //  4
-   vertices.emplace_back(side, side, side, u4, v3); //  5
-   vertices.emplace_back(side, side, -side, u3, v3); //  6
-   vertices.emplace_back(-side, side, -side, u3, v2); //  7
+   m_vertices.emplace_back(-side, side, side, u4, v2); //  4
+   m_vertices.emplace_back(side, side, side, u4, v3); //  5
+   m_vertices.emplace_back(side, side, -side, u3, v3); //  6
+   m_vertices.emplace_back(-side, side, -side, u3, v2); //  7
 
    // Back
-   vertices.emplace_back(side, side, side, u3, v4); //  8
-   vertices.emplace_back(-side, side, side, u3, v5); //  9
-   vertices.emplace_back(-side, -side, side, u2, v5); // 10
-   vertices.emplace_back(side, -side, side, u2, v4); // 11
+   m_vertices.emplace_back(side, side, side, u3, v4); //  8
+   m_vertices.emplace_back(-side, side, side, u3, v5); //  9
+   m_vertices.emplace_back(-side, -side, side, u2, v5); // 10
+   m_vertices.emplace_back(side, -side, side, u2, v4); // 11
 
    // Bottom
-   vertices.emplace_back(-side, -side, -side, u2, v2); // 12
-   vertices.emplace_back(side, -side, -side, u2, v3); // 13
-   vertices.emplace_back(side, -side, side, u1, v3); // 14
-   vertices.emplace_back(-side, -side, side, u1, v2); // 15
+   m_vertices.emplace_back(-side, -side, -side, u2, v2); // 12
+   m_vertices.emplace_back(side, -side, -side, u2, v3); // 13
+   m_vertices.emplace_back(side, -side, side, u1, v3); // 14
+   m_vertices.emplace_back(-side, -side, side, u1, v2); // 15
 
    // Right
-   vertices.emplace_back(side, side, -side, u3, v3); // 16
-   vertices.emplace_back(side, side, side, u3, v4); // 17
-   vertices.emplace_back(side, -side, side, u2, v4); // 18
-   vertices.emplace_back(side, -side, -side, u2, v3); // 19
+   m_vertices.emplace_back(side, side, -side, u3, v3); // 16
+   m_vertices.emplace_back(side, side, side, u3, v4); // 17
+   m_vertices.emplace_back(side, -side, side, u2, v4); // 18
+   m_vertices.emplace_back(side, -side, -side, u2, v3); // 19
 
    // Left
-   vertices.emplace_back(-side, side, side, u3, v1); // 20
-   vertices.emplace_back(-side, side, -side, u3, v2); // 21
-   vertices.emplace_back(-side, -side, -side, u2, v2); // 22
-   vertices.emplace_back(-side, -side, side, u2, v1); // 23
+   m_vertices.emplace_back(-side, side, side, u3, v1); // 20
+   m_vertices.emplace_back(-side, side, -side, u3, v2); // 21
+   m_vertices.emplace_back(-side, -side, -side, u2, v2); // 22
+   m_vertices.emplace_back(-side, -side, side, u2, v1); // 23
 #else
    // Y
    // |
    //-Z - X
    // Front                X      Y      Z
-   vertices.emplace_back(-side,  side, -side, 0.0f, 0.0f); //  0
-   vertices.emplace_back( side,  side, -side, 1.0f, 0.0f); //  1
-   vertices.emplace_back( side, -side, -side, 1.0f, 1.0f); //  2
-   vertices.emplace_back(-side, -side, -side, 0.0f, 1.0f); //  3
+   m_vertices.emplace_back(-side,  side, -side, 0.0f, 0.0f); //  0
+   m_vertices.emplace_back( side,  side, -side, 1.0f, 0.0f); //  1
+   m_vertices.emplace_back( side, -side, -side, 1.0f, 1.0f); //  2
+   m_vertices.emplace_back(-side, -side, -side, 0.0f, 1.0f); //  3
 
    // Top
-   vertices.emplace_back(-side,  side,  side, 0.0f, 0.0f); //  4
-   vertices.emplace_back( side,  side,  side, 1.0f, 0.0f); //  5
-   vertices.emplace_back( side,  side, -side, 1.0f, 1.0f); //  6
-   vertices.emplace_back(-side,  side, -side, 0.0f, 1.0f); //  7
+   m_vertices.emplace_back(-side,  side,  side, 0.0f, 0.0f); //  4
+   m_vertices.emplace_back( side,  side,  side, 1.0f, 0.0f); //  5
+   m_vertices.emplace_back( side,  side, -side, 1.0f, 1.0f); //  6
+   m_vertices.emplace_back(-side,  side, -side, 0.0f, 1.0f); //  7
 
    // Back
-   vertices.emplace_back( side,  side,  side, 0.0f, 0.0f); //  8
-   vertices.emplace_back(-side,  side,  side, 1.0f, 0.0f); //  9
-   vertices.emplace_back(-side, -side,  side, 1.0f, 1.0f); // 10
-   vertices.emplace_back( side, -side,  side, 0.0f, 1.0f); // 11
+   m_vertices.emplace_back( side,  side,  side, 0.0f, 0.0f); //  8
+   m_vertices.emplace_back(-side,  side,  side, 1.0f, 0.0f); //  9
+   m_vertices.emplace_back(-side, -side,  side, 1.0f, 1.0f); // 10
+   m_vertices.emplace_back( side, -side,  side, 0.0f, 1.0f); // 11
 
    // Bottom
-   vertices.emplace_back(-side, -side, -side, 0.0f, 0.0f); // 12
-   vertices.emplace_back( side, -side, -side, 1.0f, 0.0f); // 13
-   vertices.emplace_back( side, -side,  side, 1.0f, 1.0f); // 14
-   vertices.emplace_back(-side, -side,  side, 0.0f, 1.0f); // 15
+   m_vertices.emplace_back(-side, -side, -side, 0.0f, 0.0f); // 12
+   m_vertices.emplace_back( side, -side, -side, 1.0f, 0.0f); // 13
+   m_vertices.emplace_back( side, -side,  side, 1.0f, 1.0f); // 14
+   m_vertices.emplace_back(-side, -side,  side, 0.0f, 1.0f); // 15
 
    // Right
-   vertices.emplace_back( side,  side, -side, 0.0f, 0.0f); // 16
-   vertices.emplace_back( side,  side,  side, 1.0f, 0.0f); // 17
-   vertices.emplace_back( side, -side,  side, 1.0f, 1.0f); // 18
-   vertices.emplace_back( side, -side, -side, 0.0f, 1.0f); // 19
+   m_vertices.emplace_back( side,  side, -side, 0.0f, 0.0f); // 16
+   m_vertices.emplace_back( side,  side,  side, 1.0f, 0.0f); // 17
+   m_vertices.emplace_back( side, -side,  side, 1.0f, 1.0f); // 18
+   m_vertices.emplace_back( side, -side, -side, 0.0f, 1.0f); // 19
 
    // Left
-   vertices.emplace_back(-side,  side,  side, 0.0f, 0.0f); // 20
-   vertices.emplace_back(-side,  side, -side, 1.0f, 0.0f); // 21
-   vertices.emplace_back(-side, -side, -side, 1.0f, 1.0f); // 22
-   vertices.emplace_back(-side, -side,  side, 0.0f, 1.0f); // 23
+   m_vertices.emplace_back(-side,  side,  side, 0.0f, 0.0f); // 20
+   m_vertices.emplace_back(-side,  side, -side, 1.0f, 0.0f); // 21
+   m_vertices.emplace_back(-side, -side, -side, 1.0f, 1.0f); // 22
+   m_vertices.emplace_back(-side, -side,  side, 0.0f, 1.0f); // 23
 #endif
    const unsigned short cubeindices[]
    {
@@ -533,22 +533,22 @@ void Shape::CreateTextureCube()
    };
    for (int i = 0; i < _countof(cubeindices); i++)
    {
-      //      indices.push_back(cubeindices[i] + startVertices);
-      indices.emplace_back(cubeindices[i] + startVertices);
+      //      m_indices.push_back(cubeindices[i] + startVertices);
+      m_indices.emplace_back(cubeindices[i] + startVertices);
    }
 
-   shapedata[type].indiceStart = startIndices;
-   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
-   shapedata[type].verticesStart = startVertices;
-   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
+   m_shapedata[type].indiceStart = startIndices;
+   m_shapedata[type].indiceCount = (UINT)m_indices.size() - startIndices;
+   m_shapedata[type].verticesStart = startVertices;
+   m_shapedata[type].verticesCount = (UINT)m_vertices.size() - startVertices;
 }
 
 
-void Shape::CreatePictureCube()
+void Shape::createPictureCube()
 {
    shapeType type = PictureCube;
-   UINT startIndices = (UINT)indices.size();
-   UINT startVertices = (UINT)vertices.size();
+   UINT startIndices = (UINT)m_indices.size();
+   UINT startVertices = (UINT)m_vertices.size();
    constexpr float side = 1.0f;
 
    const float u1 = 0.0f;
@@ -564,40 +564,40 @@ void Shape::CreatePictureCube()
    // |
    //-Z - X
    // Front                X      Y      Z
-   vertices.emplace_back(-side, side, -side, u3, v2); //  0
-   vertices.emplace_back(side, side, -side, u3, v3); //  1
-   vertices.emplace_back(side, -side, -side, u2, v3); //  2
-   vertices.emplace_back(-side, -side, -side, u2, v2); //  3
+   m_vertices.emplace_back(-side, side, -side, u3, v2); //  0
+   m_vertices.emplace_back(side, side, -side, u3, v3); //  1
+   m_vertices.emplace_back(side, -side, -side, u2, v3); //  2
+   m_vertices.emplace_back(-side, -side, -side, u2, v2); //  3
 
    // Top
-   vertices.emplace_back(-side, side, side, u4, v2); //  4
-   vertices.emplace_back(side, side, side, u4, v3); //  5
-   vertices.emplace_back(side, side, -side, u3, v3); //  6
-   vertices.emplace_back(-side, side, -side, u3, v2); //  7
+   m_vertices.emplace_back(-side, side, side, u4, v2); //  4
+   m_vertices.emplace_back(side, side, side, u4, v3); //  5
+   m_vertices.emplace_back(side, side, -side, u3, v3); //  6
+   m_vertices.emplace_back(-side, side, -side, u3, v2); //  7
 
    // Back
-   vertices.emplace_back(side, side, side, u3, v4); //  8
-   vertices.emplace_back(-side, side, side, u3, v5); //  9
-   vertices.emplace_back(-side, -side, side, u2, v5); // 10
-   vertices.emplace_back(side, -side, side, u2, v4); // 11
+   m_vertices.emplace_back(side, side, side, u3, v4); //  8
+   m_vertices.emplace_back(-side, side, side, u3, v5); //  9
+   m_vertices.emplace_back(-side, -side, side, u2, v5); // 10
+   m_vertices.emplace_back(side, -side, side, u2, v4); // 11
 
    // Bottom
-   vertices.emplace_back(-side, -side, -side, u2, v2); // 12
-   vertices.emplace_back(side, -side, -side, u2, v3); // 13
-   vertices.emplace_back(side, -side, side, u1, v3); // 14
-   vertices.emplace_back(-side, -side, side, u1, v2); // 15
+   m_vertices.emplace_back(-side, -side, -side, u2, v2); // 12
+   m_vertices.emplace_back(side, -side, -side, u2, v3); // 13
+   m_vertices.emplace_back(side, -side, side, u1, v3); // 14
+   m_vertices.emplace_back(-side, -side, side, u1, v2); // 15
 
    // Right
-   vertices.emplace_back(side, side, -side, u3, v3); // 16
-   vertices.emplace_back(side, side, side, u3, v4); // 17
-   vertices.emplace_back(side, -side, side, u2, v4); // 18
-   vertices.emplace_back(side, -side, -side, u2, v3); // 19
+   m_vertices.emplace_back(side, side, -side, u3, v3); // 16
+   m_vertices.emplace_back(side, side, side, u3, v4); // 17
+   m_vertices.emplace_back(side, -side, side, u2, v4); // 18
+   m_vertices.emplace_back(side, -side, -side, u2, v3); // 19
 
    // Left
-   vertices.emplace_back(-side, side, side, u3, v1); // 20
-   vertices.emplace_back(-side, side, -side, u3, v2); // 21
-   vertices.emplace_back(-side, -side, -side, u2, v2); // 22
-   vertices.emplace_back(-side, -side, side, u2, v1); // 23
+   m_vertices.emplace_back(-side, side, side, u3, v1); // 20
+   m_vertices.emplace_back(-side, side, -side, u3, v2); // 21
+   m_vertices.emplace_back(-side, -side, -side, u2, v2); // 22
+   m_vertices.emplace_back(-side, -side, side, u2, v1); // 23
 
    const unsigned short cubeindices[]
    {
@@ -610,22 +610,22 @@ void Shape::CreatePictureCube()
    };
    for (int i = 0; i < _countof(cubeindices); i++)
    {
-      //      indices.push_back(cubeindices[i] + startVertices);
-      indices.emplace_back(cubeindices[i] + startVertices);
+      //      m_indices.push_back(cubeindices[i] + startVertices);
+      m_indices.emplace_back(cubeindices[i] + startVertices);
    }
 
-   shapedata[type].indiceStart = startIndices;
-   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
-   shapedata[type].verticesStart = startVertices;
-   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
+   m_shapedata[type].indiceStart = startIndices;
+   m_shapedata[type].indiceCount = (UINT)m_indices.size() - startIndices;
+   m_shapedata[type].verticesStart = startVertices;
+   m_shapedata[type].verticesCount = (UINT)m_vertices.size() - startVertices;
 }
 
-void Shape::CreateTextureCylinder(int longDiv)
+void Shape::createTextureCylinder(int longDiv)
 {
    float size = 1.0f;
    shapeType type = TextureCylinder;
-   UINT startIndices = (UINT)indices.size();
-   UINT startVertices = (UINT)vertices.size();
+   UINT startIndices = (UINT)m_indices.size();
+   UINT startVertices = (UINT)m_vertices.size();
 
    assert(longDiv >= 3);
    //const auto offset = XMVectorSet(0.0f, 0.0f, 2.0f * size, 0.0f);
@@ -639,8 +639,8 @@ void Shape::CreateTextureCylinder(int longDiv)
       unsigned short circleVerticeStart = verticeCount;
       // center
       float centerZ = size + (-2 * face) * size;
-      vertices.emplace_back();
-      vertices.back().pos = { 0.0f, 0.0f, centerZ };
+      m_vertices.emplace_back();
+      m_vertices.back().pos = { 0.0f, 0.0f, centerZ };
       ++verticeCount;
 
       const auto arm = XMVectorSet(size, 0.0f, centerZ, 0.0f);
@@ -648,12 +648,12 @@ void Shape::CreateTextureCylinder(int longDiv)
       for (int iLong = 0; iLong < longDiv; iLong++)
       {
          // Set vertices
-         vertices.emplace_back();
+         m_vertices.emplace_back();
          auto v = XMVector3Transform(
             arm,
             XMMatrixRotationZ(longitudeAngle * iLong)
          );
-         XMStoreFloat3(&vertices.back().pos, v);
+         XMStoreFloat3(&m_vertices.back().pos, v);
          ++verticeCount;
       }
 
@@ -662,15 +662,15 @@ void Shape::CreateTextureCylinder(int longDiv)
          // Set Indices
          if (face == 1)
          {
-            indices.push_back(iLong + 1 + circleVerticeStart + startVertices);
-            indices.push_back(circleVerticeStart + startVertices);
-            indices.push_back((iLong + 1) % longDiv + circleVerticeStart + 1 + startVertices);
+            m_indices.push_back(iLong + 1 + circleVerticeStart + startVertices);
+            m_indices.push_back(circleVerticeStart + startVertices);
+            m_indices.push_back((iLong + 1) % longDiv + circleVerticeStart + 1 + startVertices);
          }
          else
          {
-            indices.push_back((iLong + 1) % longDiv + circleVerticeStart + 1 + startVertices);
-            indices.push_back(circleVerticeStart + startVertices);
-            indices.push_back(iLong + 1 + circleVerticeStart + startVertices);
+            m_indices.push_back((iLong + 1) % longDiv + circleVerticeStart + 1 + startVertices);
+            m_indices.push_back(circleVerticeStart + startVertices);
+            m_indices.push_back(iLong + 1 + circleVerticeStart + startVertices);
          }
          indiceCount += 3;
       }
@@ -690,38 +690,38 @@ void Shape::CreateTextureCylinder(int longDiv)
       {
          int j = i / 2;
          // Set vertices
-         vertices.emplace_back();
+         m_vertices.emplace_back();
          auto v1 = XMVector3Transform(
             arm[i % 2],
             XMMatrixRotationZ(longitudeAngle * (iLong + j))
          );
-         XMStoreFloat3(&vertices.back().pos, v1);
+         XMStoreFloat3(&m_vertices.back().pos, v1);
          ++verticeCount;
       }
 
-      indices.push_back(startVerticeStart + 0);
-      indices.push_back(startVerticeStart + 1);
-      indices.push_back(startVerticeStart + 3);
+      m_indices.push_back(startVerticeStart + 0);
+      m_indices.push_back(startVerticeStart + 1);
+      m_indices.push_back(startVerticeStart + 3);
 
-      indices.push_back(startVerticeStart + 0);
-      indices.push_back(startVerticeStart + 3);
-      indices.push_back(startVerticeStart + 2);
+      m_indices.push_back(startVerticeStart + 0);
+      m_indices.push_back(startVerticeStart + 3);
+      m_indices.push_back(startVerticeStart + 2);
 
       indiceCount += 6;
    }
 
-   shapedata[type].indiceStart = startIndices;
-   shapedata[type].indiceCount = indiceCount;
-   shapedata[type].verticesStart = startVertices;
-   shapedata[type].verticesCount = verticeCount;
+   m_shapedata[type].indiceStart = startIndices;
+   m_shapedata[type].indiceCount = indiceCount;
+   m_shapedata[type].verticesStart = startVertices;
+   m_shapedata[type].verticesCount = verticeCount;
 }
 
-void Shape::CreateTextureCone(int longDiv)
+void Shape::createTextureCone(int longDiv)
 {
    float size = 1.0f;
    shapeType type = TextureCone;
-   UINT startIndices = (UINT)indices.size();
-   UINT startVertices = (UINT)vertices.size();
+   UINT startIndices = (UINT)m_indices.size();
+   UINT startVertices = (UINT)m_vertices.size();
 
    assert(longDiv >= 3);
    const float longitudeAngle = 2.0f * (float)M_PI / longDiv;
@@ -732,8 +732,8 @@ void Shape::CreateTextureCone(int longDiv)
    unsigned short circleVerticeStart = verticeCount;
    // center
    float centerZ = -size;
-   vertices.emplace_back();
-   vertices.back().pos = { 0.0f, 0.0f, centerZ };
+   m_vertices.emplace_back();
+   m_vertices.back().pos = { 0.0f, 0.0f, centerZ };
    ++verticeCount;
 
    const auto arm = XMVectorSet(size, 0.0f, centerZ, 0.0f);
@@ -741,21 +741,21 @@ void Shape::CreateTextureCone(int longDiv)
    for (int iLong = 0; iLong < longDiv; iLong++)
    {
       // Set vertices
-      vertices.emplace_back();
+      m_vertices.emplace_back();
       auto v = XMVector3Transform(
          arm,
          XMMatrixRotationZ(longitudeAngle * iLong)
       );
-      XMStoreFloat3(&vertices.back().pos, v);
+      XMStoreFloat3(&m_vertices.back().pos, v);
       ++verticeCount;
    }
 
    for (int iLong = 0; iLong < longDiv; iLong++)
    {
       // Set Indices
-      indices.push_back(iLong + 1 + circleVerticeStart + startVertices);
-      indices.push_back(circleVerticeStart + startVertices);
-      indices.push_back((iLong + 1) % longDiv + circleVerticeStart + 1 + startVertices);
+      m_indices.push_back(iLong + 1 + circleVerticeStart + startVertices);
+      m_indices.push_back(circleVerticeStart + startVertices);
+      m_indices.push_back((iLong + 1) % longDiv + circleVerticeStart + 1 + startVertices);
       indiceCount += 3;
    }
 
@@ -766,42 +766,42 @@ void Shape::CreateTextureCone(int longDiv)
    for (int iLong = 0; iLong < longDiv; iLong++)
    {
       int startVerticeStart = verticeCount;
-      vertices.emplace_back();
+      m_vertices.emplace_back();
       auto v1 = XMVector3Transform(arm1, XMMatrixRotationZ(longitudeAngle * iLong));
-      XMStoreFloat3(&vertices.back().pos, v1);
+      XMStoreFloat3(&m_vertices.back().pos, v1);
 
-      vertices.emplace_back();
-      XMStoreFloat3(&vertices.back().pos, center);
+      m_vertices.emplace_back();
+      XMStoreFloat3(&m_vertices.back().pos, center);
 
-      vertices.emplace_back();
+      m_vertices.emplace_back();
       auto v2 = XMVector3Transform(arm1, XMMatrixRotationZ(longitudeAngle * (iLong + 1.0f)));
-      XMStoreFloat3(&vertices.back().pos, v2);
+      XMStoreFloat3(&m_vertices.back().pos, v2);
       verticeCount += 3;
 
-      indices.push_back(startVerticeStart + 0 + startVertices);
-      indices.push_back(startVerticeStart + 2 + startVertices);
-      indices.push_back(startVerticeStart + 1 + startVertices);
+      m_indices.push_back(startVerticeStart + 0 + startVertices);
+      m_indices.push_back(startVerticeStart + 2 + startVertices);
+      m_indices.push_back(startVerticeStart + 1 + startVertices);
 
       indiceCount += 3;
    }
 
-   shapedata[type].indiceStart = startIndices;
-   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
-   shapedata[type].verticesStart = startVertices;
-   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
+   m_shapedata[type].indiceStart = startIndices;
+   m_shapedata[type].indiceCount = (UINT)m_indices.size() - startIndices;
+   m_shapedata[type].verticesStart = startVertices;
+   m_shapedata[type].verticesCount = (UINT)m_vertices.size() - startVertices;
 }
 
 
-void Shape::CreateTextureSuzanne()
+void Shape::createTextureSuzanne()
 {
    shapeType type = TextureSuzanne;
-   UINT startIndices = (UINT)indices.size();
-   UINT startVertices = (UINT)vertices.size();
+   UINT startIndices = (UINT)m_indices.size();
+   UINT startVertices = (UINT)m_vertices.size();
    int verticeCount = 0;
    int indiceCount = 0;
 
    //auto modelSuzanne = imp.ReadFile("models\\suzanne.obj",
-   auto modelSuzanne = imp.ReadFile("..\\..\\DirectX12Charles\\Models\\suzanne.obj",
+   auto modelSuzanne = m_imp.ReadFile("..\\..\\DirectX12Charles\\Models\\suzanne.obj",
       aiProcess_Triangulate |
       aiProcess_JoinIdenticalVertices);
 
@@ -810,7 +810,7 @@ void Shape::CreateTextureSuzanne()
    float scale = 1.0f;
    for (unsigned int i = 0; i < pMesh->mNumVertices; i++)
    {
-      vertices.push_back({ pMesh->mVertices[i].x * scale, pMesh->mVertices[i].y * scale, pMesh->mVertices[i].z * scale,
+      m_vertices.push_back({ pMesh->mVertices[i].x * scale, pMesh->mVertices[i].y * scale, pMesh->mVertices[i].z * scale,
          pMesh->mNormals[i].x, pMesh->mNormals[i].y, pMesh->mNormals[i].z });
       ++verticeCount;
    }
@@ -820,23 +820,23 @@ void Shape::CreateTextureSuzanne()
    {
       const auto &face = pMesh->mFaces[i];
       assert(face.mNumIndices == 3);
-      indices.push_back(face.mIndices[0] + startVertices);
-      indices.push_back(face.mIndices[1] + startVertices);
-      indices.push_back(face.mIndices[2] + startVertices);
+      m_indices.push_back(face.mIndices[0] + startVertices);
+      m_indices.push_back(face.mIndices[1] + startVertices);
+      m_indices.push_back(face.mIndices[2] + startVertices);
       indiceCount += 3;
    }
 
-   shapedata[type].indiceStart = startIndices;
-   shapedata[type].indiceCount = indiceCount;
-   shapedata[type].verticesStart = startVertices;
-   shapedata[type].verticesCount = verticeCount;
+   m_shapedata[type].indiceStart = startIndices;
+   m_shapedata[type].indiceCount = indiceCount;
+   m_shapedata[type].verticesStart = startVertices;
+   m_shapedata[type].verticesCount = verticeCount;
 }
 
-void Shape::CreateTexturePrism()
+void Shape::createTexturePrism()
 {
    shapeType type = TexturePrism;
-   UINT startIndices = (UINT)indices.size();
-   UINT startVertices = (UINT)vertices.size();
+   UINT startIndices = (UINT)m_indices.size();
+   UINT startVertices = (UINT)m_vertices.size();
 
    constexpr float edge = 2.0f;
    const float halfhight = (float)sqrt(2.0) * edge / 2.0f / 2.0f;
@@ -847,28 +847,28 @@ void Shape::CreateTexturePrism()
    //    /  \  _3/__B_\5
    //  0/__F_\2 
    // Front
-   vertices.emplace_back(-side, -halfhight,  -side); //  0 0
-   vertices.emplace_back( 0.0f,  halfhight,  -side); //  1 1
-   vertices.emplace_back( side, -halfhight,  -side); //  2 2
+   m_vertices.emplace_back(-side, -halfhight,  -side); //  0 0
+   m_vertices.emplace_back( 0.0f,  halfhight,  -side); //  1 1
+   m_vertices.emplace_back( side, -halfhight,  -side); //  2 2
    // Back
-   vertices.emplace_back(-side, -halfhight,  side); //  3 3
-   vertices.emplace_back( 0.0f,  halfhight,  side); //  4 4
-   vertices.emplace_back( side, -halfhight,  side); //  5 5
+   m_vertices.emplace_back(-side, -halfhight,  side); //  3 3
+   m_vertices.emplace_back( 0.0f,  halfhight,  side); //  4 4
+   m_vertices.emplace_back( side, -halfhight,  side); //  5 5
    // Right Side
-   vertices.emplace_back( 0.0f,  halfhight, -side); //  6 1
-   vertices.emplace_back( 0.0f,  halfhight,  side); //  7 4
-   vertices.emplace_back( side, -halfhight,  side); //  8 5
-   vertices.emplace_back( side, -halfhight, -side); //  9 2
+   m_vertices.emplace_back( 0.0f,  halfhight, -side); //  6 1
+   m_vertices.emplace_back( 0.0f,  halfhight,  side); //  7 4
+   m_vertices.emplace_back( side, -halfhight,  side); //  8 5
+   m_vertices.emplace_back( side, -halfhight, -side); //  9 2
    // Left Side
-   vertices.emplace_back(-side, -halfhight, -side); // 10 0
-   vertices.emplace_back(-side, -halfhight,  side); // 11 3
-   vertices.emplace_back( 0.0f,  halfhight,  side); // 12 4
-   vertices.emplace_back( 0.0f,  halfhight, -side); // 13 1
+   m_vertices.emplace_back(-side, -halfhight, -side); // 10 0
+   m_vertices.emplace_back(-side, -halfhight,  side); // 11 3
+   m_vertices.emplace_back( 0.0f,  halfhight,  side); // 12 4
+   m_vertices.emplace_back( 0.0f,  halfhight, -side); // 13 1
    // Bottom
-   vertices.emplace_back(-side, -halfhight, -side); // 14 0
-   vertices.emplace_back(-side, -halfhight,  side); // 15 3
-   vertices.emplace_back( side, -halfhight, -side); // 16 2
-   vertices.emplace_back( side, -halfhight,  side); // 17 5
+   m_vertices.emplace_back(-side, -halfhight, -side); // 14 0
+   m_vertices.emplace_back(-side, -halfhight,  side); // 15 3
+   m_vertices.emplace_back( side, -halfhight, -side); // 16 2
+   m_vertices.emplace_back( side, -halfhight,  side); // 17 5
 
 
    const unsigned short prismindices[]
@@ -882,11 +882,11 @@ void Shape::CreateTexturePrism()
 
    for (int i = 0; i < _countof(prismindices); i++)
    {
-      indices.push_back(prismindices[i] + startVertices);
+      m_indices.push_back(prismindices[i] + startVertices);
    }
 
-   shapedata[type].indiceStart = startIndices;
-   shapedata[type].indiceCount = (UINT)indices.size() - startIndices;
-   shapedata[type].verticesStart = startVertices;
-   shapedata[type].verticesCount = (UINT)vertices.size() - startVertices;
+   m_shapedata[type].indiceStart = startIndices;
+   m_shapedata[type].indiceCount = (UINT)m_indices.size() - startIndices;
+   m_shapedata[type].verticesStart = startVertices;
+   m_shapedata[type].verticesCount = (UINT)m_vertices.size() - startVertices;
 }

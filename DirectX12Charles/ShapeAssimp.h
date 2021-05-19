@@ -30,8 +30,8 @@ using namespace DirectX;
 class ShapeAssimp
 {
 public:
-   Assimp::Importer imp;
-   const aiScene *modelSuzanne;
+   Assimp::Importer m_imp;
+   //const aiScene *modelSuzanne;
 
    struct Vertex
    {
@@ -107,55 +107,55 @@ public:
    UINT getVerticesCount() { return m_verticesCount; }
 
    template<class V>
-   ShapeData<V> GetShapeData()
+   ShapeData<V> getShapeData()
    {
-      std::vector<V> verts(vertices.size());
-      for (size_t i = 0; i < vertices.size(); i++)
+      std::vector<V> verts(m_vertices.size());
+      for (size_t i = 0; i < m_vertices.size(); i++)
       {
-         verts[i].pos = vertices[i].pos;
+         verts[i].pos = m_vertices[i].pos;
       }
 
-      return{ verts, indices };
+      return{ verts, m_indices };
    }
 
    template<class V>
-   ShapeData<V> GetShapeTextureData()
+   ShapeData<V> getShapeTextureData()
    {
-      std::vector<V> verts(vertices.size());
-      for (size_t i = 0; i < vertices.size(); i++)
+      std::vector<V> verts(m_vertices.size());
+      for (size_t i = 0; i < m_vertices.size(); i++)
       {
-         verts[i].pos = vertices[i].pos;
-         verts[i].tex = vertices[i].tex;
+         verts[i].pos = m_vertices[i].pos;
+         verts[i].tex = m_vertices[i].tex;
       }
 
-      return{ verts, indices };
+      return{ verts, m_indices };
    }
 
 
    template<class V>
-   ShapeData<V> GetShapeNormalData()
+   ShapeData<V> getShapeNormalData()
    {
-      SetNormals();
+      setNormals();
 
-      std::vector<V> verts(vertices.size());
-      for (size_t i = 0; i < vertices.size(); i++)
+      std::vector<V> verts(m_vertices.size());
+      for (size_t i = 0; i < m_vertices.size(); i++)
       {
-         verts[i].pos = vertices[i].pos;
-         verts[i].normal = vertices[i].normal;
+         verts[i].pos = m_vertices[i].pos;
+         verts[i].normal = m_vertices[i].normal;
       }
 
-      return{ verts, indices };
+      return{ verts, m_indices };
    }
 
 private:
-   void SetNormals();
-   void CreateTextureSuzanne();
+   void setNormals();
+   void createTextureSuzanne();
 
    UINT m_verticesStart;
    UINT m_verticesCount;
    UINT m_indiceStart;
    UINT m_indiceCount;
-   std::vector<Vertex> vertices;
-   std::vector<unsigned short>indices;
+   std::vector<Vertex> m_vertices;
+   std::vector<unsigned short>m_indices;
 
 };

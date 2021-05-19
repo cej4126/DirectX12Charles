@@ -1,13 +1,13 @@
 #include "Input.h"
 
-std::optional<Input::RawDelta> Input::ReadRawDelta() noexcept
+std::optional<Input::RawDelta> Input::readRawDelta() noexcept
 {
-   if (rawDeltaBuffer.empty())
+   if (m_rawDeltaBuffer.empty())
    {
       return std::nullopt;
    }
-   const RawDelta d = rawDeltaBuffer.front();
-   rawDeltaBuffer.pop();
+   const RawDelta d = m_rawDeltaBuffer.front();
+   m_rawDeltaBuffer.pop();
    return d;
 }
 
@@ -29,32 +29,32 @@ std::optional<Input::RawDelta> Input::ReadRawDelta() noexcept
 //   charBuffer = std::queue<char>();
 //}
 
-void Input::OnKeyPressed(unsigned char keycode) noexcept
+void Input::onKeyPressed(unsigned char keycode) noexcept
 {
-   keyStates[keycode] = true;
-   keyBuffer.push(Input::KeyEvent(Input::KeyEvent::KeyType::KeyPress, keycode));
-   TrimBuffer(keyBuffer);
+   m_keyStates[keycode] = true;
+   m_keyBuffer.push(Input::KeyEvent(Input::KeyEvent::KeyType::KeyPress, keycode));
+   trimBuffer(m_keyBuffer);
 }
 
-void Input::OnKeyReleased(unsigned char keycode) noexcept
+void Input::onKeyReleased(unsigned char keycode) noexcept
 {
-   keyStates[keycode] = false;
-   keyBuffer.push(Input::KeyEvent(Input::KeyEvent::KeyType::KeyRelease, keycode));
-   TrimBuffer(keyBuffer);
+   m_keyStates[keycode] = false;
+   m_keyBuffer.push(Input::KeyEvent(Input::KeyEvent::KeyType::KeyRelease, keycode));
+   trimBuffer(m_keyBuffer);
 }
 
-void Input::OnChar(char character) noexcept
+void Input::onChar(char character) noexcept
 {
-   charBuffer.push(character);
-   TrimBuffer(charBuffer);
+   m_charBuffer.push(character);
+   trimBuffer(m_charBuffer);
 }
 
 std::optional<Input::KeyEvent> Input::ReadKey() noexcept
 {
-   if (keyBuffer.size() > 0u)
+   if (m_keyBuffer.size() > 0u)
    {
-      Input::KeyEvent e = keyBuffer.front();
-      keyBuffer.pop();
+      Input::KeyEvent e = m_keyBuffer.front();
+      m_keyBuffer.pop();
       return e;
    }
    return {};
@@ -71,116 +71,116 @@ std::optional<Input::KeyEvent> Input::ReadKey() noexcept
 //   return {};
 //}
 
-void Input::OnMouseMove(int newx, int newy) noexcept
+void Input::onMouseMove(int newx, int newy) noexcept
 {
-   x = newx;
-   y = newy;
+   m_x = newx;
+   m_y = newy;
 
-   mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::Move, *this));
-   TrimBuffer();
+   m_mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::Move, *this));
+   trimBuffer();
 }
 
-void Input::OnMouseLeave() noexcept
+void Input::onMouseLeave() noexcept
 {
-   isInWindow = false;
-   mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::Leave, *this));
-   TrimBuffer();
+   m_isInWindow = false;
+   m_mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::Leave, *this));
+   trimBuffer();
 }
 
-void Input::OnMouseEnter() noexcept
+void Input::onMouseEnter() noexcept
 {
-   isInWindow = true;
-   mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::Enter, *this));
-   TrimBuffer();
+   m_isInWindow = true;
+   m_mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::Enter, *this));
+   trimBuffer();
 }
 
-void Input::OnRawDelta(int dx, int dy) noexcept
+void Input::onRawDelta(int dx, int dy) noexcept
 {
-   rawDeltaBuffer.push({ dx,dy });
-   TrimBuffer();
+   m_rawDeltaBuffer.push({ dx,dy });
+   trimBuffer();
 }
 
-void Input::OnLeftPressed(int x, int y) noexcept
+void Input::onLeftPressed(int x, int y) noexcept
 {
-   leftIsPressed = true;
+   m_leftIsPressed = true;
 
-   mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::LPress, *this));
-   TrimBuffer();
+   m_mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::LPress, *this));
+   trimBuffer();
 }
 
-void Input::OnLeftReleased(int x, int y) noexcept
+void Input::onLeftReleased(int x, int y) noexcept
 {
-   leftIsPressed = false;
+   m_leftIsPressed = false;
 
-   mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::LRelease, *this));
-   TrimBuffer();
+   m_mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::LRelease, *this));
+   trimBuffer();
 }
 
-void Input::OnRightPressed(int x, int y) noexcept
+void Input::onRightPressed(int x, int y) noexcept
 {
-   rightIsPressed = true;
+   m_rightIsPressed = true;
 
-   mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::RPress, *this));
-   TrimBuffer();
+   m_mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::RPress, *this));
+   trimBuffer();
 }
 
-void Input::OnRightReleased(int x, int y) noexcept
+void Input::onRightReleased(int x, int y) noexcept
 {
-   rightIsPressed = false;
+   m_rightIsPressed = false;
 
-   mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::RRelease, *this));
-   TrimBuffer();
+   m_mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::RRelease, *this));
+   trimBuffer();
 }
 
-void Input::OnWheelUp(int x, int y) noexcept
+void Input::onWheelUp(int x, int y) noexcept
 {
-   mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::WheelUp, *this));
-   TrimBuffer();
+   m_mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::WheelUp, *this));
+   trimBuffer();
 }
 
-void Input::OnWheelDown(int x, int y) noexcept
+void Input::onWheelDown(int x, int y) noexcept
 {
-   mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::WheelDown, *this));
-   TrimBuffer();
+   m_mouseBuffer.push(Input::MouseEvent(Input::MouseEvent::MouseType::WheelDown, *this));
+   trimBuffer();
 }
 
-void Input::TrimBuffer() noexcept
+void Input::trimBuffer() noexcept
 {
-   while (mouseBuffer.size() > bufferSize)
+   while (m_mouseBuffer.size() > Buffer_Size)
    {
-      mouseBuffer.pop();
+      m_mouseBuffer.pop();
    }
 }
 
-void Input::TrimRawInputBuffer() noexcept
+void Input::trimRawInputBuffer() noexcept
 {
-   while (rawDeltaBuffer.size() > bufferSize)
+   while (m_rawDeltaBuffer.size() > Buffer_Size)
    {
-      rawDeltaBuffer.pop();
+      m_rawDeltaBuffer.pop();
    }
 }
 
-void Input::OnWheelDelta(int x, int y, int delta) noexcept
+void Input::onWheelDelta(int x, int y, int delta) noexcept
 {
-   wheelDeltaCarry += delta;
+   m_wheelDeltaCarry += delta;
    // generate events for every 120 
-   while (wheelDeltaCarry >= WHEEL_DELTA)
+   while (m_wheelDeltaCarry >= WHEEL_DELTA)
    {
-      wheelDeltaCarry -= WHEEL_DELTA;
-      OnWheelUp(x, y);
+      m_wheelDeltaCarry -= WHEEL_DELTA;
+      onWheelUp(x, y);
    }
-   while (wheelDeltaCarry <= -WHEEL_DELTA)
+   while (m_wheelDeltaCarry <= -WHEEL_DELTA)
    {
-      wheelDeltaCarry += WHEEL_DELTA;
-      OnWheelDown(x, y);
+      m_wheelDeltaCarry += WHEEL_DELTA;
+      onWheelDown(x, y);
    }
 }
 
 
 template<typename T>
-inline void Input::TrimBuffer(std::queue<T> &buffer) noexcept
+inline void Input::trimBuffer(std::queue<T> &buffer) noexcept
 {
-   while (buffer.size() > bufferSize)
+   while (buffer.size() > Buffer_Size)
    {
       buffer.pop();
    }

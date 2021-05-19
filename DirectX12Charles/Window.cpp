@@ -237,7 +237,7 @@ LRESULT Window::handleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             PostQuitMessage(0);
             return 0;
          case WM_KILLFOCUS:
-            m_input.ClearState();
+            m_input.clearState();
             break;
 
          case WM_ACTIVATE:
@@ -260,30 +260,30 @@ LRESULT Window::handleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
          case WM_KEYDOWN:
          case WM_SYSKEYDOWN:
 
-            if (!(lParam & 0x40000000) || (m_input.AutorepeatIsEnabled()))
+            if (!(lParam & 0x40000000) || (m_input.autorepeatIsEnabled()))
             {
-               m_input.OnKeyPressed(static_cast<unsigned char>(wParam));
+               m_input.onKeyPressed(static_cast<unsigned char>(wParam));
             }
             break;
             return 0;
             break;
          case WM_KEYUP:
          case WM_SYSKEYUP:
-            m_input.OnKeyReleased(static_cast<unsigned char>(wParam));
+            m_input.onKeyReleased(static_cast<unsigned char>(wParam));
             break;
 
          case WM_CHAR:
-            m_input.OnChar(static_cast<unsigned char>(wParam));
+            m_input.onChar(static_cast<unsigned char>(wParam));
             break;
 
          case WM_MOUSEMOVE:
          {
             if (!m_cursorEnabled)
             {
-               if (!m_input.IsInWindow())
+               if (!m_input.isInWindow())
                {
                   SetCapture(hWnd);
-                  m_input.OnMouseEnter();
+                  m_input.onMouseEnter();
                   hideCursor();
                }
                break;
@@ -292,24 +292,24 @@ LRESULT Window::handleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             const POINTS pt = MAKEPOINTS(lParam);
             if ((pt.x >= 0) && (pt.x < m_width) && (pt.y >= 0) && (pt.y < m_height))
             {
-               m_input.OnMouseMove(pt.x, pt.y);
-               if (!m_input.IsInWindow())
+               m_input.onMouseMove(pt.x, pt.y);
+               if (!m_input.isInWindow())
                {
                   SetCapture(hWnd);
-                  m_input.OnMouseEnter();
+                  m_input.onMouseEnter();
                }
             }
             else
             {
                if (wParam & (MK_LBUTTON | MK_RBUTTON))
                {
-                  m_input.OnMouseMove(pt.x, pt.y);
+                  m_input.onMouseMove(pt.x, pt.y);
                }
                // button up -> release capture / log event for leaving
                else
                {
                   ReleaseCapture();
-                  m_input.OnMouseLeave();
+                  m_input.onMouseLeave();
                }
             }
             break;
@@ -325,36 +325,36 @@ LRESULT Window::handleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
 
             const POINTS pt = MAKEPOINTS(lParam);
-            m_input.OnLeftPressed(pt.x, pt.y);
+            m_input.onLeftPressed(pt.x, pt.y);
             break;
          }
          case WM_RBUTTONDOWN:
          {
             const POINTS pt = MAKEPOINTS(lParam);
-            m_input.OnRightPressed(pt.x, pt.y);
+            m_input.onRightPressed(pt.x, pt.y);
             break;
          }
          case WM_LBUTTONUP:
          {
             const POINTS pt = MAKEPOINTS(lParam);
-            m_input.OnLeftReleased(pt.x, pt.y);
+            m_input.onLeftReleased(pt.x, pt.y);
             // release mouse if outside of window
             if (pt.x < 0 || pt.x >= m_width || pt.y < 0 || pt.y >= m_height)
             {
                ReleaseCapture();
-               m_input.OnMouseLeave();
+               m_input.onMouseLeave();
             }
             break;
          }
          case WM_RBUTTONUP:
          {
             const POINTS pt = MAKEPOINTS(lParam);
-            m_input.OnRightReleased(pt.x, pt.y);
+            m_input.onRightReleased(pt.x, pt.y);
             // release mouse if outside of window
             if (pt.x < 0 || pt.x >= m_width || pt.y < 0 || pt.y >= m_height)
             {
                ReleaseCapture();
-               m_input.OnMouseLeave();
+               m_input.onMouseLeave();
             }
             break;
          }
@@ -362,14 +362,14 @@ LRESULT Window::handleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
          {
             const POINTS pt = MAKEPOINTS(lParam);
             const int delta = GET_WHEEL_DELTA_WPARAM(wParam);
-            m_input.OnWheelDelta(pt.x, pt.y, delta);
+            m_input.onWheelDelta(pt.x, pt.y, delta);
             break;
          }
 
          /************** RAW MOUSE MESSAGES **************/
          case WM_INPUT:
          {
-            if (!m_input.RawEnabled())
+            if (!m_input.rawEnabled())
             {
                break;
             }
@@ -403,7 +403,7 @@ LRESULT Window::handleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (ri.header.dwType == RIM_TYPEMOUSE &&
                (ri.data.mouse.lLastX != 0 || ri.data.mouse.lLastY != 0))
             {
-               m_input.OnRawDelta(ri.data.mouse.lLastX, ri.data.mouse.lLastY);
+               m_input.onRawDelta(ri.data.mouse.lLastX, ri.data.mouse.lLastY);
             }
             break;
          }

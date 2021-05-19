@@ -80,15 +80,15 @@ DrawLighted::DrawLighted(Graphics &gfx, int &index, Shape::shapeType type, float
          .Append(VertexLayout::Normal)
       ));
       auto model = gfx.m_shape.GetShapeNormalData<Vertex>();
-      for (unsigned int i = 0; i < model.vertices.size(); i++)
+      for (unsigned int i = 0; i < model.m_vertices.size(); i++)
       {
          vbuf.EmplaceBack(
-            *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].pos),
-            *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].normal));
+            *reinterpret_cast<XMFLOAT3 *>(&model.m_vertices[i].pos),
+            *reinterpret_cast<XMFLOAT3 *>(&model.m_vertices[i].normal));
       }
 
       object->LoadVerticesBuffer(vbuf);
-      object->LoadIndicesBuffer(model.indices);
+      object->LoadIndicesBuffer(model.m_indices);
       object->CreateShader(L"LightedVS.cso", L"LightedPS.cso");
 
       // Create Root Signature after constants

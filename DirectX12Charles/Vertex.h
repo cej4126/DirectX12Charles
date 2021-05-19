@@ -241,7 +241,7 @@ namespace hw3dexp
 		template<VertexLayout::ElementType Type>
 		auto &Attr() noexcept
 		{
-			auto pAttribute = pData + layout.Resolve<Type>().GetOffset();
+			auto pAttribute = pData + m_layout.Resolve<Type>().GetOffset();
 			return *reinterpret_cast<typename VertexLayout::Map<Type>::SysType*>(pAttribute);
 		}
 
@@ -249,7 +249,7 @@ namespace hw3dexp
 		void SetAttributeByIndex(size_t i, T &&val) noexcept
 		{
 			using namespace DirectX;
-			const auto &element = layout.ResolveByIndex(i);
+			const auto &element = m_layout.ResolveByIndex(i);
 			auto pAttribute = pData + element.GetOffset();
 			switch (element.GetType())
 			{
@@ -289,7 +289,7 @@ namespace hw3dexp
 		Vertex(char *pData, const VertexLayout &layout) noexcept
 			:
 			pData(pData),
-			layout(layout)
+			m_layout(layout)
 		{
 			assert(pData != nullptr);
 		}
@@ -319,7 +319,7 @@ namespace hw3dexp
 		}
 	private:
 		char *pData = nullptr;
-		const VertexLayout &layout;
+		const VertexLayout &m_layout;
 	};
 
 	class ConstVertex
@@ -343,49 +343,49 @@ namespace hw3dexp
 	public:
 		VertexBuffer(VertexLayout layout) noexcept
 			:
-			layout(std::move(layout))
+			m_layout(std::move(layout))
 		{}
 
 		const char *GetData() const noexcept
 		{
-			return buffer.data();
+			return m_buffer.data();
 		}
 
 		const VertexLayout &GetLayout() const noexcept
 		{
-			return layout;
+			return m_layout;
 		}
 
 		size_t SizeByte() const noexcept
 		{
-			return buffer.size();
+			return m_buffer.size();
 		}
 
 		size_t Size() const noexcept
 		{
-			return buffer.size() / layout.Size();
+			return m_buffer.size() / m_layout.Size();
 		}
 		template<typename ...Params>
 		void EmplaceBack(Params&&... params) noexcept
 		{
-			assert(sizeof...(params) == layout.GetElementCount() && "Param count doesn't match number of vertex elements");
-			buffer.resize(buffer.size() + layout.Size());
+			assert(sizeof...(params) == m_layout.GetElementCount() && "Param count doesn't match number of vertex elements");
+			m_buffer.resize(m_buffer.size() + m_layout.Size());
 			Back().SetAttributeByIndex(0u, std::forward<Params>(params)...);
 		}
 		Vertex Back() noexcept
 		{
-			assert(buffer.size() != 0u);
-			return Vertex{ buffer.data() + buffer.size() - layout.Size(),layout };
+			assert(m_buffer.size() != 0u);
+			return Vertex{ m_buffer.data() + m_buffer.size() - m_layout.Size(), m_layout };
 		}
 		Vertex Front() noexcept
 		{
-			assert(buffer.size() != 0u);
-			return Vertex{ buffer.data(),layout };
+			assert(m_buffer.size() != 0u);
+			return Vertex{ m_buffer.data(), m_layout };
 		}
 		Vertex operator[](size_t i) noexcept
 		{
 			assert(i < Size());
-			return Vertex{ buffer.data() + layout.Size() * i,layout };
+			return Vertex{ m_buffer.data() + m_layout.Size() * i, m_layout };
 		}
 		ConstVertex Back() const noexcept
 		{
@@ -400,7 +400,7 @@ namespace hw3dexp
 			return const_cast<VertexBuffer &>(*this)[i];
 		}
 	private:
-		std::vector<char> buffer;
-		VertexLayout layout;
+		std::vector<char> m_buffer;
+		VertexLayout m_layout;
 	};
 }

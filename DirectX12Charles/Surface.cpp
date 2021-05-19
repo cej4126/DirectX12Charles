@@ -4,18 +4,18 @@
 
 Surface::Surface(unsigned int width, unsigned int height)
 {
-   HRESULT hr = scratch.Initialize2D(format, width, height, 1u, 1u);
+   HRESULT hr = m_scratch.Initialize2D(m_format, width, height, 1u, 1u);
    if (FAILED(hr))
    {
       throw ("Failed to initialize ScratchImage");
    }
 }
 
-void Surface::Clear(Color fillValue) noexcept
+void Surface::clear(Color fillValue) noexcept
 {
-   const auto width = GetWidth();
-   const auto height = GetHeight();
-   auto &imageData = *scratch.GetImage(0, 0, 0);
+   const auto width = getWidth();
+   const auto height = getHeight();
+   auto &imageData = *m_scratch.GetImage(0, 0, 0);
    for (size_t y = 0u; y < height; y++)
    {
       auto rowStart = reinterpret_cast<Color *>(imageData.pixels + imageData.rowPitch * y);
@@ -23,52 +23,52 @@ void Surface::Clear(Color fillValue) noexcept
    }
 }
 
-void Surface::PutPixel(unsigned int x, unsigned int y, Color c) noexcept
+void Surface::putPixel(unsigned int x, unsigned int y, Color c) noexcept
 {
    assert(x >= 0);
    assert(y >= 0);
-   assert(x < GetWidth());
-   assert(y < GetHeight());
-   auto &imageData = *scratch.GetImage(0, 0, 0);
+   assert(x <getWidth());
+   assert(y < getHeight());
+   auto &imageData = *m_scratch.GetImage(0, 0, 0);
    reinterpret_cast<Color *>(&imageData.pixels[y * imageData.rowPitch])[x] = c;
 }
 
-Surface::Color Surface::GetPixel(unsigned int x, unsigned int y) const noexcept
+Surface::Color Surface::getPixel(unsigned int x, unsigned int y) const noexcept
 {
    assert(x >= 0);
    assert(y >= 0);
-   assert(x < GetWidth());
-   assert(y < GetHeight());
-   auto &imageData = *scratch.GetImage(0, 0, 0);
+   assert(x < getWidth());
+   assert(y < getHeight());
+   auto &imageData = *m_scratch.GetImage(0, 0, 0);
    return reinterpret_cast<Color *>(&imageData.pixels[y * imageData.rowPitch])[x];
 }
 
-unsigned int Surface::GetWidth() const noexcept
+unsigned int Surface::getWidth() const noexcept
 {
-   return (unsigned int)scratch.GetMetadata().width;
+   return (unsigned int)m_scratch.GetMetadata().width;
 }
 
-unsigned int Surface::GetHeight() const noexcept
+unsigned int Surface::getHeight() const noexcept
 {
-   return (unsigned int)scratch.GetMetadata().height;
+   return (unsigned int)m_scratch.GetMetadata().height;
 }
 
-Surface::Color *Surface::GetBufferPtr() noexcept
+Surface::Color *Surface::getBufferPtr() noexcept
 {
-   return reinterpret_cast<Color *>(scratch.GetPixels());
+   return reinterpret_cast<Color *>(m_scratch.GetPixels());
 }
 
-const const Surface::Color *Surface::GetBufferPtr() const noexcept
+const const Surface::Color *Surface::getBufferPtr() const noexcept
 {
-   return const_cast<Surface *>(this)->GetBufferPtr();
+   return const_cast<Surface *>(this)->getBufferPtr();
 }
 
-const Surface::Color *Surface::GetBufferPtrConst() const noexcept
+const Surface::Color *Surface::getBufferPtrConst() const noexcept
 {
-   return const_cast<Surface *>(this)->GetBufferPtr();
+   return const_cast<Surface *>(this)->getBufferPtr();
 }
 
-Surface Surface::FromFile(const std::string &filename)
+Surface Surface::fromFile(const std::string &filename)
 {
    wchar_t wideName[512];
    mbstowcs_s(nullptr, wideName, filename.c_str(), _TRUNCATE);
@@ -80,12 +80,12 @@ Surface Surface::FromFile(const std::string &filename)
       throw ("Failed to load image");
    }
 
-   if (scratch.GetImage(0, 0, 0)->format != format)
+   if (scratch.GetImage(0, 0, 0)->format != m_format)
    {
       DirectX::ScratchImage converted;
       hr = DirectX::Convert(
          *scratch.GetImage(0, 0, 0),
-         format,
+         m_format,
          DirectX::TEX_FILTER_DEFAULT,
          DirectX::TEX_THRESHOLD_DEFAULT,
          converted);
@@ -98,7 +98,7 @@ Surface Surface::FromFile(const std::string &filename)
    return Surface(std::move(scratch));
 }
 
-void Surface::Save(const std::string &filename) const
+void Surface::save(const std::string &filename) const
 {
    const auto GetCodecID = [](const std::string &filename)
    {
@@ -124,7 +124,7 @@ void Surface::Save(const std::string &filename) const
    mbstowcs_s(nullptr, wideName, filename.c_str(), _TRUNCATE);
 
    HRESULT hr = DirectX::SaveToWICFile(
-      *scratch.GetImage(0, 0, 0),
+      *m_scratch.GetImage(0, 0, 0),
       DirectX::WIC_FLAGS_NONE,
       GetWICCodec(GetCodecID(filename)),
       wideName);
@@ -135,13 +135,13 @@ void Surface::Save(const std::string &filename) const
    }
 }
 
-bool Surface::AlphaLoaded() const noexcept
+bool Surface::alphaLoaded() const noexcept
 {
-   return !scratch.IsAlphaAllOpaque();
+   return !m_scratch.IsAlphaAllOpaque();
 }
 
 Surface::Surface(DirectX::ScratchImage scratch) noexcept
    :
-   scratch(std::move(scratch))
+   m_scratch(std::move(scratch))
 {
 }

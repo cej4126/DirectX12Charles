@@ -12,8 +12,8 @@ using namespace DirectX;
 class Shape
 {
 public:
-   Assimp::Importer imp;
-   const aiScene *modelSuzanne;
+   Assimp::Importer m_imp;
+   //const aiScene *m_modelSuzanne;
 
    enum ShapeBaseType
    {
@@ -108,86 +108,86 @@ public:
    };
 
    Shape();
-   UINT getIndiceStart(shapeType type) { return shapedata[type].indiceStart; }
-   UINT getIndiceCount(shapeType type) { return shapedata[type].indiceCount; }
-   UINT getVerticesStart(shapeType type) { return shapedata[type].verticesStart; }
-   UINT getVerticesCount(shapeType type) { return shapedata[type].verticesCount; }
+   UINT getIndiceStart(shapeType type) { return m_shapedata[type].indiceStart; }
+   UINT getIndiceCount(shapeType type) { return m_shapedata[type].indiceCount; }
+   UINT getVerticesStart(shapeType type) { return m_shapedata[type].verticesStart; }
+   UINT getVerticesCount(shapeType type) { return m_shapedata[type].verticesCount; }
 
    template<class V>
-   ShapeData<V> GetShapeData()
+   ShapeData<V> getShapeData()
    {
-      std::vector<V> verts(vertices.size());
-      for (size_t i = 0; i < vertices.size(); i++)
+      std::vector<V> verts(m_vertices.size());
+      for (size_t i = 0; i < m_vertices.size(); i++)
       {
-         verts[i].pos = vertices[i].pos;
+         verts[i].pos = m_vertices[i].pos;
       }
 
-      return{ verts, indices };
+      return{ verts, m_indices };
    }
 
    template<class V>
-   ShapeData<V> GetShapeTextureData()
+   ShapeData<V> getShapeTextureData()
    {
-      std::vector<V> verts(vertices.size());
-      for (size_t i = 0; i < vertices.size(); i++)
+      std::vector<V> verts(m_vertices.size());
+      for (size_t i = 0; i < m_vertices.size(); i++)
       {
-         verts[i].pos = vertices[i].pos;
-         verts[i].tex = vertices[i].tex;
+         verts[i].pos = m_vertices[i].pos;
+         verts[i].tex = m_vertices[i].tex;
       }
 
-      return{ verts, indices };
+      return{ verts, m_indices };
    }
 
 
    template<class V>
    ShapeData<V> GetShapeNormalData()
    {
-      SetNormals();
+      setNormals();
 
-      std::vector<V> verts(vertices.size());
-      for (size_t i = 0; i < vertices.size(); i++)
+      std::vector<V> verts(m_vertices.size());
+      for (size_t i = 0; i < m_vertices.size(); i++)
       {
-         verts[i].pos = vertices[i].pos;
-         verts[i].normal = vertices[i].normal;
+         verts[i].pos = m_vertices[i].pos;
+         verts[i].normal = m_vertices[i].normal;
       }
 
-      return{ verts, indices };
+      return{ verts, m_indices };
    }
 
    template<class V>
-   ShapeData<V> GetShapeTextureNormalData()
+   ShapeData<V> getShapeTextureNormalData()
    {
-      SetNormals();
+      setNormals();
 
-      std::vector<V> verts(vertices.size());
-      for (size_t i = 0; i < vertices.size(); i++)
+      std::vector<V> verts(m_vertices.size());
+      for (size_t i = 0; i < m_vertices.size(); i++)
       {
-         verts[i].pos = vertices[i].pos;
-         verts[i].normal = vertices[i].normal;
-         verts[i].tex = vertices[i].tex;
+         verts[i].pos = m_vertices[i].pos;
+         verts[i].normal = m_vertices[i].normal;
+         verts[i].tex = m_vertices[i].tex;
       }
 
-      return{ verts, indices };
+      return{ verts, m_indices };
    }
 
 
 private:
-   void SetNormals();
-   void CreateCone(int longDiv);
-   void CreateCube();
-   void CratePrism();
-   void CreatePlane(int divisions_x, int divisions_y);
-   void CreateCylinder(int longDiv);
-   void CreateSphere(int latDiv, int longDiv);
-   void CreateTextureCube();
-   void CreatePictureCube();
-   void CreateTextureCylinder(int longDiv);
-   void CreateTextureSuzanne();
-   void CreateTextureCone(int longDiv);
-   void CreateTexturePrism();
+   void setNormals();
+   void createCone(int longDiv);
+   void createCube();
+   void createPrism();
+   void createPlane(int divisions_x, int divisions_y);
+   void createCylinder(int longDiv);
+   void createSphere(int latDiv, int longDiv);
+   void createTextureCube();
+   void createPictureCube();
+   void createTextureCylinder(int longDiv);
+   void createTextureSuzanne();
+   void createTextureCone(int longDiv);
+   void createTexturePrism();
 
-   std::array<ShapeDataType, ShapeCount> shapedata;
-   std::vector<Vertex> vertices;
-   std::vector<unsigned short>indices;
+   std::array<ShapeDataType, ShapeCount> m_shapedata;
+   std::vector<Vertex> m_vertices;
+   std::vector<unsigned short> m_indices;
 
 };

@@ -68,17 +68,17 @@ DrawPictureCube::DrawPictureCube(Graphics &gfx, int &index, Shape::shapeType typ
          XMFLOAT3 pos;
          XMFLOAT2 tex;
       };
-      auto model = gfx.m_shape.GetShapeTextureData<Vertex>();
+      auto model = gfx.m_shape.getShapeTextureData<Vertex>();
 
-      for (int i = 0; i < model.vertices.size(); i++)
+      for (int i = 0; i < model.m_vertices.size(); i++)
       {
          vbuf.EmplaceBack(
-            *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].pos),
-            *reinterpret_cast<XMFLOAT2 *>(&model.vertices[i].tex));
+            *reinterpret_cast<XMFLOAT3 *>(&model.m_vertices[i].pos),
+            *reinterpret_cast<XMFLOAT2 *>(&model.m_vertices[i].tex));
       }
 
       object->LoadVerticesBuffer(vbuf);
-      object->LoadIndicesBuffer(model.indices);
+      object->LoadIndicesBuffer(model.m_indices);
       object->CreateShader(L"TextureVS.cso", L"TexturePS.cso");
 
       // Create Root Signature after constants

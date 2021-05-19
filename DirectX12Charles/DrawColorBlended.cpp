@@ -61,23 +61,23 @@ DrawColorBlended::DrawColorBlended(Graphics &gfx, int &index, Shape::shapeType t
       };
       XMFLOAT4 color1;
 
-      auto model = gfx.m_shape.GetShapeData<Vertex>();
+      auto model = gfx.m_shape.getShapeData<Vertex>();
 
-      for (int i = 0; i < model.vertices.size(); i++)
+      for (int i = 0; i < model.m_vertices.size(); i++)
       {
          float r = randcolor(gen);
          float b = randcolor(gen);
          float g = randcolor(gen);
          color1 = { r, b, g, 1.0f };
          vbuf.EmplaceBack(
-            *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].pos),
+            *reinterpret_cast<XMFLOAT3 *>(&model.m_vertices[i].pos),
             *reinterpret_cast<XMFLOAT4 *>(&color1));
       }
 
       object->LoadVerticesBuffer(vbuf);
 
       //object->LoadVerticesBuffer(model.vertices);
-      object->LoadIndicesBuffer(model.indices);
+      object->LoadIndicesBuffer(model.m_indices);
       object->CreateShader(L"ColorBlendedVS.cso", L"ColorBlendedPS.cso");
 
       // Create Root Signature after constants

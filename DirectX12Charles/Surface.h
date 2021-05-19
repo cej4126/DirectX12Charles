@@ -79,23 +79,23 @@ public:
    Surface &operator=(const Surface &) = delete;
    ~Surface() = default;
 
-   void Clear(Color fillValue) noexcept;
-   void PutPixel(unsigned int x, unsigned int y, Color c) noexcept;
-   Color GetPixel(unsigned int x, unsigned int y) const noexcept;
-   unsigned int GetWidth() const noexcept;
-   unsigned int GetHeight() const noexcept;
-   Color *GetBufferPtr() noexcept;
-   const Color *GetBufferPtr() const noexcept;
-   const Color *GetBufferPtrConst() const noexcept;
-   static Surface FromFile(const std::string &filename);
-   void Save(const std::string &filename) const;
+   void clear(Color fillValue) noexcept;
+   void putPixel(unsigned int x, unsigned int y, Color c) noexcept;
+   Color getPixel(unsigned int x, unsigned int y) const noexcept;
+   unsigned int getWidth() const noexcept;
+   unsigned int getHeight() const noexcept;
+   Color *getBufferPtr() noexcept;
+   const Color *getBufferPtr() const noexcept;
+   const Color *getBufferPtrConst() const noexcept;
+   static Surface fromFile(const std::string &filename);
+   void save(const std::string &filename) const;
 
-   bool AlphaLoaded() const noexcept;
+   bool alphaLoaded() const noexcept;
 
 private:
    Surface(DirectX::ScratchImage scratch) noexcept;
 private:
-   static constexpr DXGI_FORMAT format = DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM;
-   DirectX::ScratchImage scratch;
+   static constexpr DXGI_FORMAT m_format = DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM;
+   DirectX::ScratchImage m_scratch;
 };
 

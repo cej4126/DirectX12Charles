@@ -43,9 +43,9 @@ void Texture::Bind(Graphics &gfx) noexcept
 
 void Texture::CreateTexture(std::string path, int slot, int rootPara)
 {
-   const auto surface = Surface::FromFile(path);
+   const auto surface = Surface::fromFile(path);
    m_rootPara = rootPara;
-   m_alphaGloss = surface.AlphaLoaded();
+   m_alphaGloss = surface.alphaLoaded();
 
    D3D12_HEAP_PROPERTIES heapProps;
    ZeroMemory(&heapProps, sizeof(heapProps));
@@ -59,8 +59,8 @@ void Texture::CreateTexture(std::string path, int slot, int rootPara)
    ZeroMemory(&resourceDesc, sizeof(resourceDesc));
    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
    resourceDesc.Alignment = 0;
-   resourceDesc.Width = surface.GetWidth();
-   resourceDesc.Height = surface.GetHeight();
+   resourceDesc.Width = surface.getWidth();
+   resourceDesc.Height = surface.getHeight();
    resourceDesc.DepthOrArraySize = 1;
    resourceDesc.MipLevels = 1;
    resourceDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -100,9 +100,9 @@ void Texture::CreateTexture(std::string path, int slot, int rootPara)
 
    // copy data to the upload heap
    D3D12_SUBRESOURCE_DATA TextureData = {};
-   TextureData.pData = surface.GetBufferPtr();
-   TextureData.RowPitch = surface.GetWidth() * sizeof(Surface::Color);
-   TextureData.SlicePitch = surface.GetWidth() * sizeof(Surface::Color) * surface.GetHeight();
+   TextureData.pData = surface.getBufferPtr();
+   TextureData.RowPitch = surface.getWidth() * sizeof(Surface::Color);
+   TextureData.SlicePitch = surface.getWidth() * sizeof(Surface::Color) * surface.getHeight();
 
    gfx.updateSubresource(
       textureBuffer[slot].Get(),

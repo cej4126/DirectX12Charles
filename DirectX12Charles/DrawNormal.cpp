@@ -49,18 +49,18 @@ DrawNormal::DrawNormal(Graphics &gfx, int &index, Shape::shapeType type, float s
          XMFLOAT3 normal;
          XMFLOAT2 tex;
       };
-      auto model = gfx.m_shape.GetShapeTextureNormalData<Vertex>();
+      auto model = gfx.m_shape.getShapeTextureNormalData<Vertex>();
 
-      for (int i = 0; i < model.vertices.size(); i++)
+      for (int i = 0; i < model.m_vertices.size(); i++)
       {
          vbuf.EmplaceBack(
-            *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].pos),
-            *reinterpret_cast<XMFLOAT3 *>(&model.vertices[i].normal),
-            *reinterpret_cast<XMFLOAT2 *>(&model.vertices[i].tex));
+            *reinterpret_cast<XMFLOAT3 *>(&model.m_vertices[i].pos),
+            *reinterpret_cast<XMFLOAT3 *>(&model.m_vertices[i].normal),
+            *reinterpret_cast<XMFLOAT2 *>(&model.m_vertices[i].tex));
       }
 
       object->LoadVerticesBuffer(vbuf);
-      object->LoadIndicesBuffer(model.indices);
+      object->LoadIndicesBuffer(model.m_indices);
 
       if (specular)
       {
