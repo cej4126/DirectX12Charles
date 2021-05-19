@@ -17,37 +17,37 @@ class App
 {
 public:
    App();
-   int Go();
+   int go();
    ~App();
 private:
-   float TimeMark();
-   float TimePeek();
+   float timeMark();
+   float timePeek();
 
-   void DoFrame();
-   Window wnd;
-
-private:
-   void SpawnSimulation();
-   void SpawnObjectControl();
+   void doFrame();
+   Window m_window;
 
 private:
-   std::chrono::steady_clock::time_point lastTime;
-   std::unique_ptr< class dwritedraw> dwriteitem;
+   void spawnSimulation();
+   void spawnObjectControl();
 
-   std::vector<std::unique_ptr<class DrawFunction>> drawItems;
-   std::vector<class DrawLighted * > lightedObjects;
-   std::unique_ptr<class DrawPointLight > light;
-   std::unique_ptr<class DrawNormal > plane = nullptr;
-   std::unique_ptr<class DrawNormal > cube = nullptr;
+private:
+   std::chrono::steady_clock::time_point m_lastTime;
+   std::unique_ptr< class dwritedraw> m_dwriteitem;
 
-   Camera cam;
-   float speedFactor = 1.0f;
-   int objectIndex = 1;
-   DrawLighted *currentObject = nullptr;
+   std::vector<std::unique_ptr<class DrawFunction>> m_drawItems;
+   std::vector<class DrawLighted * > m_lightedObjects;
+   std::unique_ptr<class DrawPointLight > m_light;
+   std::unique_ptr<class DrawNormal > m_plane = nullptr;
+   std::unique_ptr<class DrawNormal > m_cube = nullptr;
 
-   std::unique_ptr<class DrawModel > nano = nullptr;
-   std::unique_ptr<class DrawModel > wall = nullptr;
-   std::unique_ptr<class DrawModel > gobber = nullptr;
-   std::unique_ptr<class DrawModel > sponza = nullptr;
+   Camera m_camera;
+   float m_speedFactor = 1.0f;
+   int m_objectIndex = 1;
+   DrawLighted *m_currentObject = nullptr;
+
+   std::unique_ptr<class DrawModel > m_nano = nullptr;
+   std::unique_ptr<class DrawModel > m_wall = nullptr;
+   std::unique_ptr<class DrawModel > m_gobber = nullptr;
+   std::unique_ptr<class DrawModel > m_sponza = nullptr;
 };
 

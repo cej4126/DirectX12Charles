@@ -61,10 +61,10 @@ DrawLighted::DrawLighted(Graphics &gfx, int &index, Shape::shapeType type, float
    spaceYawRate = 0.0f;
 #endif
 
-   UINT verticesStart = gfx.shape.getVerticesStart(type);
-   UINT verticesCount = gfx.shape.getVerticesCount(type);
-   UINT indicesStart = gfx.shape.getIndiceStart(type);
-   UINT indicesCount = gfx.shape.getIndiceCount(type);
+   UINT verticesStart = gfx.m_shape.getVerticesStart(type);
+   UINT verticesCount = gfx.m_shape.getVerticesCount(type);
+   UINT indicesStart = gfx.m_shape.getIndiceStart(type);
+   UINT indicesCount = gfx.m_shape.getIndiceCount(type);
 
    std::string tag = "Lighted";
    std::shared_ptr<Object> object = Object::Resolve(gfx, tag);
@@ -79,7 +79,7 @@ DrawLighted::DrawLighted(Graphics &gfx, int &index, Shape::shapeType type, float
          .Append(VertexLayout::Position3D)
          .Append(VertexLayout::Normal)
       ));
-      auto model = gfx.shape.GetShapeNormalData<Vertex>();
+      auto model = gfx.m_shape.GetShapeNormalData<Vertex>();
       for (unsigned int i = 0; i < model.vertices.size(); i++)
       {
          vbuf.EmplaceBack(
@@ -103,8 +103,8 @@ DrawLighted::DrawLighted(Graphics &gfx, int &index, Shape::shapeType type, float
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this, 0, -1);
 
-   UINT start = gfx.shape.getIndiceStart(type);
-   UINT count = gfx.shape.getIndiceCount(type);
+   UINT start = gfx.m_shape.getIndiceStart(type);
+   UINT count = gfx.m_shape.getIndiceCount(type);
    trans->setIndices(index, start, count);
    ++index;
 
@@ -173,5 +173,5 @@ void DrawLighted::SpawnControlWindow() noexcept
 
 void DrawLighted::SyncMaterial() noexcept
 {
-   gfx.CopyMaterialConstant(m_materialIndex, material);
+   gfx.copyMaterialConstant(m_materialIndex, material);
 }

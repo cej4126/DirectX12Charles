@@ -80,7 +80,7 @@ void DrawModel::FirstCommand()
    {
       for (int i = 0; i < m_material.size(); ++i)
       {
-         gfx.CopyMaterialConstant(m_materialIndex + i, m_material.at(i));
+         gfx.copyMaterialConstant(m_materialIndex + i, m_material.at(i));
       }
    }
 }

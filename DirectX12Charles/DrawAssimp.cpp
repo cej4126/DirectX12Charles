@@ -65,10 +65,10 @@ DrawAssimp::DrawAssimp(Graphics &gfx, int &index, Shape::shapeType type, float r
    spaceYawRate = 0.0f;
 #endif
 
-   UINT verticesStart = gfx.shapeAssimp.getVerticesStart();
-   UINT verticesCount = gfx.shapeAssimp.getVerticesCount();
-   UINT indicesStart = gfx.shapeAssimp.getIndiceStart();
-   UINT indicesCount = gfx.shapeAssimp.getIndiceCount();
+   UINT verticesStart = gfx.m_shapeAssimp.getVerticesStart();
+   UINT verticesCount = gfx.m_shapeAssimp.getVerticesCount();
+   UINT indicesStart = gfx.m_shapeAssimp.getIndiceStart();
+   UINT indicesCount = gfx.m_shapeAssimp.getIndiceCount();
 
    using hw3dexp::VertexLayout;
    hw3dexp::VertexBuffer vbuf(std::move(
@@ -83,7 +83,7 @@ DrawAssimp::DrawAssimp(Graphics &gfx, int &index, Shape::shapeType type, float r
    {
       object->setInitialized();
 
-      auto model = gfx.shapeAssimp.GetShapeNormalData<Vertex>();
+      auto model = gfx.m_shapeAssimp.GetShapeNormalData<Vertex>();
       std::vector <unsigned short> indices(indicesCount);
       for (UINT i = 0; i < indicesCount; i++)
       {
@@ -189,5 +189,5 @@ void DrawAssimp::SpawnControlWindow() noexcept
 
 void DrawAssimp::SyncMaterial() noexcept
 {
-   gfx.CopyMaterialConstant(m_materialIndex, material);
+   gfx.copyMaterialConstant(m_materialIndex, material);
 }

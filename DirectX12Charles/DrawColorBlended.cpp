@@ -61,7 +61,7 @@ DrawColorBlended::DrawColorBlended(Graphics &gfx, int &index, Shape::shapeType t
       };
       XMFLOAT4 color1;
 
-      auto model = gfx.shape.GetShapeData<Vertex>();
+      auto model = gfx.m_shape.GetShapeData<Vertex>();
 
       for (int i = 0; i < model.vertices.size(); i++)
       {
@@ -90,8 +90,8 @@ DrawColorBlended::DrawColorBlended(Graphics &gfx, int &index, Shape::shapeType t
    AddBind(std::move(object));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this, 0, -1);
-   UINT start = gfx.shape.getIndiceStart(type);
-   UINT count = gfx.shape.getIndiceCount(type);
+   UINT start = gfx.m_shape.getIndiceStart(type);
+   UINT count = gfx.m_shape.getIndiceCount(type);
    trans->setIndices(index, start, count);
    ++index;
 

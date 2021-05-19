@@ -13,8 +13,8 @@ NormalObject::NormalObject(Graphics &gfx, std::string tag)
    :
    gfx(gfx),
    tag(tag),
-   device(gfx.GetDevice()),
-   commandList(gfx.GetCommandList())
+   device(gfx.getDevice()),
+   commandList(gfx.getCommandList())
 {
 }
 
@@ -203,7 +203,7 @@ void NormalObject::LoadVerticesBuffer(const hw3dexp::VertexBuffer &vertices)
    vertexData.SlicePitch = vertexBufferSize;
 
    // Add the copy to the command list
-   gfx.UpdateSubresource(
+   gfx.updateSubresource(
       vertexDefaultBuffer.Get(),
       vertexUploadBuffer.Get(),
       &vertexData); // pSrcData
@@ -319,7 +319,7 @@ void NormalObject::LoadIndicesBuffer(const std::vector<unsigned short> &indices)
    indexData.RowPitch = indicesBufferSize;
    indexData.SlicePitch = indicesBufferSize;
 
-   gfx.UpdateSubresource(
+   gfx.updateSubresource(
       indexDefaultBuffer.Get(),
       indexUploadBuffer.Get(),
       &indexData); // pSrcData

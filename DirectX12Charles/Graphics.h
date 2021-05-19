@@ -3,6 +3,7 @@
 #include "Shape.h"
 #include "ShapeAssimp.h"
 
+using namespace Microsoft::WRL;
 using namespace DirectX;
 
 class Graphics
@@ -51,128 +52,127 @@ public:
    int ConstantBufferPerObjectAlignedSize = (sizeof(matrixBuffer) + 255) & ~255;
 
 
-   void RunCommandList();
-   void OnRenderBegin();
-   void OnRender();
-   void DrawCommandList();
-   void OnRenderEnd();
-   void CleanUp();
+   void runCommandList();
+   void onRenderBegin();
+   void onRender();
+   void drawCommandList();
+   void onRenderEnd();
+   void cleanUp();
 
 
-   void CreateMatrixConstant(UINT count);
-   void CreateMaterialConstant(UINT count);
-   void SetMatrixConstant(UINT index, TransformMatrix matrix, int rootVS, int rootPS) noexcept;
+   void createMatrixConstant(UINT count);
+   void createMaterialConstant(UINT count);
+   void setMatrixConstant(UINT index, TransformMatrix matrix, int rootVS, int rootPS) noexcept;
 
-   void CopyMaterialConstant(UINT index, MaterialType &matrix) noexcept;
-   void SetMaterialConstant(UINT index) noexcept;
+   void copyMaterialConstant(UINT index, MaterialType &matrix) noexcept;
+   void setMaterialConstant(UINT index) noexcept;
 
 
-   UINT64 UpdateSubresource(
+   UINT64 updateSubresource(
       _In_ ID3D12Resource *pDestinationResource,
       _In_ ID3D12Resource *pIntermediate,
       _In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA *pSrcData);
 
-   ID3D12Device *GetDevice() noexcept { return device.Get(); }
-   ID3D12GraphicsCommandList *GetCommandList() noexcept { return commandList.Get(); }
+   ID3D12Device *getDevice() noexcept { return m_device.Get(); }
+   ID3D12GraphicsCommandList *getCommandList() noexcept { return m_commandList.Get(); }
 
-   void SetProjection(FXMMATRIX proj) noexcept { projection = proj; }
-   XMMATRIX GetProjection() const noexcept { return projection; }
+   void setProjection(FXMMATRIX proj) noexcept { m_projection = proj; }
+   XMMATRIX getProjection() const noexcept { return m_projection; }
 
-   void SetCamera(FXMMATRIX cam) noexcept { camera = cam; };
-   XMMATRIX GetCamera() const noexcept { return camera; };
+   void setCamera(FXMMATRIX camera) noexcept { m_camera = camera; };
+   XMMATRIX getCamera() const noexcept { return m_camera; };
 
-   ID3D11DeviceContext *GetContextX11() noexcept { return x11DeviceContext.Get(); }
-   ID3D11Device *GetDeviceX11() noexcept { return x11Device.Get(); }
+   ID3D11DeviceContext *setContextX11() noexcept { return m_x11DeviceContext.Get(); }
+   ID3D11Device *getDeviceX11() noexcept { return m_x11Device.Get(); }
 
-   ID2D1DeviceContext2 *Get2dContext() noexcept { return x11d2dDeviceContext.Get(); }
-   IDWriteFactory *Get2dWriteFactory() noexcept { return m_dWriteFactory.Get(); }
-   int GetWidth() { return width; }
-   int GetHeight() { return height; }
+   ID2D1DeviceContext2 *get2dContext() noexcept { return m_x11d2dDeviceContext.Get(); }
+   IDWriteFactory *get2dWriteFactory() noexcept { return m_dWriteFactory.Get(); }
+   int getWidth() { return m_width; }
+   int getHeight() { return m_height; }
 
-   Shape shape;
-   ShapeAssimp shapeAssimp;
+   Shape m_shape;
+   ShapeAssimp m_shapeAssimp;
 
 private:
-   void WaitForPreviousFrame();
-   void LoadDevice();
-   void LoadBase();
-   void CreateFence();
+   void waitForPreviousFrame();
+   void loadDevice();
+   void loadBase();
+   void createFence();
 
-   void LoadDepent();
-   void OnRender(float dt);
+   void loadDepent();
+   void onRender(float dt);
 
    // DirectX 11
-   void LoadBaseX11();
-   void OnRenderX11();
+   void loadBaseX11();
+   void onRenderX11();
 
    // DWrite
-   void LoadBase2D();
-   void OnRender2DWrite();
+   void loadBase2D();
+   void onRender2DWrite();
 
 private:
-   Microsoft::WRL::ComPtr <ID3D12Resource> MatrixBufferUploadHeaps;
-   UINT8 *matrixBufferGPUAddress;
+   ComPtr <ID3D12Resource> m_matrixBufferUploadHeaps;
+   UINT8 *m_matrixBufferGPUAddress;
 
-   Microsoft::WRL::ComPtr <ID3D12Resource> MaterialBufferUploadHeaps;
-   UINT8 *MaterialBufferGPUAddress;
+   ComPtr <ID3D12Resource> m_materialBufferUploadHeaps;
+   UINT8 *m_materialBufferGPUAddress;
 
 protected:
-   static const UINT bufferCount = 3;
+   static const UINT Buffer_Count = 3;
 
-   int width;
-   int height;
-   HWND hWnd;
+   int m_width;
+   int m_height;
+   HWND m_hWnd;
 
-   XMMATRIX projection;
-   XMMATRIX camera;
+   XMMATRIX m_projection;
+   XMMATRIX m_camera;
 
-   Microsoft::WRL::ComPtr <IDXGIFactory4> m_DxgiFactory4;
-   Microsoft::WRL::ComPtr <IDXGIAdapter3> adapter;
-   Microsoft::WRL::ComPtr <ID3D12Device> device;
-   Microsoft::WRL::ComPtr <IDXGISwapChain1> swapChain1;
-   Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue;
-   Microsoft::WRL::ComPtr <IDXGISwapChain3> swapChain;
-   Microsoft::WRL::ComPtr <ID3D12Resource> swapChainBuffers[bufferCount];
-   Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> m_rtvHeap;
-   Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> dsDescriptorHeap;
-   Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilBuffer;
-   std::vector<Microsoft::WRL::ComPtr <ID3D12CommandAllocator>> commandAllocators;
-   Microsoft::WRL::ComPtr <ID3D12GraphicsCommandList> commandList;
-   HANDLE fenceEvent;
-   Microsoft::WRL::ComPtr<ID3D12Fence> fence[bufferCount];
-   UINT64 fenceValue[bufferCount];
-   HANDLE fenceEventHandle;
+   ComPtr <IDXGIFactory4> m_dxgiFactory4;
+   ComPtr <IDXGIAdapter3> m_adapter;
+   ComPtr <ID3D12Device> m_device;
+   ComPtr <IDXGISwapChain1> m_swapChain1;
+   ComPtr <ID3D12CommandQueue> m_commandQueue;
+   ComPtr <IDXGISwapChain3> m_swapChain;
+   ComPtr <ID3D12Resource> m_swapChainBuffers[Buffer_Count];
+   ComPtr <ID3D12DescriptorHeap> m_rtvHeap;
+   ComPtr < ID3D12DescriptorHeap> m_dsDescriptorHeap;
+   ComPtr <ID3D12Resource> m_depthStencilBuffer;
+   std::vector<ComPtr <ID3D12CommandAllocator>> m_commandAllocators;
+   ComPtr <ID3D12GraphicsCommandList> m_commandList;
+   HANDLE m_fenceEvent;
+   ComPtr<ID3D12Fence> m_fences[Buffer_Count];
+   UINT64 m_fenceValues[Buffer_Count];
+   HANDLE m_fenceEventHandle;
 
-   UINT frameIndex;
+   UINT m_frameIndex;
 
-   D3D12_VIEWPORT viewport;
-   D3D12_RECT scissorRect;
-   int rtvDescriptorSize;
-   float angle = 0.0f;
+   D3D12_VIEWPORT m_viewport;
+   D3D12_RECT m_scissorRect;
+   int m_rtvDescriptorSize;
+   float m_angle = 0.0f;
 
    // DirectX 11
 
-   Microsoft::WRL::ComPtr<ID3D11Device> x11Device;
-   Microsoft::WRL::ComPtr<ID3D11DeviceContext> x11DeviceContext;
-   Microsoft::WRL::ComPtr<ID3D11On12Device> x11On12Device;
-   Microsoft::WRL::ComPtr<ID3D11Resource> x11BackBuffer[bufferCount];
-   Microsoft::WRL::ComPtr<ID3D11RenderTargetView> x11Target[bufferCount];
-   Microsoft::WRL::ComPtr<ID3D12Resource> x11renderTargets[bufferCount];
-   Microsoft::WRL::ComPtr<ID3D11Resource> x11wrappedBackBuffers[bufferCount];
-   Microsoft::WRL::ComPtr<ID3D11Resource> pBackBuffer[bufferCount];
-   Microsoft::WRL::ComPtr<ID3D11DepthStencilState> x11DepthStencilState;
-   D3D11_VIEWPORT x11ViewPort;
+   ComPtr<ID3D11Device> m_x11Device;
+   ComPtr<ID3D11DeviceContext> m_x11DeviceContext;
+   ComPtr<ID3D11On12Device> m_x11On12Device;
+   ComPtr<ID3D11Resource> m_x11BackBuffers[Buffer_Count];
+   ComPtr<ID3D11RenderTargetView> m_x11Targets[Buffer_Count];
+   ComPtr<ID3D12Resource> m_x11renderTargets[Buffer_Count];
+   ComPtr<ID3D11Resource> m_x11wrappedBackBuffers[Buffer_Count];
+   ComPtr<ID3D11Resource> m_pBackBuffers[Buffer_Count];
+   ComPtr<ID3D11DepthStencilState> m_x11DepthStencilState;
+   D3D11_VIEWPORT m_x11ViewPort;
 
-   Microsoft::WRL::ComPtr<IDXGISwapChain> pSwap;
+   ComPtr<IDXGISwapChain> m_pSwap;
 
    // DWrite
-   Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
-   Microsoft::WRL::ComPtr<ID2D1Bitmap1> x11d2dRenderTargets[bufferCount];
-   Microsoft::WRL::ComPtr<ID2D1DeviceContext2> x11d2dDeviceContext;
+   ComPtr<IDXGIDevice> m_dxgiDevice;
+   ComPtr<ID2D1Bitmap1> m_x11d2dRenderTargets[Buffer_Count];
+   ComPtr<ID2D1DeviceContext2> m_x11d2dDeviceContext;
 
-   Microsoft::WRL::ComPtr<ID2D1Factory3> m_d2dFactory;
-   Microsoft::WRL::ComPtr<ID2D1Device2> m_d2dDevice;
-   Microsoft::WRL::ComPtr<IDWriteFactory> m_dWriteFactory;
-
+   ComPtr<ID2D1Factory3> m_d2dFactory;
+   ComPtr<ID2D1Device2> m_d2dDevice;
+   ComPtr<IDWriteFactory> m_dWriteFactory;
 };
 

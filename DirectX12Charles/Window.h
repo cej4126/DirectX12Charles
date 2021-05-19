@@ -9,37 +9,37 @@ public:
    Window(int width, int height);
    Window(const Window &) = delete;
    Window &operator=(const Window &) = delete;
-   static std::optional<int> ProcessMessages() noexcept;
+   static std::optional<int> processMessages() noexcept;
    ~Window();
 
-   void EnableCursor() noexcept;
-   void DisableCursor() noexcept;
-   bool CursorEnabled() const noexcept;
+   void enableCursor() noexcept;
+   void disableCursor() noexcept;
+   bool cursorEnabled() const noexcept;
 
-   Graphics &Gfx();
-   Input input;
-   bool running = true;
+   Graphics &gfx();
+   Input m_input;
+   bool m_running = true;
 
 private:
-   void ConfineCursor() noexcept;
-   void FreeCursor() noexcept;
-   void ShowCursor() noexcept;
-   void HideCursor() noexcept;
-   void EnableImGuiMouse() noexcept;
-   void DisableImGuiMouse() noexcept;
+   void confineCursor() noexcept;
+   void freeCursor() noexcept;
+   void showCursor() noexcept;
+   void hideCursor() noexcept;
+   void enableImGuiMouse() noexcept;
+   void disableImGuiMouse() noexcept;
 
-   static LRESULT CALLBACK HandleMsgInit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-   static LRESULT CALLBACK HandleMsgMain(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-   LRESULT HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+   static LRESULT CALLBACK handleMsgInit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+   static LRESULT CALLBACK handleMsgMain(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+   LRESULT handleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
    //LPCTSTR WindowName = L"Charles";
    //LPCTSTR WindowName = L"Charles";
-   static constexpr const char *WindowName = "Charles";
-   int width;
-   int height;
-   HWND hWnd;
-   HINSTANCE hInstance;
-   std::unique_ptr<Graphics> pGfx;
-   bool graphicActive = false;
-   bool cursorEnabled = true;
-   std::vector<BYTE> rawBuffer;
+   static constexpr const char *Window_Name = "Charles";
+   int m_width;
+   int m_height;
+   HWND m_hWnd;
+   HINSTANCE m_hInstance;
+   std::unique_ptr<Graphics> m_pGfx;
+   bool m_graphicActive = false;
+   bool m_cursorEnabled = true;
+   std::vector<BYTE> m_rawBuffer;
 };

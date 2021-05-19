@@ -8,23 +8,23 @@
 // Window Stuff
 Window::Window(int width, int height)
    :
-   width(width),
-   height(height)
+   m_width(width),
+   m_height(height)
 {
-   hInstance = GetModuleHandle(nullptr);
+   m_hInstance = GetModuleHandle(nullptr);
 
    WNDCLASSEX wc = { 0 };
    wc.cbSize = sizeof(wc);
    wc.style = CS_OWNDC;
-   wc.lpfnWndProc = HandleMsgInit;
+   wc.lpfnWndProc = handleMsgInit;
    wc.cbClsExtra = 0;
    wc.cbWndExtra = 0;
-   wc.hInstance = hInstance;
+   wc.hInstance = m_hInstance;
    wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
    wc.hCursor = nullptr;
    wc.hbrBackground = nullptr;
    wc.lpszMenuName = nullptr;
-   wc.lpszClassName = WindowName;
+   wc.lpszClassName = Window_Name;
    wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
    RegisterClassEx(&wc);
 
@@ -39,22 +39,22 @@ Window::Window(int width, int height)
       throw;
    }
    // create window & get hWnd
-   hWnd = CreateWindow(
-      WindowName, WindowName,
+   m_hWnd = CreateWindow(
+      Window_Name, Window_Name,
       WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
       CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
-      nullptr, nullptr, hInstance, this);
+      nullptr, nullptr, m_hInstance, this);
    // check for error
-   if (hWnd == nullptr)
+   if (m_hWnd == nullptr)
    {
       throw;
    }
    // newly created windows start off as hidden
-   ShowWindow(hWnd, SW_SHOWDEFAULT);
+   ShowWindow(m_hWnd, SW_SHOWDEFAULT);
 
    // create graphics object
-   pGfx = std::make_unique<Graphics>(hWnd, width, height);
-   graphicActive = true;
+   m_pGfx = std::make_unique<Graphics>(m_hWnd, width, height);
+   m_graphicActive = true;
 
    // register mouse raw input device
    RAWINPUTDEVICE rid;
@@ -68,7 +68,7 @@ Window::Window(int width, int height)
    }
 }
 
-std::optional<int> Window::ProcessMessages() noexcept
+std::optional<int> Window::processMessages() noexcept
 {
    MSG msg;
    // while queue has messages, remove and dispatch them (but do not block on empty queue)
@@ -92,74 +92,74 @@ std::optional<int> Window::ProcessMessages() noexcept
 
 Window::~Window()
 {
-   DestroyWindow(hWnd);
-   UnregisterClass(WindowName, hInstance);
+   DestroyWindow(m_hWnd);
+   UnregisterClass(Window_Name, m_hInstance);
 }
 
-void Window::EnableCursor() noexcept
+void Window::enableCursor() noexcept
 {
-   cursorEnabled = true;
-   ShowCursor();
-   EnableImGuiMouse();
-   FreeCursor();
+   m_cursorEnabled = true;
+   showCursor();
+   enableImGuiMouse();
+   freeCursor();
 }
 
-void Window::DisableCursor() noexcept
+void Window::disableCursor() noexcept
 {
-   cursorEnabled = false;
-   HideCursor();
-   DisableImGuiMouse();
-   ConfineCursor();
+   m_cursorEnabled = false;
+   hideCursor();
+   disableImGuiMouse();
+   confineCursor();
 }
 
-Graphics &Window::Gfx()
+Graphics &Window::gfx()
 {
-   if (!pGfx)
+   if (!m_pGfx)
    {
       throw;
    }
-   return *pGfx;
+   return *m_pGfx;
 }
 
-void Window::ConfineCursor() noexcept
+void Window::confineCursor() noexcept
 {
    RECT rect;
-   GetClientRect(hWnd, &rect);
-   MapWindowPoints(hWnd, nullptr, reinterpret_cast<POINT *>(&rect), 2);
+   GetClientRect(m_hWnd, &rect);
+   MapWindowPoints(m_hWnd, nullptr, reinterpret_cast<POINT *>(&rect), 2);
    ClipCursor(&rect);
 }
 
-void Window::FreeCursor() noexcept
+void Window::freeCursor() noexcept
 {
    ClipCursor(nullptr);
 }
 
-void Window::HideCursor() noexcept
+void Window::hideCursor() noexcept
 {
    while (::ShowCursor(FALSE) >= 0);
 }
 
-void Window::ShowCursor() noexcept
+void Window::showCursor() noexcept
 {
    while (::ShowCursor(TRUE) < 0);
 }
 
-void Window::EnableImGuiMouse() noexcept
+void Window::enableImGuiMouse() noexcept
 {
    ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
 }
 
-void Window::DisableImGuiMouse() noexcept
+void Window::disableImGuiMouse() noexcept
 {
    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
 }
 
-bool Window::CursorEnabled() const noexcept
+bool Window::cursorEnabled() const noexcept
 {
-   return cursorEnabled;
+   return m_cursorEnabled;
 }
 
-LRESULT CALLBACK Window::HandleMsgInit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Window::handleMsgInit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
    // Wait for window construction to get the this pointer
    if (msg == WM_NCCREATE)
@@ -168,29 +168,29 @@ LRESULT CALLBACK Window::HandleMsgInit(HWND hwnd, UINT msg, WPARAM wParam, LPARA
       const CREATESTRUCT *const pCreate = reinterpret_cast<CREATESTRUCT *>(lParam);
       Window *const pWin = static_cast<Window *>(pCreate->lpCreateParams);
       SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWin));
-      SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::HandleMsgMain));
+      SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::handleMsgMain));
    }
    return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
 
-LRESULT CALLBACK Window::HandleMsgMain(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Window::handleMsgMain(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
    Window *const pWin = reinterpret_cast<Window *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-   return pWin->HandleMsg(hwnd, msg, wParam, lParam);
+   return pWin->handleMsg(hwnd, msg, wParam, lParam);
 }
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT Window::handleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
    if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
    {
       return true;
    }
    bool imguiActive = false;
-   if (graphicActive)
+   if (m_graphicActive)
    {
       const auto &imio = ImGui::GetIO();
       switch (msg)
@@ -231,28 +231,28 @@ LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       switch (msg)
       {
          case WM_CLOSE:
-            running = false;
-            pGfx->CleanUp();
+            m_running = false;
+            m_pGfx->cleanUp();
 
             PostQuitMessage(0);
             return 0;
          case WM_KILLFOCUS:
-            input.ClearState();
+            m_input.ClearState();
             break;
 
          case WM_ACTIVATE:
             // confine/free cursor on window to foreground/background if cursor disabled
-            if (!cursorEnabled)
+            if (!m_cursorEnabled)
             {
                if (wParam & WA_ACTIVE)
                {
-                  ConfineCursor();
-                  HideCursor();
+                  confineCursor();
+                  hideCursor();
                }
                else
                {
-                  FreeCursor();
-                  ShowCursor();
+                  freeCursor();
+                  showCursor();
                }
             }
             break;
@@ -260,56 +260,56 @@ LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          case WM_KEYDOWN:
          case WM_SYSKEYDOWN:
 
-            if (!(lParam & 0x40000000) || (input.AutorepeatIsEnabled()))
+            if (!(lParam & 0x40000000) || (m_input.AutorepeatIsEnabled()))
             {
-               input.OnKeyPressed(static_cast<unsigned char>(wParam));
+               m_input.OnKeyPressed(static_cast<unsigned char>(wParam));
             }
             break;
             return 0;
             break;
          case WM_KEYUP:
          case WM_SYSKEYUP:
-            input.OnKeyReleased(static_cast<unsigned char>(wParam));
+            m_input.OnKeyReleased(static_cast<unsigned char>(wParam));
             break;
 
          case WM_CHAR:
-            input.OnChar(static_cast<unsigned char>(wParam));
+            m_input.OnChar(static_cast<unsigned char>(wParam));
             break;
 
          case WM_MOUSEMOVE:
          {
-            if (!cursorEnabled)
+            if (!m_cursorEnabled)
             {
-               if (!input.IsInWindow())
+               if (!m_input.IsInWindow())
                {
                   SetCapture(hWnd);
-                  input.OnMouseEnter();
-                  HideCursor();
+                  m_input.OnMouseEnter();
+                  hideCursor();
                }
                break;
             }
 
             const POINTS pt = MAKEPOINTS(lParam);
-            if ((pt.x >= 0) && (pt.x < width) && (pt.y >= 0) && (pt.y < height))
+            if ((pt.x >= 0) && (pt.x < m_width) && (pt.y >= 0) && (pt.y < m_height))
             {
-               input.OnMouseMove(pt.x, pt.y);
-               if (!input.IsInWindow())
+               m_input.OnMouseMove(pt.x, pt.y);
+               if (!m_input.IsInWindow())
                {
                   SetCapture(hWnd);
-                  input.OnMouseEnter();
+                  m_input.OnMouseEnter();
                }
             }
             else
             {
                if (wParam & (MK_LBUTTON | MK_RBUTTON))
                {
-                  input.OnMouseMove(pt.x, pt.y);
+                  m_input.OnMouseMove(pt.x, pt.y);
                }
                // button up -> release capture / log event for leaving
                else
                {
                   ReleaseCapture();
-                  input.OnMouseLeave();
+                  m_input.OnMouseLeave();
                }
             }
             break;
@@ -318,43 +318,43 @@ LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          case WM_LBUTTONDOWN:
          {
             SetForegroundWindow(hWnd);
-            if (!cursorEnabled)
+            if (!m_cursorEnabled)
             {
-               ConfineCursor();
-               HideCursor();
+               confineCursor();
+               hideCursor();
             }
 
             const POINTS pt = MAKEPOINTS(lParam);
-            input.OnLeftPressed(pt.x, pt.y);
+            m_input.OnLeftPressed(pt.x, pt.y);
             break;
          }
          case WM_RBUTTONDOWN:
          {
             const POINTS pt = MAKEPOINTS(lParam);
-            input.OnRightPressed(pt.x, pt.y);
+            m_input.OnRightPressed(pt.x, pt.y);
             break;
          }
          case WM_LBUTTONUP:
          {
             const POINTS pt = MAKEPOINTS(lParam);
-            input.OnLeftReleased(pt.x, pt.y);
+            m_input.OnLeftReleased(pt.x, pt.y);
             // release mouse if outside of window
-            if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height)
+            if (pt.x < 0 || pt.x >= m_width || pt.y < 0 || pt.y >= m_height)
             {
                ReleaseCapture();
-               input.OnMouseLeave();
+               m_input.OnMouseLeave();
             }
             break;
          }
          case WM_RBUTTONUP:
          {
             const POINTS pt = MAKEPOINTS(lParam);
-            input.OnRightReleased(pt.x, pt.y);
+            m_input.OnRightReleased(pt.x, pt.y);
             // release mouse if outside of window
-            if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height)
+            if (pt.x < 0 || pt.x >= m_width || pt.y < 0 || pt.y >= m_height)
             {
                ReleaseCapture();
-               input.OnMouseLeave();
+               m_input.OnMouseLeave();
             }
             break;
          }
@@ -362,14 +362,14 @@ LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          {
             const POINTS pt = MAKEPOINTS(lParam);
             const int delta = GET_WHEEL_DELTA_WPARAM(wParam);
-            input.OnWheelDelta(pt.x, pt.y, delta);
+            m_input.OnWheelDelta(pt.x, pt.y, delta);
             break;
          }
 
          /************** RAW MOUSE MESSAGES **************/
          case WM_INPUT:
          {
-            if (!input.RawEnabled())
+            if (!m_input.RawEnabled())
             {
                break;
             }
@@ -386,12 +386,12 @@ LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                // bail msg processing if error
                break;
             }
-            rawBuffer.resize(size);
+            m_rawBuffer.resize(size);
             // read in the input data
             if (GetRawInputData(
                reinterpret_cast<HRAWINPUT>(lParam),
                RID_INPUT,
-               rawBuffer.data(),
+               m_rawBuffer.data(),
                &size,
                sizeof(RAWINPUTHEADER)) != size)
             {
@@ -399,11 +399,11 @@ LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                break;
             }
             // process the raw input data
-            auto &ri = reinterpret_cast<const RAWINPUT &>(*rawBuffer.data());
+            auto &ri = reinterpret_cast<const RAWINPUT &>(*m_rawBuffer.data());
             if (ri.header.dwType == RIM_TYPEMOUSE &&
                (ri.data.mouse.lLastX != 0 || ri.data.mouse.lLastY != 0))
             {
-               input.OnRawDelta(ri.data.mouse.lLastX, ri.data.mouse.lLastY);
+               m_input.OnRawDelta(ri.data.mouse.lLastX, ri.data.mouse.lLastY);
             }
             break;
          }
@@ -413,5 +413,5 @@ LRESULT Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       }
    }
 
-   return DefWindowProc(hwnd, msg, wParam, lParam);
+   return DefWindowProc(hWnd, msg, wParam, lParam);
 }

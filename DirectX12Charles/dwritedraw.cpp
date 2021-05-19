@@ -6,14 +6,14 @@ dwritedraw::dwritedraw(Graphics &gfx)
    width(0),
    height(0)
 {
-   width = static_cast<float>(gfx.GetWidth());
-   height = static_cast<float>(gfx.GetHeight());
+   width = static_cast<float>(gfx.getWidth());
+   height = static_cast<float>(gfx.getHeight());
 
    // DWrite
-   ThrowIfFailed(gfx.Get2dContext()->CreateSolidColorBrush(
+   ThrowIfFailed(gfx.get2dContext()->CreateSolidColorBrush(
       D2D1::ColorF(D2D1::ColorF::White),
       &x11d2dtextBrush));
-   ThrowIfFailed(gfx.Get2dWriteFactory()->CreateTextFormat(
+   ThrowIfFailed(gfx.get2dWriteFactory()->CreateTextFormat(
       L"Arial",
       NULL,
       DWRITE_FONT_WEIGHT_NORMAL,
@@ -34,13 +34,13 @@ void dwritedraw::Draw()
 
    //// Render text directly to the back buffer.
    //gfx.Get2dContext()->SetTarget(x11d2dRenderTargets[frameIndex].Get());
-   gfx.Get2dContext()->BeginDraw();
+   gfx.get2dContext()->BeginDraw();
 
-   gfx.Get2dContext()->DrawRectangle(D2D1::RectF(5.0f, 5.0f, width - 5.0f, height - 5.0f), x11d2dtextBrush.Get());
+   gfx.get2dContext()->DrawRectangle(D2D1::RectF(5.0f, 5.0f, width - 5.0f, height - 5.0f), x11d2dtextBrush.Get());
    //gfx.Get2dContext()->DrawLine(D2D1::Point2F(width / 2.0f, 5.0f), D2D1::Point2F(width / 2.0f, height - 5.0f), x11d2dtextBrush.Get());
 
-   gfx.Get2dContext()->SetTransform(D2D1::Matrix3x2F::Identity());
-   gfx.Get2dContext()->DrawText(
+   gfx.get2dContext()->SetTransform(D2D1::Matrix3x2F::Identity());
+   gfx.get2dContext()->DrawText(
       textx12,
       _countof(textx12) - 1,
       x11d2dtextFormat.Get(),
@@ -49,5 +49,5 @@ void dwritedraw::Draw()
    );
 
 
-   ThrowIfFailed(gfx.Get2dContext()->EndDraw());
+   ThrowIfFailed(gfx.get2dContext()->EndDraw());
 }

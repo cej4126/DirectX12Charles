@@ -42,10 +42,10 @@ DrawPictureCube::DrawPictureCube(Graphics &gfx, int &index, Shape::shapeType typ
    spaceYawRate = 0.0f;
 #endif
 
-   UINT verticesStart = gfx.shape.getVerticesStart(type);
-   UINT verticesCount = gfx.shape.getVerticesCount(type);
-   UINT indicesStart = gfx.shape.getIndiceStart(type);
-   UINT indicesCount = gfx.shape.getIndiceCount(type);
+   UINT verticesStart = gfx.m_shape.getVerticesStart(type);
+   UINT verticesCount = gfx.m_shape.getVerticesCount(type);
+   UINT indicesStart = gfx.m_shape.getIndiceStart(type);
+   UINT indicesCount = gfx.m_shape.getIndiceCount(type);
 
    std::size_t pos = filename.find_last_of("/\\");
    std::string tag = "cube#" + filename.substr(pos + 1);
@@ -68,7 +68,7 @@ DrawPictureCube::DrawPictureCube(Graphics &gfx, int &index, Shape::shapeType typ
          XMFLOAT3 pos;
          XMFLOAT2 tex;
       };
-      auto model = gfx.shape.GetShapeTextureData<Vertex>();
+      auto model = gfx.m_shape.GetShapeTextureData<Vertex>();
 
       for (int i = 0; i < model.vertices.size(); i++)
       {
@@ -96,8 +96,8 @@ DrawPictureCube::DrawPictureCube(Graphics &gfx, int &index, Shape::shapeType typ
    AddBind(std::move(texture));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this);
-   UINT start = gfx.shape.getIndiceStart(type);
-   UINT count = gfx.shape.getIndiceCount(type);
+   UINT start = gfx.m_shape.getIndiceStart(type);
+   UINT count = gfx.m_shape.getIndiceCount(type);
    trans->setIndices(index, start, count);
    ++index;
 

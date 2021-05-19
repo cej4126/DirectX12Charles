@@ -8,8 +8,8 @@ using namespace Microsoft::WRL;
 Texture::Texture(Graphics &gfx, std::string tag)
    :
    gfx(gfx),
-   device(gfx.GetDevice()),
-   commandList(gfx.GetCommandList())
+   device(gfx.getDevice()),
+   commandList(gfx.getCommandList())
 {
 }
 
@@ -104,7 +104,7 @@ void Texture::CreateTexture(std::string path, int slot, int rootPara)
    TextureData.RowPitch = surface.GetWidth() * sizeof(Surface::Color);
    TextureData.SlicePitch = surface.GetWidth() * sizeof(Surface::Color) * surface.GetHeight();
 
-   gfx.UpdateSubresource(
+   gfx.updateSubresource(
       textureBuffer[slot].Get(),
       textureBufferUploadHeap[slot].Get(),
       &TextureData); // pSrcData

@@ -14,10 +14,10 @@ DrawNormal::DrawNormal(Graphics &gfx, int &index, Shape::shapeType type, float s
 {
    m_size = size;
 
-   UINT verticesStart = gfx.shape.getVerticesStart(type);
-   UINT verticesCount = gfx.shape.getVerticesCount(type);
-   UINT indicesStart = gfx.shape.getIndiceStart(type);
-   UINT indicesCount = gfx.shape.getIndiceCount(type);
+   UINT verticesStart = gfx.m_shape.getVerticesStart(type);
+   UINT verticesCount = gfx.m_shape.getVerticesCount(type);
+   UINT indicesStart = gfx.m_shape.getIndiceStart(type);
+   UINT indicesCount = gfx.m_shape.getIndiceCount(type);
 
    std::size_t namePos = texturefilename.find_last_of("/\\");
    std::string tag = "Normal#" + texturefilename.substr(namePos + 1);
@@ -49,7 +49,7 @@ DrawNormal::DrawNormal(Graphics &gfx, int &index, Shape::shapeType type, float s
          XMFLOAT3 normal;
          XMFLOAT2 tex;
       };
-      auto model = gfx.shape.GetShapeTextureNormalData<Vertex>();
+      auto model = gfx.m_shape.GetShapeTextureNormalData<Vertex>();
 
       for (int i = 0; i < model.vertices.size(); i++)
       {
@@ -100,8 +100,8 @@ DrawNormal::DrawNormal(Graphics &gfx, int &index, Shape::shapeType type, float s
    AddBind(std::move(texture));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this, NormalObject::VIEW_CB, NormalObject::VIEW_PS_CB);
-   UINT start = gfx.shape.getIndiceStart(type);
-   UINT count = gfx.shape.getIndiceCount(type);
+   UINT start = gfx.m_shape.getIndiceStart(type);
+   UINT count = gfx.m_shape.getIndiceCount(type);
    trans->setIndices(index, start, count);
    ++index;
 
@@ -123,7 +123,7 @@ DirectX::XMMATRIX DrawNormal::GetTransformXM() const noexcept
 
 void DrawNormal::SyncMaterial() noexcept
 {
-   m_gfx.CopyMaterialConstant(m_materialIndex, m_material);
+   m_gfx.copyMaterialConstant(m_materialIndex, m_material);
 }
 
 void DrawNormal::SpawnControlWindow(const std::string &name) noexcept

@@ -3,14 +3,11 @@
 #include "imgui/imgui_impl_dx11.h"
 #include "imgui/imgui_impl_win32.h"
 
-using namespace Microsoft::WRL;
-using namespace DirectX;
-
 Graphics::Graphics(HWND hWnd, int width, int height)
    :
-   width(width),
-   height(height),
-   hWnd(hWnd)
+   m_width(width),
+   m_height(height),
+   m_hWnd(hWnd)
 {
    // debug 3d
 #if defined(_DEBUG) 
@@ -20,10 +17,10 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 #endif
 
 
-   LoadDevice();
-   LoadBase();
-   LoadBaseX11();
-   LoadBase2D();
+   loadDevice();
+   loadBase();
+   loadBaseX11();
+   loadBase2D();
 
    // Setup Dear ImGui context
    IMGUI_CHECKVERSION();
@@ -35,7 +32,7 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 
    // Setup Platform/Renderer bindings
    ImGui_ImplWin32_Init(hWnd);
-   ImGui_ImplDX11_Init(x11Device.Get(), x11DeviceContext.Get());
+   ImGui_ImplDX11_Init(m_x11Device.Get(), m_x11DeviceContext.Get());
 }
 
 Graphics::~Graphics()
@@ -43,7 +40,7 @@ Graphics::~Graphics()
    ImGui_ImplDX11_Shutdown();
 }
 
-void Graphics::LoadDevice()
+void Graphics::loadDevice()
 {
    UINT dxgiFactoryFlags = 0;
 #if defined(_DEBUG) 
@@ -51,14 +48,14 @@ void Graphics::LoadDevice()
 #endif
 
    // factory
-   ThrowIfFailed(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&m_DxgiFactory4)));
+   ThrowIfFailed(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&m_dxgiFactory4)));
 
    // adapter
    int adapterIndex = 0;
    bool adapterFound = false;
    ComPtr<IDXGIAdapter1> adapterTemp;
    HRESULT hr;
-   while (m_DxgiFactory4->EnumAdapters1(adapterIndex, adapterTemp.ReleaseAndGetAddressOf()) != DXGI_ERROR_NOT_FOUND)
+   while (m_dxgiFactory4->EnumAdapters1(adapterIndex, adapterTemp.ReleaseAndGetAddressOf()) != DXGI_ERROR_NOT_FOUND)
    {
       DXGI_ADAPTER_DESC1 desc1;
       adapterTemp->GetDesc1(&desc1);
@@ -81,9 +78,9 @@ void Graphics::LoadDevice()
       throw;
    }
 
-   // device
-   //hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
-   hr = D3D12CreateDevice(adapterTemp.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
+   // Create device
+   //hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
+   hr = D3D12CreateDevice(adapterTemp.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
    ThrowIfFailed(hr);
 
    // Create Command Queue
@@ -94,121 +91,121 @@ void Graphics::LoadDevice()
    queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
    queueDesc.NodeMask = 0;
 
-   ThrowIfFailed(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(commandQueue.ReleaseAndGetAddressOf())));
-   commandQueue->SetName(L"Command Queue");
+   ThrowIfFailed(m_device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(m_commandQueue.ReleaseAndGetAddressOf())));
+   m_commandQueue->SetName(L"Command Queue");
 
 
    // Create Swap Chains
    DXGI_SWAP_CHAIN_DESC1 swapChainDesc;
    ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
-   swapChainDesc.Width = width;
-   swapChainDesc.Height = height;
+   swapChainDesc.Width = m_width;
+   swapChainDesc.Height = m_height;
    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
    swapChainDesc.Stereo = FALSE;
    swapChainDesc.SampleDesc = { 1, 0 };
    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-   swapChainDesc.BufferCount = bufferCount;
+   swapChainDesc.BufferCount = Buffer_Count;
    swapChainDesc.Scaling = DXGI_SCALING_NONE;
    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
    swapChainDesc.Flags = 0;
 
-   ThrowIfFailed(m_DxgiFactory4->CreateSwapChainForHwnd(commandQueue.Get(),
-      hWnd,
+   ThrowIfFailed(m_dxgiFactory4->CreateSwapChainForHwnd(m_commandQueue.Get(),
+      m_hWnd,
       &swapChainDesc,
       nullptr,
       nullptr,
-      swapChain1.ReleaseAndGetAddressOf()));
+      m_swapChain1.ReleaseAndGetAddressOf()));
 
-   ThrowIfFailed(swapChain1.As(&swapChain));
+   ThrowIfFailed(m_swapChain1.As(&m_swapChain));
 
    // Get Swap Chain Buffers
-   for (UINT i{ 0 }; i < bufferCount; i++)
+   for (UINT i{ 0 }; i < Buffer_Count; i++)
    {
-      ThrowIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(swapChainBuffers[i].ReleaseAndGetAddressOf())));
+      ThrowIfFailed(m_swapChain->GetBuffer(i, IID_PPV_ARGS(m_swapChainBuffers[i].ReleaseAndGetAddressOf())));
    }
-   frameIndex = swapChain->GetCurrentBackBufferIndex();
+   m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
 
-void Graphics::LoadBase()
+void Graphics::loadBase()
 {
    // Create Descriptopr Heap RTV
    D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
    ZeroMemory(&heapDesc, sizeof(heapDesc));
    heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-   heapDesc.NumDescriptors = bufferCount;
+   heapDesc.NumDescriptors = Buffer_Count;
    heapDesc.NodeMask = 0;
    heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
-   ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(m_rtvHeap.ReleaseAndGetAddressOf())));
+   ThrowIfFailed(m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(m_rtvHeap.ReleaseAndGetAddressOf())));
 
-   rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-   for (UINT i{ 0 }; i < bufferCount; i++)
+   m_rtvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+   for (UINT i{ 0 }; i < Buffer_Count; i++)
    {
       D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
-      rtvHandle.ptr += (INT64)i * (UINT64)rtvDescriptorSize;
-      device->CreateRenderTargetView(swapChainBuffers[i].Get(), nullptr, rtvHandle);
+      rtvHandle.ptr += (INT64)i * (UINT64)m_rtvDescriptorSize;
+      m_device->CreateRenderTargetView(m_swapChainBuffers[i].Get(), nullptr, rtvHandle);
    }
 
    // Create Command Allocators
-   for (UINT i{ 0 }; i < bufferCount; i++)
+   for (UINT i{ 0 }; i < Buffer_Count; i++)
    {
       ComPtr<ID3D12CommandAllocator> commandAllocator;
-      ThrowIfFailed(device->CreateCommandAllocator(
+      ThrowIfFailed(m_device->CreateCommandAllocator(
          D3D12_COMMAND_LIST_TYPE_DIRECT,
          IID_PPV_ARGS(commandAllocator.ReleaseAndGetAddressOf())));
 
-      commandAllocators.push_back(commandAllocator);
+      m_commandAllocators.push_back(commandAllocator);
    }
 
    // Create Command List
-   ThrowIfFailed(device->CreateCommandList(
+   ThrowIfFailed(m_device->CreateCommandList(
       0,
       D3D12_COMMAND_LIST_TYPE_DIRECT,
-      commandAllocators[0].Get(),
-      nullptr, IID_PPV_ARGS(commandList.ReleaseAndGetAddressOf())));
+      m_commandAllocators[0].Get(),
+      nullptr, IID_PPV_ARGS(m_commandList.ReleaseAndGetAddressOf())));
 
-   CreateFence();
+   createFence();
 
-   LoadDepent();
+   loadDepent();
 
-   viewport.TopLeftX = 0.0f;
-   viewport.TopLeftY = 0.0f;
-   viewport.Width = (float)width;
-   viewport.Height = (float)height;
-   viewport.MinDepth = D3D12_MIN_DEPTH;
-   viewport.MaxDepth = D3D12_MAX_DEPTH;
+   m_viewport.TopLeftX = 0.0f;
+   m_viewport.TopLeftY = 0.0f;
+   m_viewport.Width = (float)m_width;
+   m_viewport.Height = (float)m_height;
+   m_viewport.MinDepth = D3D12_MIN_DEPTH;
+   m_viewport.MaxDepth = D3D12_MAX_DEPTH;
 
-   scissorRect.left = 0;
-   scissorRect.top = 0;
-   scissorRect.right = width;
-   scissorRect.bottom = height;
+   m_scissorRect.left = 0;
+   m_scissorRect.top = 0;
+   m_scissorRect.right = m_width;
+   m_scissorRect.bottom = m_height;
 }
 
-void Graphics::CreateFence()
+void Graphics::createFence()
 {
    // Create Fences
-   for (UINT i = 0; i < bufferCount; i++)
+   for (UINT i = 0; i < Buffer_Count; i++)
    {
-      ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence[i].ReleaseAndGetAddressOf())));
-      fenceValue[i] = 0;
+      ThrowIfFailed(m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_fences[i].ReleaseAndGetAddressOf())));
+      m_fenceValues[i] = 0;
    }
 
    // Create Fence Event Handle
-   fenceEventHandle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-   if (fenceEventHandle == NULL)
+   m_fenceEventHandle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+   if (m_fenceEventHandle == NULL)
    {
       throw;
    }
 }
 
-void Graphics::LoadDepent()
+void Graphics::loadDepent()
 {
    // create a depth stencil descriptor heap
    D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
    dsvHeapDesc.NumDescriptors = 1;
    dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
    dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-   ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsDescriptorHeap)));
+   ThrowIfFailed(m_device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_dsDescriptorHeap)));
 
    D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
    depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
@@ -234,8 +231,8 @@ void Graphics::LoadDepent()
    ZeroMemory(&depthresourceDesc, sizeof(depthresourceDesc));
    depthresourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
    depthresourceDesc.Alignment = 0;
-   depthresourceDesc.Width = width;
-   depthresourceDesc.Height = height;
+   depthresourceDesc.Width = m_width;
+   depthresourceDesc.Height = m_height;
    depthresourceDesc.DepthOrArraySize = 1;
    depthresourceDesc.MipLevels = 0;
    depthresourceDesc.Format = DXGI_FORMAT_D32_FLOAT;
@@ -244,19 +241,19 @@ void Graphics::LoadDepent()
    depthresourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
    depthresourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-   ThrowIfFailed(device->CreateCommittedResource(
+   ThrowIfFailed(m_device->CreateCommittedResource(
       &depthheapProps,
       D3D12_HEAP_FLAG_NONE,
       &depthresourceDesc,
       D3D12_RESOURCE_STATE_DEPTH_WRITE,
       &depthOptimizedClearValue,
-      IID_PPV_ARGS(depthStencilBuffer.ReleaseAndGetAddressOf())));
-   depthStencilBuffer->SetName(L"depth stencil buffer");
+      IID_PPV_ARGS(m_depthStencilBuffer.ReleaseAndGetAddressOf())));
+   m_depthStencilBuffer->SetName(L"depth stencil buffer");
 
-   device->CreateDepthStencilView(depthStencilBuffer.Get(), &depthStencilDesc, dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+   m_device->CreateDepthStencilView(m_depthStencilBuffer.Get(), &depthStencilDesc, m_dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
-void Graphics::CreateMatrixConstant(UINT count)
+void Graphics::createMatrixConstant(UINT count)
 {
    // I think the default buffer is 4K
    int ConstantBufferPerObjectAlignedSize = (sizeof(XMMATRIX) + 255) & ~255;
@@ -285,21 +282,21 @@ void Graphics::CreateMatrixConstant(UINT count)
    constantHeapDesc.Width = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
    constantHeapDesc.MipLevels = 1;
 
-   ThrowIfFailed(device->CreateCommittedResource(
+   ThrowIfFailed(m_device->CreateCommittedResource(
       &constantHeapUpload,
       D3D12_HEAP_FLAG_NONE,
       &constantHeapDesc,
       D3D12_RESOURCE_STATE_GENERIC_READ,
       nullptr,
-      IID_PPV_ARGS(&MatrixBufferUploadHeaps)));
+      IID_PPV_ARGS(&m_matrixBufferUploadHeaps)));
 
    D3D12_RANGE readRange;
    readRange.Begin = 0;
    readRange.End = 0;
-   ThrowIfFailed(MatrixBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&matrixBufferGPUAddress)));
+   ThrowIfFailed(m_matrixBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&m_matrixBufferGPUAddress)));
 }
 
-void Graphics::SetMatrixConstant(UINT index, TransformMatrix matrix, int rootVS, int rootPS) noexcept
+void Graphics::setMatrixConstant(UINT index, TransformMatrix matrix, int rootVS, int rootPS) noexcept
 {
 
    int ConstantBufferPerObjectAlignedSize = (sizeof(matrix) + 255) & ~255;
@@ -307,20 +304,20 @@ void Graphics::SetMatrixConstant(UINT index, TransformMatrix matrix, int rootVS,
 
    if (rootVS >= 0)
    {
-      commandList->SetGraphicsRootConstantBufferView(rootVS,
-         MatrixBufferUploadHeaps->GetGPUVirtualAddress() + index * ConstantBufferPerObjectAlignedSize);
+      m_commandList->SetGraphicsRootConstantBufferView(rootVS,
+         m_matrixBufferUploadHeaps->GetGPUVirtualAddress() + index * ConstantBufferPerObjectAlignedSize);
    }
 
    if (rootPS >= 0)
    {
-      commandList->SetGraphicsRootConstantBufferView(rootPS,
-         MatrixBufferUploadHeaps->GetGPUVirtualAddress() + index * ConstantBufferPerObjectAlignedSize);
+      m_commandList->SetGraphicsRootConstantBufferView(rootPS,
+         m_matrixBufferUploadHeaps->GetGPUVirtualAddress() + index * ConstantBufferPerObjectAlignedSize);
    }
 
-   memcpy(matrixBufferGPUAddress + index * ConstantBufferPerObjectAlignedSize, &matrix, sizeof(matrix));
+   memcpy(m_matrixBufferGPUAddress + index * ConstantBufferPerObjectAlignedSize, &matrix, sizeof(matrix));
 }
 
-void Graphics::CreateMaterialConstant(UINT count)
+void Graphics::createMaterialConstant(UINT count)
 {
    // I think the default buffer is 4K
    int ConstantBufferPerObjectAlignedSize = (sizeof(MaterialType) + 255) & ~255;
@@ -346,47 +343,47 @@ void Graphics::CreateMaterialConstant(UINT count)
    constantHeapDesc.Width = 3 * D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
    constantHeapDesc.MipLevels = 1;
 
-   ThrowIfFailed(device->CreateCommittedResource(
+   ThrowIfFailed(m_device->CreateCommittedResource(
       &constantHeapUpload,
       D3D12_HEAP_FLAG_NONE,
       &constantHeapDesc,
       D3D12_RESOURCE_STATE_GENERIC_READ,
       nullptr,
-      IID_PPV_ARGS(&MaterialBufferUploadHeaps)));
+      IID_PPV_ARGS(&m_materialBufferUploadHeaps)));
 
    D3D12_RANGE readRange;
    readRange.Begin = 0;
    readRange.End = 0;
-   ThrowIfFailed(MaterialBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&MaterialBufferGPUAddress)));
+   ThrowIfFailed(m_materialBufferUploadHeaps->Map(0, &readRange, reinterpret_cast<void **>(&m_materialBufferGPUAddress)));
 }
 
-void Graphics::CopyMaterialConstant(UINT index, MaterialType &material) noexcept
+void Graphics::copyMaterialConstant(UINT index, MaterialType &material) noexcept
 {
    int ConstantBufferPerObjectAlignedSize = (sizeof(MaterialType) + 255) & ~255;
-   memcpy(MaterialBufferGPUAddress + index * ConstantBufferPerObjectAlignedSize, &material, sizeof(material));
+   memcpy(m_materialBufferGPUAddress + index * ConstantBufferPerObjectAlignedSize, &material, sizeof(material));
 }
 
-void Graphics::SetMaterialConstant(UINT index) noexcept
+void Graphics::setMaterialConstant(UINT index) noexcept
 {
    int ConstantBufferPerObjectAlignedSize = (sizeof(MaterialType) + 255) & ~255;
 
-   commandList->SetGraphicsRootConstantBufferView(2,
-      MaterialBufferUploadHeaps->GetGPUVirtualAddress() + index * ConstantBufferPerObjectAlignedSize);
+   m_commandList->SetGraphicsRootConstantBufferView(2,
+      m_materialBufferUploadHeaps->GetGPUVirtualAddress() + index * ConstantBufferPerObjectAlignedSize);
 }
 
-void Graphics::RunCommandList()
+void Graphics::runCommandList()
 {
    // Now we execute the command list to upload the initial assets (triangle data)
-   commandList->Close();
-   ID3D12CommandList *ppCommandLists[] = { commandList.Get() };
-   commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+   m_commandList->Close();
+   ID3D12CommandList *ppCommandLists[] = { m_commandList.Get() };
+   m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
-   fenceValue[frameIndex]++;
-   ThrowIfFailed(commandQueue->Signal(fence[frameIndex].Get(), fenceValue[frameIndex]));
+   m_fenceValues[m_frameIndex]++;
+   ThrowIfFailed(m_commandQueue->Signal(m_fences[m_frameIndex].Get(), m_fenceValues[m_frameIndex]));
 }
 
 
-UINT64 Graphics::UpdateSubresource(
+UINT64 Graphics::updateSubresource(
    _In_ ID3D12Resource *pDefaultBuffer,
    _In_ ID3D12Resource *pUploadBuffer,
    _In_reads_(1) D3D12_SUBRESOURCE_DATA *pSrcData)
@@ -464,7 +461,7 @@ UINT64 Graphics::UpdateSubresource(
       SrcBox.bottom = 1;
       SrcBox.back = 1;
 
-      commandList->CopyBufferRegion(
+      m_commandList->CopyBufferRegion(
          pDefaultBuffer, 0, pUploadBuffer, pLayouts[0].Offset, pLayouts[0].Footprint.Width);
    }
    else
@@ -477,13 +474,13 @@ UINT64 Graphics::UpdateSubresource(
       Src.pResource = pUploadBuffer;
       Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
       Src.PlacedFootprint = pLayouts[0];
-      commandList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
+      m_commandList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
    }
    HeapFree(GetProcessHeap(), 0, pMem);
    return RequiredSize;
 }
 
-void Graphics::LoadBaseX11()
+void Graphics::loadBaseX11()
 {
    UINT x11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if defined(_DEBUG)
@@ -492,65 +489,65 @@ void Graphics::LoadBaseX11()
 
    // Create an 11 device wrapped around the 12 device and share 12's command queue.
    ThrowIfFailed(D3D11On12CreateDevice(
-      device.Get(),
+      m_device.Get(),
       x11DeviceFlags,
       nullptr,
       0,
-      reinterpret_cast<IUnknown **>(commandQueue.GetAddressOf()),
+      reinterpret_cast<IUnknown **>(m_commandQueue.GetAddressOf()),
       1,
       0,
-      &x11Device,
-      &x11DeviceContext,
+      &m_x11Device,
+      &m_x11DeviceContext,
       nullptr
    ));
 
    // Query the 11On12 device from the 11 device.
-   ThrowIfFailed(x11Device.As(&x11On12Device));
+   ThrowIfFailed(m_x11Device.As(&m_x11On12Device));
 
    // DWrite
    D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
 
    ThrowIfFailed(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory3), &d2dFactoryOptions, &m_d2dFactory));
-   ThrowIfFailed(x11On12Device.As(&dxgiDevice));
+   ThrowIfFailed(m_x11On12Device.As(&m_dxgiDevice));
 
    // Create a RTV
-   for (UINT i{ 0 }; i < bufferCount; i++)
+   for (UINT i{ 0 }; i < Buffer_Count; i++)
    {
       D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
-      ThrowIfFailed(x11On12Device->CreateWrappedResource(
-         swapChainBuffers[i].Get(),
+      ThrowIfFailed(m_x11On12Device->CreateWrappedResource(
+         m_swapChainBuffers[i].Get(),
          &d3d11Flags,
          D3D12_RESOURCE_STATE_RENDER_TARGET,
          D3D12_RESOURCE_STATE_PRESENT,
-         IID_PPV_ARGS(&x11wrappedBackBuffers[i])
+         IID_PPV_ARGS(&m_x11wrappedBackBuffers[i])
       ));
 
-      swapChainBuffers[i]->SetName(L"swap Chain Buffers");
-      ThrowIfFailed(x11Device->CreateRenderTargetView(x11wrappedBackBuffers[i].Get(), nullptr, &x11Target[i]));
+      m_swapChainBuffers[i]->SetName(L"swap Chain Buffers");
+      ThrowIfFailed(m_x11Device->CreateRenderTargetView(m_x11wrappedBackBuffers[i].Get(), nullptr, &m_x11Targets[i]));
    }
 
-   x11ViewPort.Width = (float)width;
-   x11ViewPort.Height = (float)height;
-   x11ViewPort.MinDepth = 0;
-   x11ViewPort.MaxDepth = 1;
-   x11ViewPort.TopLeftX = 0;
-   x11ViewPort.TopLeftY = 0;
+   m_x11ViewPort.Width = (float)m_width;
+   m_x11ViewPort.Height = (float)m_height;
+   m_x11ViewPort.MinDepth = 0;
+   m_x11ViewPort.MaxDepth = 1;
+   m_x11ViewPort.TopLeftX = 0;
+   m_x11ViewPort.TopLeftY = 0;
 
    // Depth Stencil
    D3D11_DEPTH_STENCIL_DESC depthDesc = {};
    depthDesc.StencilEnable = false;
    depthDesc.DepthEnable = false;
 
-   ThrowIfFailed(x11Device->CreateDepthStencilState(
-      &depthDesc, &x11DepthStencilState));
+   ThrowIfFailed(m_x11Device->CreateDepthStencilState(
+      &depthDesc, &m_x11DepthStencilState));
 }
 
-void Graphics::LoadBase2D()
+void Graphics::loadBase2D()
 {
    float dpiX;
    float dpiY;
 
-   dpiX = (float)GetDpiForWindow(hWnd);
+   dpiX = (float)GetDpiForWindow(m_hWnd);
    dpiY = dpiX;
    D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
       D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
@@ -560,50 +557,50 @@ void Graphics::LoadBase2D()
    );
 
    D2D1_DEVICE_CONTEXT_OPTIONS deviceOptions = D2D1_DEVICE_CONTEXT_OPTIONS_NONE;
-   ThrowIfFailed(m_d2dFactory->CreateDevice(dxgiDevice.Get(), &m_d2dDevice));
-   ThrowIfFailed(m_d2dDevice->CreateDeviceContext(deviceOptions, &x11d2dDeviceContext));
+   ThrowIfFailed(m_d2dFactory->CreateDevice(m_dxgiDevice.Get(), &m_d2dDevice));
+   ThrowIfFailed(m_d2dDevice->CreateDeviceContext(deviceOptions, &m_x11d2dDeviceContext));
    ThrowIfFailed(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &m_dWriteFactory));
-   for (UINT i{ 0 }; i < bufferCount; i++)
+   for (UINT i{ 0 }; i < Buffer_Count; i++)
    {
       // Create a render target for D2D to draw directly to this back buffer.
       ComPtr<IDXGISurface> surface;
-      ThrowIfFailed(x11wrappedBackBuffers[i].As(&surface));
-      ThrowIfFailed(x11d2dDeviceContext->CreateBitmapFromDxgiSurface(
+      ThrowIfFailed(m_x11wrappedBackBuffers[i].As(&surface));
+      ThrowIfFailed(m_x11d2dDeviceContext->CreateBitmapFromDxgiSurface(
          surface.Get(),
          &bitmapProperties,
-         &x11d2dRenderTargets[i]));
+         &m_x11d2dRenderTargets[i]));
    }
 }
 
-void Graphics::WaitForPreviousFrame()
+void Graphics::waitForPreviousFrame()
 {
    // Need to set frameIndex before call this routine
    // Wait until the previous frame is finished.
-   if (fence[frameIndex]->GetCompletedValue() < fenceValue[frameIndex])
+   if (m_fences[m_frameIndex]->GetCompletedValue() < m_fenceValues[m_frameIndex])
    {
-      ThrowIfFailed(fence[frameIndex]->SetEventOnCompletion(fenceValue[frameIndex], fenceEvent));
-      WaitForSingleObject(fenceEvent, INFINITE);
+      ThrowIfFailed(m_fences[m_frameIndex]->SetEventOnCompletion(m_fenceValues[m_frameIndex], m_fenceEvent));
+      WaitForSingleObject(m_fenceEvent, INFINITE);
    }
 
-   fenceValue[frameIndex]++;
+   m_fenceValues[m_frameIndex]++;
 }
 
-void Graphics::OnRenderBegin()
+void Graphics::onRenderBegin()
 {
-   frameIndex = swapChain->GetCurrentBackBufferIndex();
-   WaitForPreviousFrame();
+   m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+   waitForPreviousFrame();
 
-   OnRender(angle);
+   onRender(m_angle);
 }
 
-void Graphics::OnRender()
+void Graphics::onRender()
 {
-   x11On12Device->AcquireWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
-   OnRender2DWrite();
-   OnRenderX11();
+   m_x11On12Device->AcquireWrappedResources(m_x11wrappedBackBuffers[m_frameIndex].GetAddressOf(), 1);
+   onRender2DWrite();
+   onRenderX11();
 }
 
-void Graphics::DrawCommandList()
+void Graphics::drawCommandList()
 {
 #ifdef NOT_USE_DWRITE
    // Indicate that the back buffer will now be used to present.
@@ -621,30 +618,30 @@ void Graphics::DrawCommandList()
    }
 #endif
 
-   ThrowIfFailed(commandList->Close());
+   ThrowIfFailed(m_commandList->Close());
 
    // Execute the command list.
-   ID3D12CommandList *ppCommandLists[] = { commandList.Get() };
-   commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+   ID3D12CommandList *ppCommandLists[] = { m_commandList.Get() };
+   m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 }
 
-void Graphics::OnRenderEnd()
+void Graphics::onRenderEnd()
 {
-   x11On12Device->ReleaseWrappedResources(x11wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+   m_x11On12Device->ReleaseWrappedResources(m_x11wrappedBackBuffers[m_frameIndex].GetAddressOf(), 1);
 
-   x11DeviceContext->Flush();
-   ThrowIfFailed(commandQueue->Signal(fence[frameIndex].Get(), fenceValue[frameIndex]));
+   m_x11DeviceContext->Flush();
+   ThrowIfFailed(m_commandQueue->Signal(m_fences[m_frameIndex].Get(), m_fenceValues[m_frameIndex]));
 
    // Present the frame.
-   ThrowIfFailed(swapChain->Present(1, 0));
+   ThrowIfFailed(m_swapChain->Present(1, 0));
 
 }
 
-void Graphics::OnRender(float dt)
+void Graphics::onRender(float dt)
 {
-   ThrowIfFailed(commandAllocators[frameIndex]->Reset());
+   ThrowIfFailed(m_commandAllocators[m_frameIndex]->Reset());
 
-   ThrowIfFailed(commandList->Reset(commandAllocators[frameIndex].Get(), nullptr));
+   ThrowIfFailed(m_commandList->Reset(m_commandAllocators[m_frameIndex].Get(), nullptr));
 
    D3D12_RESOURCE_BARRIER resourceBarrier;
    resourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -652,56 +649,56 @@ void Graphics::OnRender(float dt)
    resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
    resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
    resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-   resourceBarrier.Transition.pResource = swapChainBuffers[frameIndex].Get();
-   commandList->ResourceBarrier(1, &resourceBarrier);
+   resourceBarrier.Transition.pResource = m_swapChainBuffers[m_frameIndex].Get();
+   m_commandList->ResourceBarrier(1, &resourceBarrier);
 
    // Indicate that the back buffer will be used as a render target.
    D3D12_CPU_DESCRIPTOR_HANDLE renderTargetDesc = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
-   renderTargetDesc.ptr += (SIZE_T)frameIndex * (SIZE_T)rtvDescriptorSize;
+   renderTargetDesc.ptr += (SIZE_T)m_frameIndex * (SIZE_T)m_rtvDescriptorSize;
 
-   D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-   commandList->OMSetRenderTargets(1, &renderTargetDesc, FALSE, &dsvHandle);
+   D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = m_dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+   m_commandList->OMSetRenderTargets(1, &renderTargetDesc, FALSE, &dsvHandle);
 
    // Record commands.
    const float clearColor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
-   commandList->ClearRenderTargetView(renderTargetDesc, clearColor, 0, nullptr);
-   commandList->ClearDepthStencilView(dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+   m_commandList->ClearRenderTargetView(renderTargetDesc, clearColor, 0, nullptr);
+   m_commandList->ClearDepthStencilView(m_dsDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
    // Set necessary state.
-   commandList->RSSetViewports(1, &viewport);
-   commandList->RSSetScissorRects(1, &scissorRect);
+   m_commandList->RSSetViewports(1, &m_viewport);
+   m_commandList->RSSetScissorRects(1, &m_scissorRect);
 }
 
-void Graphics::OnRenderX11()
+void Graphics::onRenderX11()
 {
-   x11DeviceContext->OMSetDepthStencilState(x11DepthStencilState.Get(), 0u);
+   m_x11DeviceContext->OMSetDepthStencilState(m_x11DepthStencilState.Get(), 0u);
 
    // bind render target
-   x11DeviceContext->OMSetRenderTargets(1u, x11Target[frameIndex].GetAddressOf(), nullptr);
+   m_x11DeviceContext->OMSetRenderTargets(1u, m_x11Targets[m_frameIndex].GetAddressOf(), nullptr);
 
-   x11DeviceContext->RSSetViewports(1u, &x11ViewPort);
+   m_x11DeviceContext->RSSetViewports(1u, &m_x11ViewPort);
 }
 
-void Graphics::OnRender2DWrite()
+void Graphics::onRender2DWrite()
 {
    // Render text directly to the back buffer.
-   x11d2dDeviceContext->SetTarget(x11d2dRenderTargets[frameIndex].Get());
+   m_x11d2dDeviceContext->SetTarget(m_x11d2dRenderTargets[m_frameIndex].Get());
 }
 
-void Graphics::CleanUp()
+void Graphics::cleanUp()
 {
    // wait for the gpu to finish all frames
-   for (int i = 0; i < bufferCount; ++i)
+   for (int i = 0; i < Buffer_Count; ++i)
    {
-      frameIndex = i;
-      WaitForPreviousFrame();
+      m_frameIndex = i;
+      waitForPreviousFrame();
    }
 
    // Wait for windows to finish
-   for (int i = 0; i < bufferCount; ++i)
+   for (int i = 0; i < Buffer_Count; ++i)
    {
-      frameIndex = i;
-      ThrowIfFailed(commandQueue->Signal(fence[frameIndex].Get(), fenceValue[frameIndex]));
-      WaitForPreviousFrame();
+      m_frameIndex = i;
+      ThrowIfFailed(m_commandQueue->Signal(m_fences[m_frameIndex].Get(), m_fenceValues[m_frameIndex]));
+      waitForPreviousFrame();
    }
 }

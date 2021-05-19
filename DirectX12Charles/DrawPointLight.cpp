@@ -11,10 +11,10 @@ DrawPointLight::DrawPointLight(Graphics &gfx, int &index, float size)
    ResetLightData();
    Shape::shapeType type = Shape::Sphere;
 
-   UINT verticesStart = gfx.shape.getVerticesStart(type);
-   UINT verticesCount = gfx.shape.getVerticesCount(type);
-   UINT indicesStart = gfx.shape.getIndiceStart(type);
-   UINT indicesCount = gfx.shape.getIndiceCount(type);
+   UINT verticesStart = gfx.m_shape.getVerticesStart(type);
+   UINT verticesCount = gfx.m_shape.getVerticesCount(type);
+   UINT indicesStart = gfx.m_shape.getIndiceStart(type);
+   UINT indicesCount = gfx.m_shape.getIndiceCount(type);
 
    std::shared_ptr<Object> object = Object::Resolve(gfx, "PointLight");
    if (!object->isInitialized())
@@ -32,7 +32,7 @@ DrawPointLight::DrawPointLight(Graphics &gfx, int &index, float size)
          XMFLOAT3 pos;
       };
 
-      auto model = gfx.shape.GetShapeData<Vertex>();
+      auto model = gfx.m_shape.GetShapeData<Vertex>();
 
       std::vector< Vertex > vertices(verticesCount);
 

@@ -4,8 +4,8 @@
 Transform::Transform(Graphics &gfx, const DrawFunction &parent, int rootVS, int rootPS)
    :
    gfx(gfx),
-   device(gfx.GetDevice()),
-   commandList(gfx.GetCommandList()),
+   device(gfx.getDevice()),
+   commandList(gfx.getCommandList()),
    parentTransform(parent),
    m_rootVS(rootVS),
    m_rootPS(rootPS)
@@ -14,13 +14,13 @@ Transform::Transform(Graphics &gfx, const DrawFunction &parent, int rootVS, int 
 
 void Transform::Bind(Graphics &gfx) noexcept
 {
-   const auto modelView = parentTransform.GetTransformXM() * gfx.GetCamera();
+   const auto modelView = parentTransform.GetTransformXM() * gfx.getCamera();
    const Graphics::TransformMatrix contantMatrix =
    {
       XMMatrixTranspose(modelView),
       XMMatrixTranspose(
       modelView *
-      gfx.GetProjection())
+      gfx.getProjection())
    };
 
    int index = getIndex();
@@ -29,12 +29,12 @@ void Transform::Bind(Graphics &gfx) noexcept
       assert(false);
    }
 
-   gfx.SetMatrixConstant(index, contantMatrix, m_rootVS, m_rootPS);
+   gfx.setMatrixConstant(index, contantMatrix, m_rootVS, m_rootPS);
 
    int materialIndex = parentTransform.getMaterialIndex();
    if (materialIndex != -1)
    {
-      gfx.SetMaterialConstant(materialIndex);
+      gfx.setMaterialConstant(materialIndex);
    }
 
    if (indicesCount > 0)
@@ -46,7 +46,7 @@ void Transform::Bind(Graphics &gfx) noexcept
    {
       auto dataCopy = gfx.lightData;
       const auto pos = XMLoadFloat3(&dataCopy.viewLightPos);
-      XMMATRIX cam = gfx.GetCamera();
+      XMMATRIX cam = gfx.getCamera();
       XMStoreFloat3(&dataCopy.viewLightPos, XMVector3Transform(pos, cam));
       memcpy(lightBufferGPUAddress, &dataCopy, sizeof(dataCopy));
    }

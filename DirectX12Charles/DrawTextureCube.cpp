@@ -42,10 +42,10 @@ DrawTextureCube::DrawTextureCube(Graphics &gfx, int &index, float range)
 #endif
    Shape::shapeType type = Shape::PictureCube;
 
-   UINT verticesStart = gfx.shape.getVerticesStart(type);
-   UINT verticesCount = gfx.shape.getVerticesCount(type);
-   UINT indicesStart = gfx.shape.getIndiceStart(type);
-   UINT indicesCount = gfx.shape.getIndiceCount(type);
+   UINT verticesStart = gfx.m_shape.getVerticesStart(type);
+   UINT verticesCount = gfx.m_shape.getVerticesCount(type);
+   UINT indicesStart = gfx.m_shape.getIndiceStart(type);
+   UINT indicesCount = gfx.m_shape.getIndiceCount(type);
 
    struct Vertex
    {
@@ -68,7 +68,7 @@ DrawTextureCube::DrawTextureCube(Graphics &gfx, int &index, float range)
 
       std::vector <unsigned short> indices(indicesCount);
 
-      auto model = gfx.shape.GetShapeTextureData<Vertex>();
+      auto model = gfx.m_shape.GetShapeTextureData<Vertex>();
       for (int i = 0; i < model.vertices.size(); i++)
       {
          vbuf.EmplaceBack(
@@ -96,8 +96,8 @@ DrawTextureCube::DrawTextureCube(Graphics &gfx, int &index, float range)
    AddBind(std::move(texture));
 
    std::shared_ptr < Transform > trans = std::make_shared<Transform>(gfx, *this, 0, -1);
-   UINT start = gfx.shape.getIndiceStart(type);
-   UINT count = gfx.shape.getIndiceCount(type);
+   UINT start = gfx.m_shape.getIndiceStart(type);
+   UINT count = gfx.m_shape.getIndiceCount(type);
    trans->setIndices(index, start, count);
    ++index;
 
